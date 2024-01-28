@@ -1,0 +1,17 @@
+01:45:50 **** Incremental Build of configuration Debug for project PeripherialTest ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../USB_DEVICE/App -I../USB_DEVICE/Target -I../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTest/Drivers/LCD" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTest/Drivers/UGUI" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTest/Drivers/UGUI/Fonts" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTest/Drivers/VL53L0X/Api/core/inc" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTest/Drivers/VL53L0X/Api/platform/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "PeripherialTest.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTest/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="PeripherialTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: PeripherialTest.elf
+ 
+arm-none-eabi-size   PeripherialTest.elf 
+arm-none-eabi-objdump -h -S  PeripherialTest.elf  > "PeripherialTest.list"
+   text	   data	    bss	    dec	    hex	filename
+  81040	   1120	  10160	  92320	  168a0	PeripherialTest.elf
+Finished building: default.size.stdout
+ 
+Finished building: PeripherialTest.list
+ 
+
+01:45:51 Build Finished. 0 errors, 0 warnings. (took 635ms)
+

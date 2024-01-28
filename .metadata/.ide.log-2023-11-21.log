@@ -1,0 +1,389 @@
+2023-11-22 00:06:18,002 [INFO] EditThreadDialog:704 - RAM SIZE (in KB): 128
+2023-11-22 00:06:18,004 [INFO] EditThreadDialog:706 - RAM SIZE (in words): 32768
+2023-11-22 00:06:40,195 [INFO] TasksAndQueuesTab:757 - Dynamic
+2023-11-22 00:06:40,195 [WARN] TasksAndQueuesTab:763 - 128 128
+2023-11-22 00:06:40,195 [WARN] TasksAndQueuesTab:775 - max value is: 3840.0
+2023-11-22 00:06:40,195 [INFO] TasksAndQueuesTab:757 - Dynamic
+2023-11-22 00:06:40,195 [WARN] TasksAndQueuesTab:763 - 256 128
+2023-11-22 00:06:40,195 [WARN] TasksAndQueuesTab:775 - max value is: 3840.0
+2023-11-22 00:06:40,195 [INFO] TasksAndQueuesTab:757 - Dynamic
+2023-11-22 00:06:40,195 [WARN] TasksAndQueuesTab:763 - 128 128
+2023-11-22 00:06:40,195 [WARN] TasksAndQueuesTab:775 - max value is: 3840.0
+2023-11-22 00:06:40,195 [INFO] TasksAndQueuesTab:757 - Dynamic
+2023-11-22 00:06:40,195 [WARN] TasksAndQueuesTab:763 - 128 128
+2023-11-22 00:06:40,195 [WARN] TasksAndQueuesTab:775 - max value is: 3840.0
+2023-11-22 00:06:40,195 [INFO] TasksAndQueuesTab:757 - Dynamic
+2023-11-22 00:06:40,195 [WARN] TasksAndQueuesTab:763 - 128 128
+2023-11-22 00:06:40,195 [WARN] TasksAndQueuesTab:775 - max value is: 3840.0
+2023-11-22 00:07:20,092 [INFO] TasksAndQueuesTab:757 - Dynamic
+2023-11-22 00:07:20,092 [WARN] TasksAndQueuesTab:763 - 128 128
+2023-11-22 00:07:20,092 [WARN] TasksAndQueuesTab:775 - max value is: 3840.0
+2023-11-22 00:07:20,092 [INFO] TasksAndQueuesTab:757 - Dynamic
+2023-11-22 00:07:20,092 [WARN] TasksAndQueuesTab:763 - 256 128
+2023-11-22 00:07:20,092 [WARN] TasksAndQueuesTab:775 - max value is: 3840.0
+2023-11-22 00:07:20,092 [INFO] TasksAndQueuesTab:757 - Dynamic
+2023-11-22 00:07:20,092 [WARN] TasksAndQueuesTab:763 - 128 128
+2023-11-22 00:07:20,092 [WARN] TasksAndQueuesTab:775 - max value is: 3840.0
+2023-11-22 00:07:20,092 [INFO] TasksAndQueuesTab:757 - Dynamic
+2023-11-22 00:07:20,092 [WARN] TasksAndQueuesTab:763 - 128 128
+2023-11-22 00:07:20,092 [WARN] TasksAndQueuesTab:775 - max value is: 3840.0
+2023-11-22 00:07:26,850 [INFO] TasksAndQueuesTab:757 - Dynamic
+2023-11-22 00:07:26,850 [WARN] TasksAndQueuesTab:763 - 128 128
+2023-11-22 00:07:26,850 [WARN] TasksAndQueuesTab:775 - max value is: 3840.0
+2023-11-22 00:07:26,850 [INFO] TasksAndQueuesTab:757 - Dynamic
+2023-11-22 00:07:26,850 [WARN] TasksAndQueuesTab:763 - 256 128
+2023-11-22 00:07:26,850 [WARN] TasksAndQueuesTab:775 - max value is: 3840.0
+2023-11-22 00:07:26,850 [INFO] TasksAndQueuesTab:757 - Dynamic
+2023-11-22 00:07:26,850 [WARN] TasksAndQueuesTab:763 - 128 128
+2023-11-22 00:07:26,850 [WARN] TasksAndQueuesTab:775 - max value is: 3840.0
+2023-11-22 00:07:26,850 [INFO] TasksAndQueuesTab:757 - Dynamic
+2023-11-22 00:07:26,850 [WARN] TasksAndQueuesTab:763 - 128 128
+2023-11-22 00:07:26,850 [WARN] TasksAndQueuesTab:775 - max value is: 3840.0
+2023-11-22 00:07:29,381 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 844932328 Bytes (1073741824)
+2023-11-22 00:07:30,596 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 874292456 Bytes (1073741824)
+2023-11-22 00:07:31,336 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 798838416 Bytes (1073741824)
+2023-11-22 00:07:31,473 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: RTC
+2023-11-22 00:07:31,473 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: SPI
+2023-11-22 00:07:31,473 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: USB_OTG_FS
+2023-11-22 00:07:31,473 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: NVIC
+2023-11-22 00:07:31,473 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: FREERTOS
+2023-11-22 00:07:31,473 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: DMA
+2023-11-22 00:07:31,473 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: TIM1_8
+2023-11-22 00:07:31,473 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: TIM1_8
+2023-11-22 00:07:31,473 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: TIM1_8
+2023-11-22 00:07:31,473 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: USB_DEVICE
+2023-11-22 00:07:31,473 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: TIM1_8
+2023-11-22 00:07:31,474 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: SYS
+2023-11-22 00:07:31,474 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: GPIO
+2023-11-22 00:07:31,474 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: RCC
+2023-11-22 00:07:31,474 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: I2C
+2023-11-22 00:07:31,474 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: I2C
+2023-11-22 00:07:31,474 [INFO] CodeGenerator:793 - code generatio: config db path: /opt/st/stm32cubeide_1.12.1/plugins/com.st.stm32cube.common.mx_6.8.1.202304191431//db/
+2023-11-22 00:07:31,477 [WARN] IP:2113 - I2C_Coeff_DF not found: check if there is a RefParameter without a condition.
+2023-11-22 00:07:31,477 [WARN] IP:2113 - Analog_Filter not found: check if there is a RefParameter without a condition.
+2023-11-22 00:07:31,477 [WARN] IP:2113 - I2C_Coeff_DF not found: check if there is a RefParameter without a condition.
+2023-11-22 00:07:31,477 [WARN] IP:2113 - Analog_Filter not found: check if there is a RefParameter without a condition.
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : hdmavalue: null
+2023-11-22 00:07:31,482 [INFO] Argument:321 - 	 sub Args: 
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : Instancevalue: DMA1_Stream4
+2023-11-22 00:07:31,482 [INFO] Argument:329 - Argument : Instancevalue: DMA1_Stream4
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : Initvalue: null
+2023-11-22 00:07:31,482 [INFO] Argument:321 - 	 sub Args: 
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : Channelvalue: DMA_CHANNEL_0
+2023-11-22 00:07:31,482 [INFO] Argument:329 - Argument : Channelvalue: DMA_CHANNEL_0
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : Directionvalue: DMA_MEMORY_TO_PERIPH
+2023-11-22 00:07:31,482 [INFO] Argument:329 - Argument : Directionvalue: DMA_MEMORY_TO_PERIPH
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : PeriphIncvalue: DMA_PINC_DISABLE
+2023-11-22 00:07:31,482 [INFO] Argument:329 - Argument : PeriphIncvalue: DMA_PINC_DISABLE
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : MemIncvalue: DMA_MINC_ENABLE
+2023-11-22 00:07:31,482 [INFO] Argument:329 - Argument : MemIncvalue: DMA_MINC_ENABLE
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : PeriphDataAlignmentvalue: DMA_PDATAALIGN_BYTE
+2023-11-22 00:07:31,482 [INFO] Argument:329 - Argument : PeriphDataAlignmentvalue: DMA_PDATAALIGN_BYTE
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : MemDataAlignmentvalue: DMA_MDATAALIGN_BYTE
+2023-11-22 00:07:31,482 [INFO] Argument:329 - Argument : MemDataAlignmentvalue: DMA_MDATAALIGN_BYTE
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : Modevalue: DMA_NORMAL
+2023-11-22 00:07:31,482 [INFO] Argument:329 - Argument : Modevalue: DMA_NORMAL
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : Priorityvalue: DMA_PRIORITY_LOW
+2023-11-22 00:07:31,482 [INFO] Argument:329 - Argument : Priorityvalue: DMA_PRIORITY_LOW
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : FIFOModevalue: DMA_FIFOMODE_DISABLE
+2023-11-22 00:07:31,482 [INFO] Argument:329 - Argument : FIFOModevalue: DMA_FIFOMODE_DISABLE
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : FIFOThresholdvalue: null
+2023-11-22 00:07:31,482 [INFO] Argument:329 - Argument : FIFOThresholdvalue: null
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : MemBurstvalue: null
+2023-11-22 00:07:31,482 [INFO] Argument:329 - Argument : MemBurstvalue: null
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : PeriphBurstvalue: null
+2023-11-22 00:07:31,482 [INFO] Argument:329 - Argument : PeriphBurstvalue: null
+2023-11-22 00:07:31,482 [INFO] Argument:319 - Argument : Lockvalue: null
+2023-11-22 00:07:31,482 [INFO] Argument:329 - Argument : Lockvalue: null
+2023-11-22 00:07:31,483 [INFO] Argument:319 - Argument : Statevalue: null
+2023-11-22 00:07:31,483 [INFO] Argument:329 - Argument : Statevalue: null
+2023-11-22 00:07:31,483 [INFO] Argument:319 - Argument : Parentvalue: null
+2023-11-22 00:07:31,483 [INFO] Argument:329 - Argument : Parentvalue: null
+2023-11-22 00:07:31,483 [INFO] Argument:319 - Argument : XferCpltCallbackvalue: null
+2023-11-22 00:07:31,483 [INFO] Argument:329 - Argument : XferCpltCallbackvalue: null
+2023-11-22 00:07:31,483 [INFO] Argument:319 - Argument : XferHalfCpltCallbackvalue: null
+2023-11-22 00:07:31,483 [INFO] Argument:329 - Argument : XferHalfCpltCallbackvalue: null
+2023-11-22 00:07:31,483 [INFO] Argument:319 - Argument : XferM1CpltCallbackvalue: null
+2023-11-22 00:07:31,483 [INFO] Argument:329 - Argument : XferM1CpltCallbackvalue: null
+2023-11-22 00:07:31,483 [INFO] Argument:319 - Argument : XferErrorCallbackvalue: null
+2023-11-22 00:07:31,483 [INFO] Argument:329 - Argument : XferErrorCallbackvalue: null
+2023-11-22 00:07:31,483 [INFO] Argument:319 - Argument : ErrorCodevalue: null
+2023-11-22 00:07:31,483 [INFO] Argument:329 - Argument : ErrorCodevalue: null
+2023-11-22 00:07:31,508 [WARN] IP:2113 - DEVICE_SERIAL0_CDC_FS not found: check if there is a RefParameter without a condition.
+2023-11-22 00:07:31,508 [WARN] IP:2113 - DEVICE_SERIAL1_CDC_FS not found: check if there is a RefParameter without a condition.
+2023-11-22 00:07:31,508 [WARN] IP:2113 - DEVICE_SERIAL2_CDC_FS not found: check if there is a RefParameter without a condition.
+2023-11-22 00:07:31,618 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/license.tmp_save
+2023-11-22 00:07:31,669 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/license.tmp
+2023-11-22 00:07:31,682 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/gpio.tmp_save
+2023-11-22 00:07:31,733 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/gpio.tmp
+2023-11-22 00:07:31,782 [WARN] IPConfigManager:2937 - Warning: the RefConfig PWREx_EnableUSBVoltageDetector is not available in your config.xml file
+2023-11-22 00:07:31,785 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_vars.tmp_save
+2023-11-22 00:07:31,835 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_vars.tmp
+2023-11-22 00:07:31,835 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_inc.tmp_save
+2023-11-22 00:07:31,897 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_inc.tmp
+2023-11-22 00:07:31,898 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_HalInit.tmp_save
+2023-11-22 00:07:31,949 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_HalInit.tmp
+2023-11-22 00:07:31,950 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_Msp.tmp_save
+2023-11-22 00:07:32,005 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_Msp.tmp
+2023-11-22 00:07:32,251 [INFO] Middleware:1439 - No code input for Bsp Dependency
+2023-11-22 00:07:32,252 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_inc.tmp_save
+2023-11-22 00:07:32,305 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_inc.tmp
+2023-11-22 00:07:32,305 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelInit.tmp_save
+2023-11-22 00:07:32,350 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelInit.tmp
+2023-11-22 00:07:32,351 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelStart.tmp_save
+2023-11-22 00:07:32,423 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelStart.tmp
+2023-11-22 00:07:32,424 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_typedefs.tmp_save
+2023-11-22 00:07:32,475 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_typedefs.tmp
+2023-11-22 00:07:32,475 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_vars.tmp_save
+2023-11-22 00:07:32,520 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_vars.tmp
+2023-11-22 00:07:32,520 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_pfp.tmp_save
+2023-11-22 00:07:32,563 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_pfp.tmp
+2023-11-22 00:07:32,563 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_obj_creat.tmp_save
+2023-11-22 00:07:32,607 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_obj_creat.tmp
+2023-11-22 00:07:32,608 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_default_thread.tmp_save
+2023-11-22 00:07:32,650 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_default_thread.tmp
+2023-11-22 00:07:32,651 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_threads.tmp_save
+2023-11-22 00:07:32,693 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_threads.tmp
+2023-11-22 00:07:32,696 [INFO] Middleware:1439 - No code input for Bsp Dependency
+2023-11-22 00:07:32,699 [INFO] Middleware:1439 - No code input for Bsp Dependency
+2023-11-22 00:07:32,700 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_inc.tmp_save
+2023-11-22 00:07:32,743 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_inc.tmp
+2023-11-22 00:07:32,744 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelInit.tmp_save
+2023-11-22 00:07:32,784 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelInit.tmp
+2023-11-22 00:07:32,785 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelStart.tmp_save
+2023-11-22 00:07:32,826 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelStart.tmp
+2023-11-22 00:07:32,826 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_typedefs.tmp_save
+2023-11-22 00:07:32,869 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_typedefs.tmp
+2023-11-22 00:07:32,869 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_vars.tmp_save
+2023-11-22 00:07:32,916 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_vars.tmp
+2023-11-22 00:07:32,916 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_pfp.tmp_save
+2023-11-22 00:07:32,960 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_pfp.tmp
+2023-11-22 00:07:32,961 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_obj_creat.tmp_save
+2023-11-22 00:07:33,010 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_obj_creat.tmp
+2023-11-22 00:07:33,011 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_default_thread.tmp_save
+2023-11-22 00:07:33,059 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_default_thread.tmp
+2023-11-22 00:07:33,060 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_threads.tmp_save
+2023-11-22 00:07:33,101 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_threads.tmp
+2023-11-22 00:07:33,102 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/FreeRTOSConfig.h_save
+2023-11-22 00:07:33,152 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/FreeRTOSConfig.h
+2023-11-22 00:07:33,153 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/freertos.c_save
+2023-11-22 00:07:33,197 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/freertos.c
+2023-11-22 00:07:33,215 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/dma.tmp_save
+2023-11-22 00:07:33,258 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/dma.tmp
+2023-11-22 00:07:33,258 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/dma_GV.tmp_save
+2023-11-22 00:07:33,299 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/dma_GV.tmp
+2023-11-22 00:07:33,303 [INFO] Middleware:1439 - No code input for Bsp Dependency
+2023-11-22 00:07:33,304 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usb_device.c_save
+2023-11-22 00:07:33,353 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usb_device.c
+2023-11-22 00:07:33,353 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usb_device.h_save
+2023-11-22 00:07:33,396 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usb_device.h
+2023-11-22 00:07:33,396 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/Target/usbd_conf.h_save
+2023-11-22 00:07:33,439 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/Target/usbd_conf.h
+2023-11-22 00:07:33,439 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/Target/usbd_conf.c_save
+2023-11-22 00:07:33,487 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/Target/usbd_conf.c
+2023-11-22 00:07:33,488 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_desc.h_save
+2023-11-22 00:07:33,530 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_desc.h
+2023-11-22 00:07:33,530 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_desc.c_save
+2023-11-22 00:07:33,577 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_desc.c
+2023-11-22 00:07:33,577 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_cdc_if.h_save
+2023-11-22 00:07:33,620 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_cdc_if.h
+2023-11-22 00:07:33,621 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_cdc_if.c_save
+2023-11-22 00:07:33,670 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_cdc_if.c
+2023-11-22 00:07:33,674 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/stm32f4xx_it.c_save
+2023-11-22 00:07:33,782 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/stm32f4xx_it.c
+2023-11-22 00:07:33,782 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/stm32f4xx_it.h_save
+2023-11-22 00:07:33,826 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/stm32f4xx_it.h
+2023-11-22 00:07:33,829 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/stm32f4xx_hal_msp.c_save
+2023-11-22 00:07:33,899 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/stm32f4xx_hal_msp.c
+2023-11-22 00:07:33,899 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/system.tmp_save
+2023-11-22 00:07:33,944 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/system.tmp
+2023-11-22 00:07:33,945 [INFO] CodeEngine:311 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/stm32f4xx_hal_conf.h_save
+2023-11-22 00:07:33,999 [INFO] CodeEngine:335 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/stm32f4xx_hal_conf.h
+2023-11-22 00:07:34,009 [WARN] IPConfigManager:3431 - IP not found : TIM
+2023-11-22 00:07:34,009 [WARN] CodeGenerator:3754 - IP not found : null
+2023-11-22 00:07:34,010 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/main.h_save
+2023-11-22 00:07:34,087 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/main.h
+2023-11-22 00:07:34,088 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/main.c_save
+2023-11-22 00:07:34,187 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/main.c
+2023-11-22 00:07:34,500 [INFO] ProjectBuilder:2996 - Time for Copy HAL[1] : 21mS.
+2023-11-22 00:07:34,501 [INFO] ProjectBuilder:4304 - Project Generator version: 3.19.2
+2023-11-22 00:07:34,750 [INFO] ConfigFileManager:1483 - The Die is : DIE431
+2023-11-22 00:07:35,536 [INFO] ProjectBuilder:4505 - Time for Generating toolchain IDE Files: 1035mS.
+2023-11-22 00:07:35,537 [INFO] ProjectBuilder:2867 - Time for Copy CMSIS : 0mS.
+2023-11-22 00:07:35,537 [INFO] ProjectBuilder:2867 - Time for Copy CMSIS : 0mS.
+2023-11-22 00:24:21,622 [INFO] NvicIntPanel:101 - NVIC parent = com.st.microxplorer.plugins.ip.nvic.MultiNvicIntPanel[,0,0,0x0,invalid,layout=javax.swing.BoxLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=,minimumSize=,preferredSize=]
+2023-11-22 00:25:42,561 [INFO] NvicIntPanel:101 - NVIC parent = com.st.microxplorer.plugins.ip.nvic.MultiNvicIntPanel[,0,0,0x0,invalid,layout=javax.swing.BoxLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=,minimumSize=,preferredSize=]
+2023-11-22 00:25:45,873 [INFO] NvicIntPanel:101 - NVIC parent = com.st.microxplorer.plugins.ip.nvic.MultiNvicIntPanel[,0,0,0x0,invalid,layout=javax.swing.BoxLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=,minimumSize=,preferredSize=]
+2023-11-22 00:25:49,559 [INFO] NvicIntPanel:101 - NVIC parent = com.st.microxplorer.plugins.ip.nvic.MultiNvicIntPanel[,0,0,0x0,invalid,layout=javax.swing.BoxLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=,minimumSize=,preferredSize=]
+2023-11-22 00:28:03,593 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 736887064 Bytes (1073741824)
+2023-11-22 00:28:05,436 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 784072984 Bytes (1073741824)
+2023-11-22 00:28:06,072 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 851181848 Bytes (1073741824)
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: RTC
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: SPI
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: USB_OTG_FS
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: NVIC
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: FREERTOS
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: DMA
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: TIM1_8
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: TIM1_8
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: TIM1_8
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: USB_DEVICE
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: TIM1_8
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: SYS
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: GPIO
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: RCC
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: I2C
+2023-11-22 00:28:06,221 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: I2C
+2023-11-22 00:28:06,221 [INFO] CodeGenerator:793 - code generatio: config db path: /opt/st/stm32cubeide_1.12.1/plugins/com.st.stm32cube.common.mx_6.8.1.202304191431//db/
+2023-11-22 00:28:06,237 [WARN] IP:2113 - I2C_Coeff_DF not found: check if there is a RefParameter without a condition.
+2023-11-22 00:28:06,237 [WARN] IP:2113 - Analog_Filter not found: check if there is a RefParameter without a condition.
+2023-11-22 00:28:06,237 [WARN] IP:2113 - I2C_Coeff_DF not found: check if there is a RefParameter without a condition.
+2023-11-22 00:28:06,237 [WARN] IP:2113 - Analog_Filter not found: check if there is a RefParameter without a condition.
+2023-11-22 00:28:06,242 [INFO] Argument:319 - Argument : hdmavalue: null
+2023-11-22 00:28:06,242 [INFO] Argument:321 - 	 sub Args: 
+2023-11-22 00:28:06,242 [INFO] Argument:319 - Argument : Instancevalue: DMA1_Stream4
+2023-11-22 00:28:06,242 [INFO] Argument:329 - Argument : Instancevalue: DMA1_Stream4
+2023-11-22 00:28:06,242 [INFO] Argument:319 - Argument : Initvalue: null
+2023-11-22 00:28:06,242 [INFO] Argument:321 - 	 sub Args: 
+2023-11-22 00:28:06,242 [INFO] Argument:319 - Argument : Channelvalue: DMA_CHANNEL_0
+2023-11-22 00:28:06,242 [INFO] Argument:329 - Argument : Channelvalue: DMA_CHANNEL_0
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : Directionvalue: DMA_MEMORY_TO_PERIPH
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : Directionvalue: DMA_MEMORY_TO_PERIPH
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : PeriphIncvalue: DMA_PINC_DISABLE
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : PeriphIncvalue: DMA_PINC_DISABLE
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : MemIncvalue: DMA_MINC_ENABLE
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : MemIncvalue: DMA_MINC_ENABLE
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : PeriphDataAlignmentvalue: DMA_PDATAALIGN_BYTE
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : PeriphDataAlignmentvalue: DMA_PDATAALIGN_BYTE
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : MemDataAlignmentvalue: DMA_MDATAALIGN_BYTE
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : MemDataAlignmentvalue: DMA_MDATAALIGN_BYTE
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : Modevalue: DMA_NORMAL
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : Modevalue: DMA_NORMAL
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : Priorityvalue: DMA_PRIORITY_LOW
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : Priorityvalue: DMA_PRIORITY_LOW
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : FIFOModevalue: DMA_FIFOMODE_DISABLE
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : FIFOModevalue: DMA_FIFOMODE_DISABLE
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : FIFOThresholdvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : FIFOThresholdvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : MemBurstvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : MemBurstvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : PeriphBurstvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : PeriphBurstvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : Lockvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : Lockvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : Statevalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : Statevalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : Parentvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : Parentvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : XferCpltCallbackvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : XferCpltCallbackvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : XferHalfCpltCallbackvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : XferHalfCpltCallbackvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : XferM1CpltCallbackvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : XferM1CpltCallbackvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : XferErrorCallbackvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : XferErrorCallbackvalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:319 - Argument : ErrorCodevalue: null
+2023-11-22 00:28:06,243 [INFO] Argument:329 - Argument : ErrorCodevalue: null
+2023-11-22 00:28:06,249 [WARN] IP:2113 - DEVICE_SERIAL0_CDC_FS not found: check if there is a RefParameter without a condition.
+2023-11-22 00:28:06,249 [WARN] IP:2113 - DEVICE_SERIAL1_CDC_FS not found: check if there is a RefParameter without a condition.
+2023-11-22 00:28:06,249 [WARN] IP:2113 - DEVICE_SERIAL2_CDC_FS not found: check if there is a RefParameter without a condition.
+2023-11-22 00:28:06,347 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/license.tmp_save
+2023-11-22 00:28:06,399 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/license.tmp
+2023-11-22 00:28:06,413 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/gpio.tmp_save
+2023-11-22 00:28:06,477 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/gpio.tmp
+2023-11-22 00:28:06,505 [WARN] IPConfigManager:2937 - Warning: the RefConfig PWREx_EnableUSBVoltageDetector is not available in your config.xml file
+2023-11-22 00:28:06,506 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_vars.tmp_save
+2023-11-22 00:28:06,556 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_vars.tmp
+2023-11-22 00:28:06,556 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_inc.tmp_save
+2023-11-22 00:28:06,598 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_inc.tmp
+2023-11-22 00:28:06,598 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_HalInit.tmp_save
+2023-11-22 00:28:06,651 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_HalInit.tmp
+2023-11-22 00:28:06,651 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_Msp.tmp_save
+2023-11-22 00:28:06,706 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/usb_otg_fs_Msp.tmp
+2023-11-22 00:28:06,965 [INFO] Middleware:1439 - No code input for Bsp Dependency
+2023-11-22 00:28:06,967 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_inc.tmp_save
+2023-11-22 00:28:07,020 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_inc.tmp
+2023-11-22 00:28:07,020 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelInit.tmp_save
+2023-11-22 00:28:07,066 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelInit.tmp
+2023-11-22 00:28:07,066 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelStart.tmp_save
+2023-11-22 00:28:07,145 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelStart.tmp
+2023-11-22 00:28:07,145 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_typedefs.tmp_save
+2023-11-22 00:28:07,189 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_typedefs.tmp
+2023-11-22 00:28:07,190 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_vars.tmp_save
+2023-11-22 00:28:07,236 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_vars.tmp
+2023-11-22 00:28:07,236 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_pfp.tmp_save
+2023-11-22 00:28:07,279 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_pfp.tmp
+2023-11-22 00:28:07,279 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_obj_creat.tmp_save
+2023-11-22 00:28:07,324 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_obj_creat.tmp
+2023-11-22 00:28:07,325 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_default_thread.tmp_save
+2023-11-22 00:28:07,369 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_default_thread.tmp
+2023-11-22 00:28:07,369 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_threads.tmp_save
+2023-11-22 00:28:07,413 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_threads.tmp
+2023-11-22 00:28:07,416 [INFO] Middleware:1439 - No code input for Bsp Dependency
+2023-11-22 00:28:07,418 [INFO] Middleware:1439 - No code input for Bsp Dependency
+2023-11-22 00:28:07,419 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_inc.tmp_save
+2023-11-22 00:28:07,465 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_inc.tmp
+2023-11-22 00:28:07,465 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelInit.tmp_save
+2023-11-22 00:28:07,507 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelInit.tmp
+2023-11-22 00:28:07,507 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelStart.tmp_save
+2023-11-22 00:28:07,549 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_kernelStart.tmp
+2023-11-22 00:28:07,549 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_typedefs.tmp_save
+2023-11-22 00:28:07,592 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_typedefs.tmp
+2023-11-22 00:28:07,593 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_vars.tmp_save
+2023-11-22 00:28:07,646 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_vars.tmp
+2023-11-22 00:28:07,647 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_pfp.tmp_save
+2023-11-22 00:28:07,690 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_pfp.tmp
+2023-11-22 00:28:07,690 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_obj_creat.tmp_save
+2023-11-22 00:28:07,739 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_obj_creat.tmp
+2023-11-22 00:28:07,739 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_default_thread.tmp_save
+2023-11-22 00:28:07,781 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_default_thread.tmp
+2023-11-22 00:28:07,782 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_threads.tmp_save
+2023-11-22 00:28:07,824 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/rtos_threads.tmp
+2023-11-22 00:28:07,825 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/FreeRTOSConfig.h_save
+2023-11-22 00:28:07,896 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/FreeRTOSConfig.h
+2023-11-22 00:28:07,897 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/freertos.c_save
+2023-11-22 00:28:07,949 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/freertos.c
+2023-11-22 00:28:07,957 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/dma.tmp_save
+2023-11-22 00:28:08,005 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/dma.tmp
+2023-11-22 00:28:08,005 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/dma_GV.tmp_save
+2023-11-22 00:28:08,047 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/dma_GV.tmp
+2023-11-22 00:28:08,051 [INFO] Middleware:1439 - No code input for Bsp Dependency
+2023-11-22 00:28:08,052 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usb_device.c_save
+2023-11-22 00:28:08,103 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usb_device.c
+2023-11-22 00:28:08,103 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usb_device.h_save
+2023-11-22 00:28:08,147 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usb_device.h
+2023-11-22 00:28:08,147 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/Target/usbd_conf.h_save
+2023-11-22 00:28:08,191 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/Target/usbd_conf.h
+2023-11-22 00:28:08,191 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/Target/usbd_conf.c_save
+2023-11-22 00:28:08,241 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/Target/usbd_conf.c
+2023-11-22 00:28:08,241 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_desc.h_save
+2023-11-22 00:28:08,285 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_desc.h
+2023-11-22 00:28:08,285 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_desc.c_save
+2023-11-22 00:28:08,335 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_desc.c
+2023-11-22 00:28:08,335 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_cdc_if.h_save
+2023-11-22 00:28:08,381 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_cdc_if.h
+2023-11-22 00:28:08,381 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_cdc_if.c_save
+2023-11-22 00:28:08,434 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/USB_DEVICE/App/usbd_cdc_if.c
+2023-11-22 00:28:08,439 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/stm32f4xx_it.c_save
+2023-11-22 00:28:08,564 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/stm32f4xx_it.c
+2023-11-22 00:28:08,565 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/stm32f4xx_it.h_save
+2023-11-22 00:28:08,619 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/stm32f4xx_it.h
+2023-11-22 00:28:08,622 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/stm32f4xx_hal_msp.c_save
+2023-11-22 00:28:08,700 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/stm32f4xx_hal_msp.c
+2023-11-22 00:28:08,700 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/system.tmp_save
+2023-11-22 00:28:08,745 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/MXTmpFiles/system.tmp
+2023-11-22 00:28:08,746 [INFO] CodeEngine:311 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/stm32f4xx_hal_conf.h_save
+2023-11-22 00:28:08,819 [INFO] CodeEngine:335 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/stm32f4xx_hal_conf.h
+2023-11-22 00:28:08,830 [WARN] IPConfigManager:3431 - IP not found : TIM
+2023-11-22 00:28:08,830 [WARN] CodeGenerator:3754 - IP not found : null
+2023-11-22 00:28:08,831 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/main.h_save
+2023-11-22 00:28:08,889 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Inc/main.h
+2023-11-22 00:28:08,890 [INFO] CodeEngine:255 - oldGeneratedFile, /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/main.c_save
+2023-11-22 00:28:09,000 [INFO] CodeEngine:279 - Generated code: /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/PeripherialTestRTOS/Core/Src/main.c
+2023-11-22 00:28:09,370 [INFO] ProjectBuilder:2996 - Time for Copy HAL[1] : 22mS.
+2023-11-22 00:28:09,372 [INFO] ProjectBuilder:4304 - Project Generator version: 3.19.2
+2023-11-22 00:28:09,611 [INFO] ConfigFileManager:1483 - The Die is : DIE431
+2023-11-22 00:28:10,639 [INFO] ProjectBuilder:4505 - Time for Generating toolchain IDE Files: 1267mS.
+2023-11-22 00:28:10,639 [INFO] ProjectBuilder:2867 - Time for Copy CMSIS : 0mS.
+2023-11-22 00:28:10,640 [INFO] ProjectBuilder:2867 - Time for Copy CMSIS : 0mS.

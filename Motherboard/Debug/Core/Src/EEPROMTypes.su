@@ -1,0 +1,6 @@
+../Core/Src/EEPROMTypes.c:12:19:EEPROM_ReadUint8	32	static
+../Core/Src/EEPROMTypes.c:16:19:EEPROM_WriteUint8	32	static
+../Core/Src/EEPROMTypes.c:20:19:EEPROM_ReadInt32	32	static
+../Core/Src/EEPROMTypes.c:24:19:EEPROM_WriteInt32	32	static
+../Core/Src/EEPROMTypes.c:28:19:EEPROM_ReadFloat	24	static
+../Core/Src/EEPROMTypes.c:32:19:EEPROM_WriteFloat	24	static

@@ -1,0 +1,53 @@
+03:25:44 **** Incremental Build of configuration Debug for project Motherboard ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../USB_DEVICE/App -I../USB_DEVICE/Target -I../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/platform/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'vTaskSendData':
+../Core/Src/main.c:523:3: warning: enumeration value 'none' not handled in switch [-Wswitch]
+  523 |   switch(DataID)
+      |   ^~~~~~
+../Core/Src/main.c:523:3: warning: enumeration value 'Data' not handled in switch [-Wswitch]
+../Core/Src/main.c:523:3: warning: enumeration value 'USBConnected' not handled in switch [-Wswitch]
+../Core/Src/main.c:523:3: warning: enumeration value 'USBDisconnected' not handled in switch [-Wswitch]
+../Core/Src/main.c: In function 'CommandProcess':
+../Core/Src/main.c:536:52: warning: value computed is not used [-Wunused-value]
+  536 |  for(*command = 0;*command < RXCommands.memberNum; *command++, RXCommandsPtr++)
+      |                                                    ^~~~~~~~~~
+../Core/Src/main.c: In function 'USBTransmit':
+../Core/Src/main.c:554:1: warning: no return statement in function returning non-void [-Wreturn-type]
+  554 | }
+      | ^
+../Core/Src/main.c: At top level:
+../Core/Src/main.c:473:13: warning: 'vTaskDaughter' declared 'static' but never defined [-Wunused-function]
+  473 | static void vTaskDaughter(void);
+      |             ^~~~~~~~~~~~~
+In file included from ../Core/Src/main.c:41:
+../Core/Src/main.c: In function 'UART_Transmit':
+../Core/Src/main.c:561:31: warning: 'uint16_t' {aka 'short unsigned int'} is promoted to 'int' when passed through '...'
+  561 |  uint16_t Size = va_arg(args, uint16_t);
+      |                               ^
+../Core/Src/main.c:561:31: note: (so you should pass 'int' not 'uint16_t' {aka 'short unsigned int'} to 'va_arg')
+../Core/Src/main.c:561:31: note: if this code is reached, the program will abort
+At top level:
+../Core/Src/main.c:545:17: warning: 'USBTransmit' defined but not used [-Wunused-function]
+  545 | static uint16_t USBTransmit(uint8_t* Buf, uint16_t Len)
+      |                 ^~~~~~~~~~~
+../Core/Src/main.c:519:13: warning: 'vTaskSendData' defined but not used [-Wunused-function]
+  519 | static void vTaskSendData(void)
+      |             ^~~~~~~~~~~~~
+../Core/Src/main.c:502:13: warning: 'vTaskBlinkCommFailed' defined but not used [-Wunused-function]
+  502 | static void vTaskBlinkCommFailed(void)
+      |             ^~~~~~~~~~~~~~~~~~~~
+arm-none-eabi-gcc -o "Motherboard.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Motherboard.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Motherboard.elf
+ 
+arm-none-eabi-size   Motherboard.elf 
+arm-none-eabi-objdump -h -S  Motherboard.elf  > "Motherboard.list"
+   text	   data	    bss	    dec	    hex	filename
+  80256	   1156	  12660	  94072	  16f78	Motherboard.elf
+Finished building: default.size.stdout
+ 
+Finished building: Motherboard.list
+ 
+
+03:25:45 Build Finished. 0 errors, 11 warnings. (took 584ms)
+

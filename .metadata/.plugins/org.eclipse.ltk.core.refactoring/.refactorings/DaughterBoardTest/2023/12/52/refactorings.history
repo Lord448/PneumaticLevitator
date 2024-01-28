@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;DaughterBoardTest/Drivers/UI_DESIGN&apos; to &apos;UI&apos;" description="Rename resource &apos;UI_DESIGN&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Drivers/UI_DESIGN" name="UI" stamp="1703664626389" updateReferences="true"/>
+</session>

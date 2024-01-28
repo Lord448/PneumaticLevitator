@@ -1,0 +1,15 @@
+/*
+ * Bitmaps.c
+ *
+ *  Created on: Dec 27, 2023
+ *      Author: lord448
+ */
+
+#include "Bitmaps.h"
+
+UG_BMP fry = {
+  .p=fry_data,
+  .width=77,
+  .height=114,
+  .bpp=BMP_BPP_16,
+};

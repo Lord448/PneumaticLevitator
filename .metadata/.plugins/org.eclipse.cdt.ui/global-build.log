@@ -1,0 +1,161 @@
+18:34:45 **** Incremental Build of configuration Debug for project DaughterBoardTest ****
+make -j16 all 
+arm-none-eabi-gcc "../Drivers/UI/Src/UI.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/LCD" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI/Fonts" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UI/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/UI/Src/UI.d" -MT"Drivers/UI/Src/UI.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/UI/Src/UI.o"
+arm-none-eabi-gcc -o "DaughterBoardTest.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="DaughterBoardTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: DaughterBoardTest.elf
+ 
+arm-none-eabi-size   DaughterBoardTest.elf 
+arm-none-eabi-objdump -h -S  DaughterBoardTest.elf  > "DaughterBoardTest.list"
+   text	   data	    bss	    dec	    hex	filename
+ 155796	    160	   2240	 158196	  269f4	DaughterBoardTest.elf
+Finished building: default.size.stdout
+ 
+Finished building: DaughterBoardTest.list
+ 
+18:34:47 **** Incremental Build of configuration Debug for project DaughterBoardTest ****
+make -j16 all 
+arm-none-eabi-size   DaughterBoardTest.elf 
+   text	   data	    bss	    dec	    hex	filename
+ 155796	    160	   2240	 158196	  269f4	DaughterBoardTest.elf
+Finished building: default.size.stdout
+ 
+18:35:12 **** Incremental Build of configuration Debug for project DaughterBoardTest ****
+make -j16 all 
+arm-none-eabi-gcc "../Drivers/UI/Src/UI.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/LCD" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI/Fonts" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UI/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/UI/Src/UI.d" -MT"Drivers/UI/Src/UI.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/UI/Src/UI.o"
+arm-none-eabi-gcc -o "DaughterBoardTest.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="DaughterBoardTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: DaughterBoardTest.elf
+ 
+arm-none-eabi-size   DaughterBoardTest.elf 
+arm-none-eabi-objdump -h -S  DaughterBoardTest.elf  > "DaughterBoardTest.list"
+   text	   data	    bss	    dec	    hex	filename
+ 155796	    160	   2240	 158196	  269f4	DaughterBoardTest.elf
+Finished building: default.size.stdout
+ 
+Finished building: DaughterBoardTest.list
+ 
+18:35:36 **** Incremental Build of configuration Debug for project DaughterBoardTest ****
+make -j16 all 
+arm-none-eabi-gcc "../Drivers/UI/Src/UI.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/LCD" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI/Fonts" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UI/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/UI/Src/UI.d" -MT"Drivers/UI/Src/UI.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/UI/Src/UI.o"
+arm-none-eabi-gcc -o "DaughterBoardTest.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="DaughterBoardTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: DaughterBoardTest.elf
+ 
+arm-none-eabi-size   DaughterBoardTest.elf 
+arm-none-eabi-objdump -h -S  DaughterBoardTest.elf  > "DaughterBoardTest.list"
+   text	   data	    bss	    dec	    hex	filename
+ 155796	    160	   2240	 158196	  269f4	DaughterBoardTest.elf
+Finished building: default.size.stdout
+ 
+Finished building: DaughterBoardTest.list
+ 
+18:35:55 **** Incremental Build of configuration Debug for project DaughterBoardTest ****
+make -j16 all 
+arm-none-eabi-gcc "../Drivers/UI/Src/UI.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/LCD" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI/Fonts" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UI/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/UI/Src/UI.d" -MT"Drivers/UI/Src/UI.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/UI/Src/UI.o"
+arm-none-eabi-gcc -o "DaughterBoardTest.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="DaughterBoardTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: DaughterBoardTest.elf
+ 
+arm-none-eabi-size   DaughterBoardTest.elf 
+arm-none-eabi-objdump -h -S  DaughterBoardTest.elf  > "DaughterBoardTest.list"
+   text	   data	    bss	    dec	    hex	filename
+ 155796	    160	   2240	 158196	  269f4	DaughterBoardTest.elf
+Finished building: default.size.stdout
+ 
+Finished building: DaughterBoardTest.list
+ 
+18:37:05 **** Incremental Build of configuration Debug for project DaughterBoardTest ****
+make -j16 all 
+arm-none-eabi-gcc "../Drivers/UI/Src/UI.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/LCD" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI/Fonts" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UI/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/UI/Src/UI.d" -MT"Drivers/UI/Src/UI.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/UI/Src/UI.o"
+arm-none-eabi-gcc -o "DaughterBoardTest.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="DaughterBoardTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: DaughterBoardTest.elf
+ 
+arm-none-eabi-size   DaughterBoardTest.elf 
+arm-none-eabi-objdump -h -S  DaughterBoardTest.elf  > "DaughterBoardTest.list"
+   text	   data	    bss	    dec	    hex	filename
+ 155844	    160	   2240	 158244	  26a24	DaughterBoardTest.elf
+Finished building: default.size.stdout
+ 
+Finished building: DaughterBoardTest.list
+ 
+18:39:33 **** Incremental Build of configuration Debug for project DaughterBoardTest ****
+make -j16 all 
+arm-none-eabi-gcc "../Drivers/UI/Src/UI.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/LCD" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI/Fonts" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UI/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/UI/Src/UI.d" -MT"Drivers/UI/Src/UI.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/UI/Src/UI.o"
+arm-none-eabi-gcc -o "DaughterBoardTest.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="DaughterBoardTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: DaughterBoardTest.elf
+ 
+arm-none-eabi-size   DaughterBoardTest.elf 
+arm-none-eabi-objdump -h -S  DaughterBoardTest.elf  > "DaughterBoardTest.list"
+   text	   data	    bss	    dec	    hex	filename
+ 155872	    160	   2240	 158272	  26a40	DaughterBoardTest.elf
+Finished building: default.size.stdout
+ 
+Finished building: DaughterBoardTest.list
+ 
+18:39:56 **** Incremental Build of configuration Debug for project DaughterBoardTest ****
+make -j16 all 
+arm-none-eabi-gcc "../Drivers/UI/Src/UI.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/LCD" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI/Fonts" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UI/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/UI/Src/UI.d" -MT"Drivers/UI/Src/UI.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/UI/Src/UI.o"
+arm-none-eabi-gcc -o "DaughterBoardTest.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="DaughterBoardTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: DaughterBoardTest.elf
+ 
+arm-none-eabi-size   DaughterBoardTest.elf 
+arm-none-eabi-objdump -h -S  DaughterBoardTest.elf  > "DaughterBoardTest.list"
+   text	   data	    bss	    dec	    hex	filename
+ 155872	    160	   2240	 158272	  26a40	DaughterBoardTest.elf
+Finished building: default.size.stdout
+ 
+Finished building: DaughterBoardTest.list
+ 
+18:41:02 **** Incremental Build of configuration Debug for project DaughterBoardTest ****
+make -j16 all 
+arm-none-eabi-size   DaughterBoardTest.elf 
+   text	   data	    bss	    dec	    hex	filename
+ 155872	    160	   2240	 158272	  26a40	DaughterBoardTest.elf
+Finished building: default.size.stdout
+ 
+18:41:21 **** Incremental Build of configuration Debug for project DaughterBoardTest ****
+make -j16 all 
+arm-none-eabi-gcc "../Drivers/UI/Src/UI.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/LCD" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI/Fonts" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UI/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/UI/Src/UI.d" -MT"Drivers/UI/Src/UI.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/UI/Src/UI.o"
+arm-none-eabi-gcc -o "DaughterBoardTest.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="DaughterBoardTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: DaughterBoardTest.elf
+ 
+arm-none-eabi-size   DaughterBoardTest.elf 
+arm-none-eabi-objdump -h -S  DaughterBoardTest.elf  > "DaughterBoardTest.list"
+   text	   data	    bss	    dec	    hex	filename
+ 155872	    160	   2240	 158272	  26a40	DaughterBoardTest.elf
+Finished building: default.size.stdout
+ 
+Finished building: DaughterBoardTest.list
+ 
+18:42:50 **** Incremental Build of configuration Debug for project DaughterBoardTest ****
+make -j16 all 
+arm-none-eabi-size   DaughterBoardTest.elf 
+   text	   data	    bss	    dec	    hex	filename
+ 155872	    160	   2240	 158272	  26a40	DaughterBoardTest.elf
+Finished building: default.size.stdout
+ 
+18:43:39 **** Incremental Build of configuration Debug for project DaughterBoardTest ****
+make -j16 all 
+arm-none-eabi-gcc "../Drivers/UI/Src/UI.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/LCD" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI/Fonts" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UI/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/UI/Src/UI.d" -MT"Drivers/UI/Src/UI.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/UI/Src/UI.o"
+arm-none-eabi-gcc -o "DaughterBoardTest.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="DaughterBoardTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: DaughterBoardTest.elf
+ 
+arm-none-eabi-size   DaughterBoardTest.elf 
+arm-none-eabi-objdump -h -S  DaughterBoardTest.elf  > "DaughterBoardTest.list"
+   text	   data	    bss	    dec	    hex	filename
+ 155908	    160	   2240	 158308	  26a64	DaughterBoardTest.elf
+Finished building: default.size.stdout
+ 
+Finished building: DaughterBoardTest.list
+ 
+18:44:05 **** Incremental Build of configuration Debug for project DaughterBoardTest ****
+make -j16 all 
+arm-none-eabi-gcc "../Drivers/UI/Src/UI.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/LCD" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI/Fonts" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UI/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/UI/Src/UI.d" -MT"Drivers/UI/Src/UI.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/UI/Src/UI.o"
+arm-none-eabi-gcc -o "DaughterBoardTest.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="DaughterBoardTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: DaughterBoardTest.elf
+ 
+arm-none-eabi-size   DaughterBoardTest.elf 
+arm-none-eabi-objdump -h -S  DaughterBoardTest.elf  > "DaughterBoardTest.list"
+   text	   data	    bss	    dec	    hex	filename
+ 155908	    160	   2240	 158308	  26a64	DaughterBoardTest.elf
+Finished building: default.size.stdout
+ 
+Finished building: DaughterBoardTest.list
+ 

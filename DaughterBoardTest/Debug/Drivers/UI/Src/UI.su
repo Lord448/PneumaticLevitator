@@ -1,0 +1,12 @@
+../Drivers/UI/Src/UI.c:20:13:vInitialAnim	40	static
+../Drivers/UI/Src/UI.c:161:13:vMainLobby	16	static
+../Drivers/UI/Src/UI.c:165:13:vMenu	16	static
+../Drivers/UI/Src/UI.c:169:13:vConfigurationMenu	16	static
+../Drivers/UI/Src/UI.c:173:13:vAboutMenu	16	static
+../Drivers/UI/Src/UI.c:177:13:vPlotMenu	16	static
+../Drivers/UI/Src/UI.c:181:13:vUSBConfigMenu	16	static
+../Drivers/UI/Src/UI.c:185:13:vStepResponseMenu	16	static
+../Drivers/UI/Src/UI.c:190:10:RGB565Color	16	static
+../Drivers/UI/Src/UI.c:195:6:UIDrawCenterBitmap	16	static
+../Drivers/UI/Src/UI.c:200:6:vTaskUI	16	static
+../Drivers/UI/Src/UI.c:231:6:UIWindowCreate	16	static
