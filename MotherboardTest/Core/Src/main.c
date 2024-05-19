@@ -23,6 +23,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "usbd_cdc_if.h"
+#include "vl53l0x_api.h"
+#include "vl53l0x_platform.h"
 #include <stdio.h>
 #include <string.h>
 /* USER CODE END Includes */
@@ -35,6 +37,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define EEPROM_ADDR 0xA0
+#define Reference 520
+#define MeasureTolerance 5 //To reduce numeric noise
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -49,6 +53,7 @@ I2C_HandleTypeDef hi2c2;
 RTC_HandleTypeDef hrtc;
 
 TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart1;
 
@@ -64,9 +69,12 @@ static void MX_I2C2_Init(void);
 static void MX_RTC_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM1_Init(void);
+static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
+static void vTaskUSBSensor(void);
 static void vTaskUSB(void);
-static void vTaskBlinks(void);
+static void vTaskBlink(void);
+static void vTaskFan(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -81,6 +89,16 @@ uint16_t Flag = 1;
 uint16_t ParsedFlag = 1;
 uint8_t DeviceConnected = 0;
 uint8_t NeedToReport = 0;
+static uint16_t MaxCCR = 0;
+//VL053L0X
+static VL53L0X_RangingMeasurementData_t RangingData;
+static VL53L0X_Dev_t  vl53l0x_c; //center module
+static VL53L0X_DEV    Dev = &vl53l0x_c;
+static uint32_t refSpadCount;
+static uint8_t isApertureSpads;
+static uint8_t VhvSettings;
+static uint8_t PhaseCal;
+static uint16_t distance, past_measure;
 /* USER CODE END 0 */
 
 /**
@@ -117,19 +135,56 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_DEVICE_Init();
   MX_TIM1_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim1);
   HAL_UART_Receive_IT(&huart1, (uint8_t*)&UART_IncomData, 1);
+
+  /* Init the VL53L0X sensor */
+  MaxCCR = htim3.Init.Period;
+  Dev->I2cHandle = &hi2c1;
+  Dev->I2cDevAddr = 0x52;
+
+  //Disable XSHUT
+  HAL_GPIO_WritePin(TOF_XSHUT_GPIO_Port, TOF_XSHUT_Pin, GPIO_PIN_RESET);
+  HAL_Delay(20);
+
+  //Enable XSHUT
+  HAL_GPIO_WritePin(TOF_XSHUT_GPIO_Port, TOF_XSHUT_Pin, GPIO_PIN_SET);
+  HAL_Delay(20);
+
+  VL53L0X_WaitDeviceBooted( Dev );
+  VL53L0X_DataInit( Dev );
+  VL53L0X_StaticInit( Dev );
+  VL53L0X_PerformRefCalibration(Dev, &VhvSettings, &PhaseCal);
+  VL53L0X_PerformRefSpadManagement(Dev, &refSpadCount, &isApertureSpads);
+  VL53L0X_SetDeviceMode(Dev, VL53L0X_DEVICEMODE_SINGLE_RANGING);
+
+  //Enable/Disable Sigma and Signal check
+  VL53L0X_SetLimitCheckEnable(Dev, VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE, 1);
+  VL53L0X_SetLimitCheckEnable(Dev, VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, 1);
+  VL53L0X_SetLimitCheckValue(Dev, VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, (FixPoint1616_t)(0.1*65536));
+  VL53L0X_SetLimitCheckValue(Dev, VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE, (FixPoint1616_t)(60*65536));
+  VL53L0X_SetMeasurementTimingBudgetMicroSeconds(Dev, 33000);
+  VL53L0X_SetVcselPulsePeriod(Dev, VL53L0X_VCSEL_PERIOD_PRE_RANGE, 18);
+  VL53L0X_SetVcselPulsePeriod(Dev, VL53L0X_VCSEL_PERIOD_FINAL_RANGE, 14);
+
+  /*PWM FAN Init*/
+  TIM3->CCR1 = 149; //Low PWM signal at start - 5% of Duty
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  HAL_GPIO_WritePin(EnablePWM_GPIO_Port, EnablePWM_Pin, 1); //Turning on the AND gate
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	vTaskUSB();
-	vTaskBlinks();
-	ParsedFlag = 1;
-	while(ParsedFlag);
+		//vTaskUSB();
+		vTaskUSBSensor();
+		vTaskBlink();
+		vTaskFan();
+		ParsedFlag = 1;
+		while(ParsedFlag); //Parsed Loop @ 1ms
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -333,6 +388,65 @@ static void MX_TIM1_Init(void)
 }
 
 /**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 0;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 2999;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
+  HAL_TIM_MspPostInit(&htim3);
+
+}
+
+/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -386,7 +500,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3|GPIO_PIN_4, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPLed1_Pin|GPLed2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, EnablePWM_Pin|TOF_XSHUT_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PC13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
@@ -401,12 +518,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(DevMode_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA3 PA4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  /*Configure GPIO pins : GPLed1_Pin GPLed2_Pin */
+  GPIO_InitStruct.Pin = GPLed1_Pin|GPLed2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : EnablePWM_Pin TOF_XSHUT_Pin */
+  GPIO_InitStruct.Pin = EnablePWM_Pin|TOF_XSHUT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
@@ -417,6 +541,33 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+/* Temporal function for sensor test */
+static void vTaskUSBSensor(void) {
+	static uint8_t timeCounter = 0;
+	char Buffer[32] = "";
+
+	if(timeCounter == 300) {
+		//Send data each 300ms
+		VL53L0X_PerformSingleRangingMeasurement(Dev, &RangingData);
+		if(RangingData.RangeStatus == 0) {
+			//Data have been acquired
+			if(RangingData.RangeMilliMeter > past_measure+MeasureTolerance || RangingData.RangeMilliMeter < past_measure-MeasureTolerance) {
+				//It's a significant change on the measure
+				distance = Reference - RangingData.RangeMilliMeter;
+				if(CDC_getReady() == USBD_OK) {
+					//Sending to usb
+					memset(Buffer, '\0', sizeof(Buffer));
+					sprintf(Buffer, "%d", distance);
+					CDC_Transmit_FS((uint8_t *)Buffer, strlen(Buffer));
+				}
+				past_measure = distance;
+			}
+		}
+	}
+	timeCounter++;
+}
+
 static void vTaskUSB(void)
 {
 	uint8_t MemValue = 1;
@@ -483,7 +634,7 @@ static void vTaskUSB(void)
 	}
 }
 
-static void vTaskBlinks(void)
+static void vTaskBlink(void)
 {
   static uint32_t Count = 0;
   if(Count == 100)
@@ -497,6 +648,37 @@ static void vTaskBlinks(void)
   Count++;
 }
 
+static void vTaskFan(void)
+{
+	enum states {
+		idle,
+		ramp
+	}static stateHandler = idle;
+  static uint32_t timeCount = 0;
+
+  switch(stateHandler)
+  {
+  	case idle:
+  		TIM3->CCR1 = 149; //5% Duty cycle
+  		timeCount++;
+  		if(timeCount >= 500) { //Wait for 500ms
+  			stateHandler = ramp;
+  			timeCount = 0;
+  		}
+  	break;
+  	case ramp:
+  		TIM3->CCR1 += 2;
+  	  //Giving 5% top constraint
+  	  if(TIM3->CCR1 >= MaxCCR-149) {
+  	  	stateHandler = idle;
+  	  }
+  	break;
+  	default:
+  		/* Code should not reach this line */
+  		TIM3->CCR1 = 149; //5% Duty cycle
+  	break;
+  }
+}
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {

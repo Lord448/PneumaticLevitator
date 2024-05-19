@@ -17449,6 +17449,7 @@ static void vInitialAnim(MenuStage *stage)
  8006a28:	f7fe fa30 	bl	8004e8c <UG_FillScreen>
 				UG_Update();
  8006a2c:	f7ff fb96 	bl	800615c <UG_Update>
+				//TODO Adjust positions
 				LCD_PutStr(20, 2, "Firmware", FONT_arial_49X57, C_BLACK, C_WHITE);
  8006a30:	f64f 73ff 	movw	r3, #65535	; 0xffff
  8006a34:	9301      	str	r3, [sp, #4]
