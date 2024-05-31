@@ -1,17 +1,10 @@
-15:24:09 **** Build of configuration Debug for project DaughterBoardTest ****
+12:33:31 **** Incremental Build of configuration Debug for project DaughterBoardTest ****
 make -j16 all 
-arm-none-eabi-gcc "../Drivers/UI/Src/UI.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/LCD" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI/Fonts" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UI/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/UI/Src/UI.d" -MT"Drivers/UI/Src/UI.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/UI/Src/UI.o"
-arm-none-eabi-gcc -o "DaughterBoardTest.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="DaughterBoardTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
-Finished building target: DaughterBoardTest.elf
- 
 arm-none-eabi-size   DaughterBoardTest.elf 
-arm-none-eabi-objdump -h -S  DaughterBoardTest.elf  > "DaughterBoardTest.list"
    text	   data	    bss	    dec	    hex	filename
- 155908	    160	   2240	 158308	  26a64	DaughterBoardTest.elf
+ 169868	    160	   2696	 172724	  2a2b4	DaughterBoardTest.elf
 Finished building: default.size.stdout
  
-Finished building: DaughterBoardTest.list
- 
 
-15:24:10 Build Finished. 0 errors, 0 warnings. (took 737ms)
+12:33:31 Build Finished. 0 errors, 0 warnings. (took 223ms)
 

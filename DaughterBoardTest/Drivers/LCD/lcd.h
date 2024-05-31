@@ -17,7 +17,7 @@
 #define LCD_DC                LCD_DC
 #define LCD_RST               LCD_RST /* Disable if your display has no RST pin */
 #define LCD_CS                LCD_CS  /* Disable if your display has no CS pin */
-//#define LCD_BL              LCD_BL  /* Enable if you need backlight control */
+//#define LCD_BL                LCD_BLK  /* Enable if you need backlight control */
 
 #define USE_DMA                       /* Use DMA for transfers when possible */
 //#define LCD_LOCAL_FB                /* Use local framebuffer. Needs a lot of ram, but removes flickering and redrawing glitches  */

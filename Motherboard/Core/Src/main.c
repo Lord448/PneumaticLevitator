@@ -502,6 +502,7 @@ static void vTaskCommandsHandler(void)
 static void vTaskBlinkCommFailed(void)
 {
 	static uint16_t Counter = 0;
+
 	if(GPUCommFailed)
 	{
 		if(Counter == 500) //500ms Delay

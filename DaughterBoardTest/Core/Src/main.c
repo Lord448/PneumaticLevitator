@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-//#define LCD_TEST
+#define LCD_TEST
 #define LCD_UI_DESIGN
 
 #define TimerMiddleValue 0x7FFF //0xFFFF/2
