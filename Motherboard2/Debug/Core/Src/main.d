@@ -53,10 +53,10 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC/ModeManager/ModeManger.h \
  /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC/PID/PID.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC/DistanceSensor/DistanceSensor.h \
  /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC/COM/COM.h \
  /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC/COM/Signals.h \
  /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC/COM/COM.h \
+ /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC/DistanceSensor/DistanceSensor.h \
  /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/vl53l0x_api.h \
  /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_api_strings.h \
  /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_def.h \
@@ -125,10 +125,10 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC/ModeManager/ModeManger.h:
 /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC/PID/PID.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC/DistanceSensor/DistanceSensor.h:
 /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC/COM/COM.h:
 /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC/COM/Signals.h:
 /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC/COM/COM.h:
+/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC/DistanceSensor/DistanceSensor.h:
 /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/vl53l0x_api.h:
 /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_api_strings.h:
 /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_def.h:

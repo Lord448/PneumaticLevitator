@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Rename resource &apos;Motherboard/Drivers/VL53L0X_F401&apos; to &apos;VL53L0X&apos;" description="Rename resource &apos;VL53L0X_F401&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Drivers/VL53L0X_F401" name="VL53L0X" stamp="1703136288262" updateReferences="true"/>
-</session>

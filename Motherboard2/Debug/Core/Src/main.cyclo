@@ -13,8 +13,8 @@ main.c:725:13:MX_USART1_UART_Init	2
 main.c:756:13:MX_DMA_Init	1
 main.c:784:13:MX_GPIO_Init	1
 main.c:847:6:vTaskIdle	1
-main.c:867:6:vTaskModeManager	1
-main.c:881:6:vTaskPID	1
-main.c:895:6:vTaskCOM	1
-main.c:909:6:vTaskSensorActuator	1
-main.c:935:6:Error_Handler	1
+main.c:869:6:vTaskModeManager	1
+main.c:883:6:vTaskPID	1
+main.c:897:6:vTaskCOM	1
+main.c:911:6:vTaskSensorActuator	1
+main.c:937:6:Error_Handler	1

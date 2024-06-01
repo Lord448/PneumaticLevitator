@@ -2,7 +2,7 @@
  * PID.c
  *
  *  Created on: May 29, 2024
- *      Author: lord448
+ *      Author: @noescine
  */
 
 #include "PID.h"
@@ -105,7 +105,7 @@ void vTaskPID_Runnable(void)
 		osMessageQueuePut(xFIFO_ControlActionHandle, &PID.ControlAction, 0U, 0U);
 		/*Sending to the COM module*/
 		ControlAction_PDU = COM_CreatePDU(0, PID.ControlAction);
-		osMessageQueuePut(xFIFO_COMHandle, &ControlAction_PDU, NULL, 0U);
+		osMessageQueuePut(xFIFO_COMHandle, &ControlAction_PDU, 0U, 0U);
 		PID.Past_Error = PID.Error;
 	}
 }

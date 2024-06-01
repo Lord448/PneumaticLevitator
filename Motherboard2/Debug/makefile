@@ -12,6 +12,7 @@ RM := rm -rf
 -include USB_DEVICE/Target/subdir.mk
 -include USB_DEVICE/App/subdir.mk
 -include Source/SWC/PID/subdir.mk
+-include Source/SWC/NVM/subdir.mk
 -include Source/SWC/ModeManager/subdir.mk
 -include Source/SWC/FAN/subdir.mk
 -include Source/SWC/DistanceSensor/subdir.mk

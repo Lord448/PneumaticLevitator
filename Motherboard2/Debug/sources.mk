@@ -37,6 +37,7 @@ Source/SWC/COM \
 Source/SWC/DistanceSensor \
 Source/SWC/FAN \
 Source/SWC/ModeManager \
+Source/SWC/NVM \
 Source/SWC/PID \
 USB_DEVICE/App \
 USB_DEVICE/Target \

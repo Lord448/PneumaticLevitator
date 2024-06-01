@@ -5,6 +5,10 @@
  *      Author: lord448
  */
 
+#include "COM.h"
+
+extern osMessageQueueId_t xFIFO_COMHandle;
+
 void COM_Init(void)
 {
 

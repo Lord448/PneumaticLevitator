@@ -11,5 +11,6 @@
 #include "COM.h"
 
 /*Declare here all the signals*/
+#define DISTANCE_ID 0
 
 #endif /* SWC_COM_SIGNALS_H_ */

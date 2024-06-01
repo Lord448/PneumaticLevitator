@@ -57,6 +57,7 @@
 "./Source/SWC/DistanceSensor/DistanceSensor.o"
 "./Source/SWC/FAN/FAN.o"
 "./Source/SWC/ModeManager/ModeManger.o"
+"./Source/SWC/NVM/NVM.o"
 "./Source/SWC/PID/PID.o"
 "./USB_DEVICE/App/usb_device.o"
 "./USB_DEVICE/App/usbd_cdc_if.o"

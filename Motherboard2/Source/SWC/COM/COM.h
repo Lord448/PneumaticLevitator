@@ -8,6 +8,9 @@
 #ifndef SWC_COM_COM_H_
 #define SWC_COM_COM_H_
 
+#include "main.h"
+#include "cmsis_os2.h"
+
 /*Last Chunk is the message ID*/
 typedef union PDU_t{
 	uint32_t rawData;

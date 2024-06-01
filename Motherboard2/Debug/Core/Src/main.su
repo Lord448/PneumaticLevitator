@@ -13,8 +13,8 @@
 ../Core/Src/main.c:756:13:MX_DMA_Init	16	static
 ../Core/Src/main.c:784:13:MX_GPIO_Init	48	static
 ../Core/Src/main.c:847:6:vTaskIdle	16	static
-../Core/Src/main.c:867:6:vTaskModeManager	16	static
-../Core/Src/main.c:881:6:vTaskPID	16	static
-../Core/Src/main.c:895:6:vTaskCOM	16	static
-../Core/Src/main.c:909:6:vTaskSensorActuator	24	static
-../Core/Src/main.c:935:6:Error_Handler	4	static,ignoring_inline_asm
+../Core/Src/main.c:869:6:vTaskModeManager	16	static
+../Core/Src/main.c:883:6:vTaskPID	16	static
+../Core/Src/main.c:897:6:vTaskCOM	16	static
+../Core/Src/main.c:911:6:vTaskSensorActuator	24	static
+../Core/Src/main.c:937:6:Error_Handler	4	static,ignoring_inline_asm
