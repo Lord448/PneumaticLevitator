@@ -9,8 +9,8 @@
 	<item key="formatter_page.modify_dialog_tab_page.last_focus_index" value="3"/>
 	<item key="org.eclipse.cdt.uiformatter_pagemodify_dialog.preferred_width" value="1161"/>
 	<item key="org.eclipse.cdt.uiformatter_pagemodify_dialog.preferred_height" value="979"/>
-	<item key="org.eclipse.cdt.uiformatter_pagemodify_dialog.preferred_x" value="2366"/>
-	<item key="org.eclipse.cdt.uiformatter_pagemodify_dialog.preferred_y" value="20"/>
+	<item key="org.eclipse.cdt.uiformatter_pagemodify_dialog.preferred_x" value="759"/>
+	<item key="org.eclipse.cdt.uiformatter_pagemodify_dialog.preferred_y" value="24"/>
 	<section name="completion_proposal_size">
 	</section>
 	<section name="org.eclipse.cdt.ui.text.hover.CMacroExpansionExploration">
@@ -33,7 +33,7 @@
 	<section name="org.eclipse.cdt.ui.OPEN_ACTION_SELECTION_DIALOG_SECTION">
 		<item key="DIALOG_X_ORIGIN" value="769"/>
 		<item key="DIALOG_Y_ORIGIN" value="200"/>
-		<item key="DIALOG_WIDTH" value="388"/>
+		<item key="DIALOG_WIDTH" value="866"/>
 		<item key="DIALOG_HEIGHT" value="465"/>
 		<item key="DIALOG_FONT_NAME" value="1|Ubuntu|10.0|0|GTK|1|"/>
 	</section>

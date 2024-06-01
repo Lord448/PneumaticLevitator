@@ -4,7 +4,15 @@ configurationInstallLocation=/opt/st/stm32cubeide_1.12.1/
 eclipse.preferences.version=1
 iconcolormode=primary
 includeThemingInOomph=false
+<<<<<<< Updated upstream
 last.download.attempt.time=1716665658774
 lastConfiguration=1716665651614
+=======
+last.download.attempt.time=1716088433301
+lastConfiguration=1717119086756
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 newinstall=true
 workbench.theme=Dark Gray

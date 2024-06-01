@@ -1,0 +1,2 @@
+../Source/SWC/COM/COM.c:8:6:COM_Init	4	static
+../Source/SWC/COM/COM.c:13:6:vTaskCOM_Runnable	4	static

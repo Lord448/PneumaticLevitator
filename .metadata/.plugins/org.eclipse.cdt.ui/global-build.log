@@ -1,3 +1,5 @@
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 12:33:28 **** Incremental Build of configuration Debug for project DaughterBoardTest ****
 make -j16 all 
 arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/LCD" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UGUI/Fonts" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/DaughterBoardTest/Drivers/UI/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
@@ -18,4 +20,48 @@ arm-none-eabi-size   DaughterBoardTest.elf
    text	   data	    bss	    dec	    hex	filename
  169868	    160	   2696	 172724	  2a2b4	DaughterBoardTest.elf
 Finished building: default.size.stdout
+=======
+20:58:06 **** Incremental Build of configuration Debug for project Motherboard2 ****
+make -j12 all 
+arm-none-eabi-gcc "../Source/SWC/PID/PID.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../USB_DEVICE/App -I../USB_DEVICE/Target -I../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/platform/inc" -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Source/SWC/PID/PID.d" -MT"Source/SWC/PID/PID.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Source/SWC/PID/PID.o"
+../Source/SWC/PID/PID.c:39:8: warning: return type defaults to 'int' [-Wimplicit-int]
+   39 | static PID_SetConfigs(PIDConfigs *configs)
+      |        ^~~~~~~~~~~~~~
+../Source/SWC/PID/PID.c: In function 'PID_SetConfigs':
+../Source/SWC/PID/PID.c:42:1: warning: control reaches end of non-void function [-Wreturn-type]
+   42 | }
+      | ^
+arm-none-eabi-gcc -o "Motherboard2.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Motherboard2.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Motherboard2.elf
+ 
+arm-none-eabi-size   Motherboard2.elf 
+arm-none-eabi-objdump -h -S  Motherboard2.elf  > "Motherboard2.list"
+   text	   data	    bss	    dec	    hex	filename
+  82848	   1068	  29412	 113328	  1bab0	Motherboard2.elf
+Finished building: default.size.stdout
+ 
+Finished building: Motherboard2.list
+>>>>>>> Stashed changes
+=======
+20:58:06 **** Incremental Build of configuration Debug for project Motherboard2 ****
+make -j12 all 
+arm-none-eabi-gcc "../Source/SWC/PID/PID.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F411xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../USB_DEVICE/App -I../USB_DEVICE/Target -I../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc" -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/platform/inc" -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -I"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/Source/SWC" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Source/SWC/PID/PID.d" -MT"Source/SWC/PID/PID.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Source/SWC/PID/PID.o"
+../Source/SWC/PID/PID.c:39:8: warning: return type defaults to 'int' [-Wimplicit-int]
+   39 | static PID_SetConfigs(PIDConfigs *configs)
+      |        ^~~~~~~~~~~~~~
+../Source/SWC/PID/PID.c: In function 'PID_SetConfigs':
+../Source/SWC/PID/PID.c:42:1: warning: control reaches end of non-void function [-Wreturn-type]
+   42 | }
+      | ^
+arm-none-eabi-gcc -o "Motherboard2.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard2/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Motherboard2.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Motherboard2.elf
+ 
+arm-none-eabi-size   Motherboard2.elf 
+arm-none-eabi-objdump -h -S  Motherboard2.elf  > "Motherboard2.list"
+   text	   data	    bss	    dec	    hex	filename
+  82848	   1068	  29412	 113328	  1bab0	Motherboard2.elf
+Finished building: default.size.stdout
+ 
+Finished building: Motherboard2.list
+>>>>>>> Stashed changes
  
