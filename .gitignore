@@ -1,2 +1,6 @@
-.metadata/
-.metadata/.log
+# Eclipse
+.metadata
+.settings
+[Rr]elease
+[Dd]ebug
+.launch
