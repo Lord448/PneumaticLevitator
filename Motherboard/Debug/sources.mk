@@ -29,6 +29,18 @@ Drivers/VL53L0X/Api/core/src \
 Drivers/VL53L0X/Api/platform/src \
 Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src \
+Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
+Middlewares/Third_Party/FreeRTOS/Source \
+Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
+Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang \
+Source/SWC/COM \
+Source/SWC/DiagAppl \
+Source/SWC/DistanceSensor \
+Source/SWC/EcuM \
+Source/SWC/FAN \
+Source/SWC/ModeManager \
+Source/SWC/NVM \
+Source/SWC/PID \
 USB_DEVICE/App \
 USB_DEVICE/Target \
 

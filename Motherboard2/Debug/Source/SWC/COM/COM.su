@@ -1,3 +1,0 @@
-../Source/SWC/COM/COM.c:12:6:COM_Init	4	static
-../Source/SWC/COM/COM.c:17:6:vTaskCOM_Runnable	4	static
-../Source/SWC/COM/COM.c:25:7:COM_CreatePDU	32	static
