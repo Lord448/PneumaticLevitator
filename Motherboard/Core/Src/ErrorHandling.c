@@ -11,5 +11,4 @@ extern UART_HandleTypeDef huart1;
 
 void FatalError_EEPROM(uint8_t ID)
 {
-	int i = 2;
 }

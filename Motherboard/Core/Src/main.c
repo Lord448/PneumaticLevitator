@@ -1,730 +1,351 @@
+/* USER CODE BEGIN Header */
 /**
- * @file   main.c
- * @author Pedro Rojo (pedroeroca@outlook.com)
- * @brief
- *
- * @version 0.0.1
- * @date 2023-12-5
- *
- * @EEPROM Memory Map:
- *   Memory Regions
- *   0x00 - 0x00 -> Initial Configurations
- *   0x00 - 0x00 -> PID Values
- * 	 Variables
- * 	 	0x00 - 0x00 FactoryValue | uint8_t
- * 	 	0x00 - 0x00 Date		 |
- * 	 	0x00 - 0x00 Kp 			 | float
- * 	 	0x00 - 0x00 Ki			 | float
- * 	 	0x00 - 0x00 Kd			 | float
- * 	 	0x00 - 0x00 SetPoint	 | float
- * @UART Communication Format:
- * (Communication finisher -> !)
- *   Command - #Command Arg!
- *   Action  - $Action!
- *   Info    - %Status!
- * @copyright Copyright (c) 2023
- * @TODO Acknowledge Timer
- * @TODO Check the possible crashes when pressing DevMode_IT
- * 		 and send data via USB (Interrupts the USB send)
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2024 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include "cmsis_os.h"
+#include "usb_device.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+#include "ModeManager/ModeManger.h"
+#include "DistanceSensor/DistanceSensor.h"
+#include "DiagAppl/DiagAppl.h"
+#include "EcuM/EcuM.h"
+#include "PID/PID.h"
+#include "FAN/FAN.h"
+#include "COM/COM.h"
+#include "COM/Signals.h"
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+/*Documenting the peripheals*/
+
+/**
+I2C_HandleTypeDef hi2c1; //Connection to the VL53L0X
+I2C_HandleTypeDef hi2c2; //Connection to the AT24C04
+DMA_HandleTypeDef hdma_i2c2_rx;
+DMA_HandleTypeDef hdma_i2c2_tx;
+
+IWDG_HandleTypeDef hiwdg; //Watchdog timer @ 500ms
+
+RTC_HandleTypeDef hrtc; //RTC for date control
+
+Requirements on timers
+Acknowledge with Daughter Board @ 10ms (Period desired by COM Engineer)
+Fan RPM measure (Input Capture)
+Fan PWM controller @ 24KHz (manufacturer recommended frequency)
+PID Controller (Possible)
+
+TIM_HandleTypeDef htim1; //Pending for application
+TIM_HandleTypeDef htim2; //Pending for application
+TIM_HandleTypeDef htim3; //Pending for application 
+TIM_HandleTypeDef htim4; //Pending for application
+TIM_HandleTypeDef htim5; //Pending for application
+
+UART_HandleTypeDef huart1; //Daughter board connection
+DMA_HandleTypeDef hdma_usart1_rx;
+DMA_HandleTypeDef hdma_usart1_tx;
  */
 
-#include "main.h"
-#include "usb_device.h"
-#include "usb_device.h"
-#include "usbd_cdc_if.h"
-#include "vl53l0x_api.h"
-#include "vl53l0x_platform.h"
-#include "ErrorHandling.h"
-#include "EEPROMTypes.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-#include <stdint.h>
+/* USER CODE END PM */
 
-//General definitions
-#define MAX_MM_DISTANCE 510 //Measured in centimeters
-#define Reference 520
-#define MeasureTolerance 5 //To reduce numeric noise
-#define MaxPID 100
-#define CDC_CIRCULAR_BUFFER_SIZE 64
-#define CDC_STR_SIZE 32
-#define USER_DEBUG
-
-//PID constants default values
-#define DefaultKp 0.05   //0.3  - 1.5
-#define DefaultKi 0.0005 //0.02 - 0.16
-#define DefaultKd 0.05   //00   - 0.5
-
-//Function Like Macro
-#define ABS(x) x>0? x:-x
-#define AtoI(x) x-0x30
-#define USBIsConnected hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED
-#define USBIsDisconnected hUsbDeviceFS.dev_state == USBD_STATE_SUSPENDED
-
-//TODO Define addresses
-enum EEPROMBaseAddr
-{
-	FactoryBase = 0x00,
-	SetPointBase = 0x00,
-	KpBase = 0x00,
-	KiBase = 0x00,
-	KdBase = 0x00
-};
-
-const struct EEPROMDefaultValues
-{
-	uint16_t FactoryDefaultValue;
-}EEPROMDefaultValues = {
-		.FactoryDefaultValue = 1
-};
-
-enum UARTDataIdentifiers {
-	Command = '#',
-	Action = '$',
-	Information = '%',
-	WakeUp = 'W'
-};
-
-typedef enum TXNeedToSend {
-	none,
-	Acknowledge,
-	Data,
-	USBConnected,
-	USBDisconnected
-}TXDataID;
-
-//Commands
-struct RXCommands
-{
-	char SetPointCommand[sizeof(uint64_t)];
-	uint16_t memberNum;
-}RXCommands = {
-		.SetPointCommand = "SP",
-		.memberNum = 1
-};
-typedef enum commands
-{
-	null,
-	notHandled,
-	SetPoint
-}Commands;
-
-//Actions
-//Info
-typedef enum bool
-{
-	false,
-	true
-}bool;
-
-struct PID
-{
-	float Kp;
-	float Ki;
-	float Kd;
-	float Control;
-	float P;
-	float I;
-	float D;
-	int32_t Error;
-	int32_t Past_Error;
-	int32_t Set_point;
-}PID = {
-		.Kp = DefaultKp,
-		.Ki = DefaultKi,
-		.Kd = DefaultKd,
-		.Set_point = 300
-};
-
-struct Errors
-{
-	bool EEPROM_Fatal;
-}Errors = {
-		.EEPROM_Fatal = false
-};
-
-I2C_HandleTypeDef hi2c1;   //Connection to the VL53L0X
-I2C_HandleTypeDef hi2c2;   //Connection to the AT24C04
-DMA_HandleTypeDef hdma_i2c2_tx;
+/* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c2;
 DMA_HandleTypeDef hdma_i2c2_rx;
+DMA_HandleTypeDef hdma_i2c2_tx;
 
-RTC_HandleTypeDef hrtc;    //RTC for date control
+IWDG_HandleTypeDef hiwdg;
 
-IWDG_HandleTypeDef hiwdg;  //Watchdog timer @ 500ms
+RTC_HandleTypeDef hrtc;
 
-TIM_HandleTypeDef htim1;   //ParsedLoop Handler @ 1ms
-TIM_HandleTypeDef htim2;   //PID Controller
-TIM_HandleTypeDef htim3;   //Fan PWM controller @ 21KHz (manufacturer recommended frequency)
-TIM_HandleTypeDef htim4;   //Fan RPM measure (Input Capture)
-TIM_HandleTypeDef htim5;   //Acknowledge with Daughter Board @ 10ms
+TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim4;
+TIM_HandleTypeDef htim5;
 
-UART_HandleTypeDef huart1; //Connection to daughter board
+UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart1_tx;
 
-//HAl System Prototypes
+/* Definitions for TaskIdle */
+osThreadId_t TaskIdleHandle;
+const osThreadAttr_t TaskIdle_attributes = {
+  .name = "TaskIdle",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
+/* Definitions for TaskModeManager */
+osThreadId_t TaskModeManagerHandle;
+const osThreadAttr_t TaskModeManager_attributes = {
+  .name = "TaskModeManager",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityAboveNormal,
+};
+/* Definitions for TaskPID */
+osThreadId_t TaskPIDHandle;
+const osThreadAttr_t TaskPID_attributes = {
+  .name = "TaskPID",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityHigh,
+};
+/* Definitions for TaskCOM */
+osThreadId_t TaskCOMHandle;
+const osThreadAttr_t TaskCOM_attributes = {
+  .name = "TaskCOM",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for TaskSensorActua */
+osThreadId_t TaskSensorActuaHandle;
+const osThreadAttr_t TaskSensorActua_attributes = {
+  .name = "TaskSensorActua",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityHigh,
+};
+/* Definitions for TaskWdgM */
+osThreadId_t TaskWdgMHandle;
+const osThreadAttr_t TaskWdgM_attributes = {
+  .name = "TaskWdgM",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityRealtime,
+};
+/* Definitions for TaskEcuM */
+osThreadId_t TaskEcuMHandle;
+const osThreadAttr_t TaskEcuM_attributes = {
+  .name = "TaskEcuM",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
+/* Definitions for TaskDiagAppl */
+osThreadId_t TaskDiagApplHandle;
+const osThreadAttr_t TaskDiagAppl_attributes = {
+  .name = "TaskDiagAppl",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for xFIFO_COM */
+osMessageQueueId_t xFIFO_COMHandle;
+const osMessageQueueAttr_t xFIFO_COM_attributes = {
+  .name = "xFIFO_COM"
+};
+/* Definitions for xFIFO_Distance */
+osMessageQueueId_t xFIFO_DistanceHandle;
+const osMessageQueueAttr_t xFIFO_Distance_attributes = {
+  .name = "xFIFO_Distance"
+};
+/* Definitions for xFIFO_ControlAction */
+osMessageQueueId_t xFIFO_ControlActionHandle;
+const osMessageQueueAttr_t xFIFO_ControlAction_attributes = {
+  .name = "xFIFO_ControlAction"
+};
+/* Definitions for xFIFO_PIDConfigs */
+osMessageQueueId_t xFIFO_PIDConfigsHandle;
+const osMessageQueueAttr_t xFIFO_PIDConfigs_attributes = {
+  .name = "xFIFO_PIDConfigs"
+};
+/* Definitions for xSemaphore_PID */
+osSemaphoreId_t xSemaphore_PIDHandle;
+const osSemaphoreAttr_t xSemaphore_PID_attributes = {
+  .name = "xSemaphore_PID"
+};
+/* Definitions for xSemaphore_PID_Init */
+osSemaphoreId_t xSemaphore_PID_InitHandle;
+const osSemaphoreAttr_t xSemaphore_PID_Init_attributes = {
+  .name = "xSemaphore_PID_Init"
+};
+/* USER CODE BEGIN PV */
+char ResBuffer[64];
+uint8_t ReceiveFlag;
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
+static void MX_IWDG_Init(void);
 static void MX_RTC_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_USART1_UART_Init(void);
-static void MX_TIM1_Init(void);
-static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_TIM1_Init(void);
+static void MX_TIM2_Init(void);
 static void MX_TIM5_Init(void);
-static void MX_IWDG_Init(void);
-//Tasks Prototypes
-static void vTaskMeasure(void);
-static void vTaskReceiveUSB(void);
-static void vTaskSendUSB(void);
-static void vTaskDaughter(void);
-static void vTaskCommandsHandler(void);
-static void vTaskBlinkCommFailed(void);
-static void vTaskSendData(void);
-//Functions Prototypes
-static void CommandProcess(char *Buffer, Commands *command);
-static uint16_t USBTransmit(uint8_t* Buf, uint16_t Len);
-static void UART_Transmit(TXDataID dataID, ...);
+void vTaskIdle(void *argument);
+void vTaskModeManager(void *argument);
+void vTaskPID(void *argument);
+void vTaskCOM(void *argument);
+void vTaskSensorActuator(void *argument);
+void vTaskWdgM(void *argument);
+void vTaskEcuM(void *argument);
+void vTaskDiagAppl(void *argument);
 
-//-----------------------------------
-//			PROJECT GLOBALS
-//-----------------------------------
-//CDC
-extern USBD_HandleTypeDef hUsbDeviceFS;
-char ResBuffer[64];
-uint8_t ReceiveFlag;
-//-----------------------------------
-//			 FILE GLOBALS
-//-----------------------------------
-//CDC
-static char CDCCircularBuffer[CDC_CIRCULAR_BUFFER_SIZE][CDC_STR_SIZE] = {""};
-static bool CDCSendFlags[CDC_CIRCULAR_BUFFER_SIZE] = {};
-static uint16_t CDCWriteIndex = 0;
-static uint16_t CDCReadIndex = 0;
-//VL053L0X
-static VL53L0X_RangingMeasurementData_t RangingData;
-static VL53L0X_Dev_t  vl53l0x_c; //center module
-static VL53L0X_DEV    Dev = &vl53l0x_c;
-static uint32_t refSpadCount;
-static uint8_t isApertureSpads;
-static uint8_t VhvSettings;
-static uint8_t PhaseCal;
-//PID & Control
-static bool doPID;
-static uint16_t distance, past_measure;
-static uint16_t MaxCCR;
-static uint32_t ICValue;
-static uint32_t Duty;
-static uint32_t Frequency;
-//Serial Communications
-static char TXDistanceBuffer[8];
-static char CommandBuffer[32];
-static char ActionBuffer[32];
-static char InfoBuffer[32];
-static char UARTIncomData;
-static bool GPUCommFailed = false; //TODO Make it error
-static bool NeedToProcessCommand = false;
-static bool NeedToProcessAction = false;
-static bool NeedToProcessInfo = false;
-static bool NeedToSendData = false;
-static Commands commands = null;
-static TXDataID DataID = none;
-const char* AcknowledgeBuffer = "A!";
-const char* USBConnectBuffer = "USBC!";
-const char* USBDisconnectBuffer = "USBD!";
-//ParsedLoop & WakeUp
-#ifdef USER_DEBUG
-static bool ParsedFlag = true;
-static bool WakeUpFlag = true;
-#endif
-//AT23C04
-static Euint8 FactoryValue = {
-		.Address = FactoryBase,
-		.Value = 1
-};
-static Eint32 eSetPoint = {
-		.BaseAddress = SetPointBase,
-		.Value = 0
-};
-static Efloat Kp = {
-		.BaseAddress = KpBase,
-		.Value = DefaultKp
-};
-static Efloat Ki = {
-		.BaseAddress = KiBase,
-		.Value = DefaultKi
-};
-static Efloat Kd = {
-		.BaseAddress = KdBase,
-		.Value = DefaultKd
-};
+/* USER CODE BEGIN PFP */
 
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+
+/* USER CODE END 0 */
+
+/**
+  * @brief  The application entry point.
+  * @retval int
+  */
 int main(void)
 {
+  /* USER CODE BEGIN 1 */
+
+  /* USER CODE END 1 */
+
+  /* MCU Configuration--------------------------------------------------------*/
+
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
+
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
   SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
+  MX_IWDG_Init();
   MX_RTC_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
   MX_USART1_UART_Init();
-  MX_USB_DEVICE_Init();
-  MX_TIM1_Init();
-  MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
+  MX_TIM1_Init();
+  MX_TIM2_Init();
   MX_TIM5_Init();
-  MX_IWDG_Init();
+  /* USER CODE BEGIN 2 */
 
-  //TODO Report that the MCU is starting
+  /* USER CODE END 2 */
 
-  MaxCCR = htim3.Init.Period;
-  Dev->I2cHandle = &hi2c1;
-  Dev->I2cDevAddr = 0x52;
+  /* Init scheduler */
+  osKernelInitialize();
 
-  for(uint16_t i = 0; i < CDC_CIRCULAR_BUFFER_SIZE; i++)
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* Create the semaphores(s) */
+  /* creation of xSemaphore_PID */
+  xSemaphore_PIDHandle = osSemaphoreNew(1, 1, &xSemaphore_PID_attributes);
+
+  /* creation of xSemaphore_PID_Init */
+  xSemaphore_PID_InitHandle = osSemaphoreNew(1, 1, &xSemaphore_PID_Init_attributes);
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* Create the queue(s) */
+  /* creation of xFIFO_COM */
+  xFIFO_COMHandle = osMessageQueueNew (16, sizeof(PDU_t), &xFIFO_COM_attributes);
+
+  /* creation of xFIFO_Distance */
+  xFIFO_DistanceHandle = osMessageQueueNew (4, sizeof(uint16_t), &xFIFO_Distance_attributes);
+
+  /* creation of xFIFO_ControlAction */
+  xFIFO_ControlActionHandle = osMessageQueueNew (16, sizeof(float), &xFIFO_ControlAction_attributes);
+
+  /* creation of xFIFO_PIDConfigs */
+  xFIFO_PIDConfigsHandle = osMessageQueueNew (16, sizeof(PIDConfigs), &xFIFO_PIDConfigs_attributes);
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* creation of TaskIdle */
+  TaskIdleHandle = osThreadNew(vTaskIdle, NULL, &TaskIdle_attributes);
+
+  /* creation of TaskModeManager */
+  TaskModeManagerHandle = osThreadNew(vTaskModeManager, NULL, &TaskModeManager_attributes);
+
+  /* creation of TaskPID */
+  TaskPIDHandle = osThreadNew(vTaskPID, NULL, &TaskPID_attributes);
+
+  /* creation of TaskCOM */
+  TaskCOMHandle = osThreadNew(vTaskCOM, NULL, &TaskCOM_attributes);
+
+  /* creation of TaskSensorActua */
+  TaskSensorActuaHandle = osThreadNew(vTaskSensorActuator, NULL, &TaskSensorActua_attributes);
+
+  /* creation of TaskWdgM */
+  TaskWdgMHandle = osThreadNew(vTaskWdgM, NULL, &TaskWdgM_attributes);
+
+  /* creation of TaskEcuM */
+  TaskEcuMHandle = osThreadNew(vTaskEcuM, NULL, &TaskEcuM_attributes);
+
+  /* creation of TaskDiagAppl */
+  TaskDiagApplHandle = osThreadNew(vTaskDiagAppl, NULL, &TaskDiagAppl_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
+
+  /* Start scheduler */
+  osKernelStart();
+  /* We should never get here as control is now taken by the scheduler */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
   {
-	  memset(CDCCircularBuffer[i], '\0', CDC_STR_SIZE);
-	  CDCSendFlags[i] = false;
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
   }
-
-  //Disable XSHUT
-  HAL_GPIO_WritePin(TOF_XSHUT_GPIO_Port, TOF_XSHUT_Pin, GPIO_PIN_RESET);
-  HAL_Delay(20);
-
-  //Enable XSHUT
-  HAL_GPIO_WritePin(TOF_XSHUT_GPIO_Port, TOF_XSHUT_Pin, GPIO_PIN_SET);
-  HAL_Delay(20);
-
-  VL53L0X_WaitDeviceBooted( Dev );
-  VL53L0X_DataInit( Dev );
-  VL53L0X_StaticInit( Dev );
-  VL53L0X_PerformRefCalibration(Dev, &VhvSettings, &PhaseCal);
-  VL53L0X_PerformRefSpadManagement(Dev, &refSpadCount, &isApertureSpads);
-  VL53L0X_SetDeviceMode(Dev, VL53L0X_DEVICEMODE_SINGLE_RANGING);
-  HAL_IWDG_Refresh(&hiwdg);
-
-  //Enable/Disable Sigma and Signal check
-  VL53L0X_SetLimitCheckEnable(Dev, VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE, 1);
-  VL53L0X_SetLimitCheckEnable(Dev, VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, 1);
-  VL53L0X_SetLimitCheckValue(Dev, VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, (FixPoint1616_t)(0.1*65536));
-  VL53L0X_SetLimitCheckValue(Dev, VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE, (FixPoint1616_t)(60*65536));
-  VL53L0X_SetMeasurementTimingBudgetMicroSeconds(Dev, 33000);
-  VL53L0X_SetVcselPulsePeriod(Dev, VL53L0X_VCSEL_PERIOD_PRE_RANGE, 18);
-  VL53L0X_SetVcselPulsePeriod(Dev, VL53L0X_VCSEL_PERIOD_FINAL_RANGE, 14);
-  HAL_IWDG_Refresh(&hiwdg);
-
-  //EEPROM Check & Configurations Read
-  if(EEPROM_ReadUint8(&FactoryValue) != HAL_OK)
-	  FatalError_EEPROM(FactoryValue.Address);
-  HAL_IWDG_Refresh(&hiwdg);
-  if(!Errors.EEPROM_Fatal && FactoryValue.Value == 0)
-  {
-	  if(EEPROM_ReadInt32(&eSetPoint) != HAL_OK) {
-		  FatalError_EEPROM(eSetPoint.BaseAddress);
-		  goto END_OF_CONFIG;
-	  }
-	  HAL_IWDG_Refresh(&hiwdg);
-	  if(EEPROM_ReadFloat(&Kp) != HAL_OK) {
-		  FatalError_EEPROM(Kp.BaseAddress);
-		  goto END_OF_CONFIG;
-	  }
-	  HAL_IWDG_Refresh(&hiwdg);
-	  if(EEPROM_ReadFloat(&Ki) != HAL_OK) {
-		  FatalError_EEPROM(Ki.BaseAddress);
-		  goto END_OF_CONFIG;
-	  }
-	  HAL_IWDG_Refresh(&hiwdg);
-	  if(EEPROM_ReadFloat(&Kp) != HAL_OK) {
-		  FatalError_EEPROM(Kd.BaseAddress);
-		  goto END_OF_CONFIG;
-	  }
-	  END_OF_CONFIG:
-	  HAL_IWDG_Refresh(&hiwdg);
-  }
-
-  //Enable AND Gate
-  HAL_GPIO_WritePin(EnableFAN_GPIO_Port, EnableFAN_Pin, 1);
-
-  //Start Timers
-  HAL_TIM_Base_Start_IT(&htim1);
-  HAL_TIM_Base_Start_IT(&htim2);
-  HAL_TIM_Base_Start_IT(&htim5);
-  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
-  HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
-  HAL_TIM_IC_Start(&htim4, TIM_CHANNEL_2); //Indirect Channel
-  HAL_IWDG_Refresh(&hiwdg);
-  //Start Receptions
-  HAL_UART_Receive_IT(&huart1, (uint8_t *)&UARTIncomData, 1);
-  //TODO Report all OK
-
-  //Sleep until reception
-#ifdef USER_DEBUG
-  while(WakeUpFlag)
-	  HAL_IWDG_Refresh(&hiwdg);
-#else
-  HAL_SuspendTick();
-  HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
-  HAL_ResumeTick();
-#endif
-  while(1)
-  {
-	  HAL_IWDG_Refresh(&hiwdg);
-	  vTaskMeasure();
-	  vTaskReceiveUSB();
-	  vTaskSendUSB();
-	  vTaskCommandsHandler();
-#ifdef USER_DEBUG
-	  while(ParsedFlag)
-		  HAL_IWDG_Refresh(&hiwdg);
-	  ParsedFlag = true;
-#else
-	  HAL_SuspendTick();
-	  HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
-	  HAL_ResumeTick();
-#endif
-	  HAL_IWDG_Refresh(&hiwdg);
-  }
-}
-//-----------------------------------
-//			    TASKS
-//-----------------------------------
-static void vTaskMeasure(void)
-{
-	VL53L0X_PerformSingleRangingMeasurement(Dev, &RangingData);
-	HAL_IWDG_Refresh(&hiwdg);
-	if(RangingData.RangeStatus == 0)
-    {
-		if(RangingData.RangeMilliMeter > past_measure+MeasureTolerance || RangingData.RangeMilliMeter < past_measure-MeasureTolerance)
-		{
-			distance = Reference - RangingData.RangeMilliMeter;
-			sprintf(TXDistanceBuffer, "%d", distance);
-			HAL_UART_Transmit_DMA(&huart1, (uint8_t *)TXDistanceBuffer, strlen(TXDistanceBuffer));
-		}
-	}
-	HAL_IWDG_Refresh(&hiwdg);
-	past_measure = RangingData.RangeMilliMeter;
-
-}
-static void vTaskReceiveUSB(void)
-{
-	if(ReceiveFlag)
-	{
-		//TODO for vacations - Checkout PC commands
-		ReceiveFlag = 0;
-	}
-}
-
-//Implementing Circular buffer to avoid losing data
-static void vTaskSendUSB(void)
-{
-	static bool NotCleared = true;
-	static bool ReportConnected = false;
-
-	HAL_IWDG_Refresh(&hiwdg);
-	if(USBIsDisconnected && NotCleared)
-	{
-		//Clear all the info saved and reset the index states
-		for(uint16_t i = 0; i < CDC_CIRCULAR_BUFFER_SIZE; i++)
-		{
-			memset(CDCCircularBuffer[i], '\0', CDC_STR_SIZE);
-			CDCSendFlags[i] = false;
-		}
-		CDCWriteIndex = 0;
-		CDCReadIndex = 0;
-		NotCleared = false;
-		ReportConnected = false;
-		UART_Transmit(USBDisconnected);
-		HAL_IWDG_Refresh(&hiwdg);
-	}
-	else if(USBIsConnected)
-	{
-		if(!ReportConnected)
-		{
-			ReportConnected = true;
-			UART_Transmit(USBConnected);
-		}
-		//Normal Code flow
-		if(CDCReadIndex > CDC_CIRCULAR_BUFFER_SIZE)
-			CDCReadIndex = 0;
-		//Hierarchical check
-		if(CDCSendFlags[CDCReadIndex])
-		{
-			if(CDC_getReady() == USBD_OK)
-			{
-				HAL_IWDG_Refresh(&hiwdg);
-				uint8_t Result = CDC_Transmit_FS((uint8_t*)CDCCircularBuffer[CDCReadIndex],
-											  strlen(CDCCircularBuffer[CDCReadIndex]));
-				HAL_IWDG_Refresh(&hiwdg);
-				if(Result == USBD_OK)
-				{
-					CDCSendFlags[CDCReadIndex] = false;
-					CDCReadIndex++;
-				}
-			}
-			HAL_IWDG_Refresh(&hiwdg);
-		}
-	}
-}
-static void vTaskDaughter(void);
-static void vTaskCommandsHandler(void)
-{
-	if(NeedToProcessCommand)
-	{
-		CommandProcess(CommandBuffer, &commands);
-		switch(commands)
-		{
-			case SetPoint:
-				doPID = false;
-				PID.Set_point = 0;
-				for(uint16_t i = 0; i < strlen(CommandBuffer); i++)
-				{
-					if(CommandBuffer[i] == ' ')
-					{
-						for(uint16_t Pos = 1; i < strlen(CommandBuffer); Pos*=10, i++)
-							PID.Set_point = AtoI(CommandBuffer[i])*Pos;
-					}
-
-				}
-				doPID = true;
-				commands = null;
-			break;
-			case notHandled:
-			case null:
-			break;
-		}
-	}
-}
-static void vTaskBlinkCommFailed(void)
-{
-	static uint16_t Counter = 0;
-
-	if(GPUCommFailed)
-	{
-		if(Counter == 500) //500ms Delay
-		{
-			HAL_GPIO_TogglePin(LED_OR_GPIO_Port, LED_OR_Pin);
-			Counter = 0;
-		}
-		Counter++;
-	}
-	else
-	{
-		HAL_GPIO_WritePin(LED_OR_GPIO_Port, LED_OR_Pin, 1);
-	}
-}
-static void vTaskSendData(void)
-{
-	if(NeedToSendData)
-	{
-		switch(DataID)
-		{
-			case Acknowledge:
-			break;
-		}
-	}
-}
-//-----------------------------------
-//			   FUNCTIONS
-//-----------------------------------
-static void CommandProcess(char *Buffer, Commands *command)
-{
-	uint64_t *RXCommandsPtr = (uint64_t*) &RXCommands;
-	for(*command = 0;*command < RXCommands.memberNum; *command++, RXCommandsPtr++)
-	{
-		if(strcmp(Buffer, (char*)RXCommandsPtr) == 0) {
-			return;
-		}
-	}
-	*command = notHandled;
-}
-
-static uint16_t USBTransmit(uint8_t* Buf, uint16_t Len)
-{
-	if(Len > CDC_STR_SIZE)
-		Len = CDC_STR_SIZE;
-	memcpy(CDCCircularBuffer[CDCWriteIndex], Buf, Len);
-	CDCSendFlags[CDCWriteIndex] = true;
-	CDCWriteIndex++;
-	if(CDCWriteIndex > CDC_CIRCULAR_BUFFER_SIZE)
-		CDCWriteIndex = 0;
-}
-
-static void UART_Transmit(TXDataID dataID, ...)
-{
-	va_list args;
-	va_start(args, dataID);
-	uint8_t* pData = va_arg(args, uint8_t*);
-	uint16_t Size = va_arg(args, uint16_t);
-	switch(dataID)
-	{
-		case Acknowledge:
-			if(huart1.gState != HAL_UART_STATE_BUSY_TX)
-				HAL_UART_Transmit_DMA(&huart1, (uint8_t *) AcknowledgeBuffer, strlen(AcknowledgeBuffer));
-			else //Send in task
-			{
-				NeedToSendData = true;
-				DataID = Acknowledge;
-			}
-			return;
-		break;
-		case USBConnected:
-			if(huart1.gState != HAL_UART_STATE_BUSY_TX)
-				HAL_UART_Transmit_DMA(&huart1, (uint8_t*) USBConnectBuffer, strlen(USBConnectBuffer));
-			else
-			{
-				NeedToSendData = true;
-				DataID = USBConnected;
-			}
-		break;
-		case USBDisconnected:
-			if(huart1.gState != HAL_UART_STATE_BUSY_TX)
-				HAL_UART_Transmit_DMA(&huart1, (uint8_t*) USBDisconnectBuffer, strlen(USBDisconnectBuffer));
-			else
-			{
-				NeedToSendData = true;
-				DataID = USBDisconnected;
-			}
-		break;
-		default:
-			if(huart1.gState != HAL_UART_STATE_BUSY_TX)
-				HAL_UART_Transmit_DMA(&huart1, pData, (uint16_t)Size);
-			else //Send in task
-			{
-				NeedToSendData = true;
-				DataID = dataID;
-				//If need, save the buffer
-			}
-		break;
-	}
-	va_end(args);
-}
-//-----------------------------------
-//			 	 ISRs
-//-----------------------------------
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-	if(htim->Instance == TIM2 && doPID)
-	{
-		PID.Error = PID.Set_point - distance;
-		PID.P = (float)PID.Error * PID.Kp;
-		PID.I += (float)PID.Error * PID.Ki;
-		PID.D = (float)(PID.Error - PID.Past_Error) * PID.Kd;
-	#ifdef MaxPID
-		if(PID.I > 80)
-		{
-			PID.I = 80;
-		}
-		else if(PID.I < -80)
-		{
-			PID.I = -80;
-		}
-	#else
-		if(PID.I > 3000)
-		{
-			PID.I = 3000;
-		}
-		else if(PID.I < 0)
-		{
-			PID.I = 0;
-		}
-	#endif
-		PID.Control = PID.P + PID.I + PID.D;
-		if(PID.Control < 0)
-			PID.Control = ABS(PID.Control);
-	#ifdef MaxPID
-		if(PID.Control > MaxPID)
-			PID.Control = MaxPID;
-		TIM3 -> CCR1 = (uint32_t)((PID.Control * MaxCCR) / 100) + 2056;
-	#else
-		if(PID.Control > MaxCCR)
-			PID.Control = MaxCCR;
-		TIM2 -> CCR1 = (uint32_t)(PID.Control);
-	#endif
-		PID.Past_Error = PID.Error;
-	}
-#ifdef USER_DEBUG
-	else if(htim->Instance == TIM1) //ParsedLoop
-	{
-		ParsedFlag = false;
-	}
-#endif
-	else if(htim -> Instance == TIM5)
-	{
-		//Check Acknowledge flag
-	}
-}
-
-void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
-{
-
-	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)  // If the interrupt is triggered by channel 1
-	{
-		// Read the IC value
-		ICValue = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
-		if (ICValue != 0)
-		{
-			// calculate the Duty Cycle
-			Duty = (HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2) *100)/ICValue;
-			Frequency = 96e6/ICValue;
-		}
-	}
-}
-
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(huart);
-  /* NOTE: This function should not be modified, when the callback is needed,
-           the HAL_UART_TxCpltCallback could be implemented in the user file
-   */
-}
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	static uint16_t DataCount = 0;
-	static char Buffer[32] = "";
-
-	Buffer[DataCount] = UARTIncomData;
-	DataCount++;
-	if(UARTIncomData == '!') //Communication finished
-	{
-		switch(Buffer[0])
-		{
-			case Command:
-				NeedToProcessCommand = true;
-				memcpy(CommandBuffer, Buffer, DataCount);
-			break;
-			case Action:
-				NeedToProcessAction = true;
-				memcpy(ActionBuffer, Buffer, DataCount);
-			break;
-			case Information:
-				NeedToProcessInfo = true;
-				memcpy(InfoBuffer, Buffer, DataCount);
-			break;
-			case Acknowledge:
-				DataCount = 0;
-			break;
-#ifdef USER_DEBUG
-			case WakeUp:
-				WakeUpFlag = false;
-			break;
-#endif
-			default: //Data not handled
-			break;
-		}
-		memset(Buffer, '\0', 32); //Reset the buffer
-		DataCount = 0;
-		if(Buffer[0] != Acknowledge) {
-			UART_Transmit(Acknowledge);
-		}
-	}
-	HAL_UART_Receive_IT(&huart1, (uint8_t *)&UARTIncomData, 1);
+  /* USER CODE END 3 */
 }
 
 /**
@@ -1204,16 +825,16 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Stream2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream2_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream2_IRQn);
   /* DMA1_Stream7_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream7_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream7_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream7_IRQn);
   /* DMA2_Stream2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
   /* DMA2_Stream7_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
 
 }
@@ -1278,6 +899,154 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_vTaskIdle */
+/**
+  * @brief  Function implementing the TaskIdle thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_vTaskIdle */
+void vTaskIdle(void *argument)
+{
+  /* init code for USB_DEVICE */
+  MX_USB_DEVICE_Init();
+  /* USER CODE BEGIN 5 */
+  /*TODO: Implement strategy for CPU Load measures*/
+
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_vTaskModeManager */
+/**
+* @brief Function implementing the ModeManager thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vTaskModeManager */
+void vTaskModeManager(void *argument)
+{
+  /* USER CODE BEGIN vTaskModeManager */
+  vTaskModeManager_Runnable();
+  /* USER CODE END vTaskModeManager */
+}
+
+/* USER CODE BEGIN Header_vTaskPID */
+/**
+* @brief Function implementing the TaskPID thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vTaskPID */
+void vTaskPID(void *argument)
+{
+  /* USER CODE BEGIN vTaskPID */
+  vTaskPID_Runnable();
+  /* USER CODE END vTaskPID */
+}
+
+/* USER CODE BEGIN Header_vTaskCOM */
+/**
+* @brief Function implementing the TaskCOM thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vTaskCOM */
+void vTaskCOM(void *argument)
+{
+  /* USER CODE BEGIN vTaskCOM */
+	vTaskCOM_Runnable();
+  /* USER CODE END vTaskCOM */
+}
+
+/* USER CODE BEGIN Header_vTaskSensorActuator */
+/**
+* @brief Function implementing the TaskSensorActua thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vTaskSensorActuator */
+void vTaskSensorActuator(void *argument)
+{
+  /* USER CODE BEGIN vTaskSensorActuator */
+	const TickType_t taskResolutionMS = 10;
+	TickType_t tick;
+
+	DistanceSensor_Init();
+	FAN_Init();
+	tick = osKernelGetTickCount();
+  for(;;)
+  {
+  	DistanceSensor_MainRunnable();
+  	FAN_MainRunnable();
+  	osSemaphoreRelease(xSemaphore_PIDHandle);
+
+  	/*Parsed Loop Handling with 10ms resolution*/
+  	tick += pdMS_TO_TICKS(taskResolutionMS);
+  	osDelayUntil(tick);
+  }
+  /* USER CODE END vTaskSensorActuator */
+}
+
+/* USER CODE BEGIN Header_vTaskWdgM */
+/**
+* @brief Function implementing the TaskWdgM thread.
+* 			 Due to simple code handling here
+* @note  Checking the possibilities on a window watch dog timer
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vTaskWdgM */
+void vTaskWdgM(void *argument)
+{
+  /* USER CODE BEGIN vTaskWdgM */
+	const TickType_t ticksForResetWDG = pdMS_TO_TICKS(500); //WDG @ 500ms
+	TickType_t ticks;
+
+	HAL_IWDG_Init(&hiwdg);
+	ticks = osKernelGetTickCount();
+  /* Infinite loop */
+  for(;;)
+  {
+    HAL_IWDG_Refresh(&hiwdg);
+    ticks += ticksForResetWDG;
+    osDelayUntil(ticks);
+  }
+  /* USER CODE END vTaskWdgM */
+}
+
+/* USER CODE BEGIN Header_vTaskEcuM */
+/**
+* @brief Function implementing the TaskEcuM thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vTaskEcuM */
+void vTaskEcuM(void *argument)
+{
+  /* USER CODE BEGIN vTaskEcuM */
+	vTaskEcuM_Runnable();
+  /* USER CODE END vTaskEcuM */
+}
+
+/* USER CODE BEGIN Header_vTaskDiagAppl */
+/**
+* @brief Function implementing the TaskDiagAppl thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vTaskDiagAppl */
+void vTaskDiagAppl(void *argument)
+{
+  /* USER CODE BEGIN vTaskDiagAppl */
+	vTaskDiagAppl_Runnable();
+  /* USER CODE END vTaskDiagAppl */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

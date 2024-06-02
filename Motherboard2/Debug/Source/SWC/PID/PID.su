@@ -1,3 +1,0 @@
-../Source/SWC/PID/PID.c:40:8:PID_SetConfigs	16	static
-../Source/SWC/PID/PID.c:45:6:PID_Init	8	static
-../Source/SWC/PID/PID.c:58:6:vTaskPID_Runnable	56	static

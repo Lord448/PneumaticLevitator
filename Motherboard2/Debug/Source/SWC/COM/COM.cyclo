@@ -1,3 +1,0 @@
-COM.c:12:6:COM_Init	1
-COM.c:17:6:vTaskCOM_Runnable	1
-COM.c:25:7:COM_CreatePDU	1
