@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lcd.h"
+#include "ugui.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -77,6 +78,11 @@ const osThreadAttr_t TaskLeds_attributes = {
   .name = "TaskLeds",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for xSemaphoreDMAComplete */
+osSemaphoreId_t xSemaphoreDMACompleteHandle;
+const osSemaphoreAttr_t xSemaphoreDMAComplete_attributes = {
+  .name = "xSemaphoreDMAComplete"
 };
 /* USER CODE BEGIN PV */
 
@@ -146,6 +152,10 @@ int main(void)
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
+  /* Create the semaphores(s) */
+  /* creation of xSemaphoreDMAComplete */
+  xSemaphoreDMACompleteHandle = osSemaphoreNew(1, 1, &xSemaphoreDMAComplete_attributes);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -191,6 +201,11 @@ int main(void)
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
+}
+
+void DMATrasferCpltCallback(DMA_HandleTypeDef *DmaHandle)
+{
+	osSemaphoreRelease(xSemaphoreDMACompleteHandle);
 }
 
 /**
@@ -390,6 +405,9 @@ static void MX_DMA_Init(void)
   }
 
   /* DMA interrupt init */
+  /* DMA2_Stream1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
   /* DMA2_Stream2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
@@ -529,9 +547,22 @@ void vTaskLCD(void *argument)
 	 * chunks of 256 Bytes
 	 */
 	uint16_t *ITMLogoRAMBuffer;
-	ITMLogoRAMBuffer = (uint16_t*)calloc(ITMLOGO_SIZE, sizeof(uint16_t));
-	HAL_DMA_Start(&hdma_memtomem_dma2_stream1, (uint32_t)&ITMLogo.p, (uint32_t)ITMLogoRAMBuffer, ITMLOGO_SIZE);
+	UG_BMP ITMLogoRAM = {
+		.p = ITMLogoRAMBuffer,
+		.width = 161,
+		.height = 153,
+		.bpp = BMP_BPP_16
+	};
+	uint16_t *Pixels;
 
+	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream1, HAL_DMA_XFER_CPLT_CB_ID, DMATrasferCpltCallback);
+
+	ITMLogoRAMBuffer = (uint16_t*)calloc(ITMLOGO_SIZE, sizeof(uint16_t));
+	HAL_DMA_Start_IT(&hdma_memtomem_dma2_stream1, (uint32_t)&ITMLogo.p, (uint32_t)ITMLogoRAMBuffer, ITMLOGO_SIZE);
+	osSemaphoreAcquire(xSemaphoreDMACompleteHandle, osWaitForever);
+	UG_DrawBMP((LCD_WIDTH-ITMLogo.width)/2, (LCD_HEIGHT-ITMLogo.height)/2, &ITMLogoRAM);
+	osDelay(pdMS_TO_TICKS(500));
+	/*Process image*/
 	LCD_init();
 	LCD_Test();
 	free(ITMLogoRAMBuffer);
@@ -581,9 +612,12 @@ void vTaskLeds(void *argument)
     osDelay(pdMS_TO_TICKS(100));
     HAL_GPIO_TogglePin(LED_CONTROL_GPIO_Port, LED_CONTROL_Pin);
     osDelay(pdMS_TO_TICKS(100));
+
   }
   /* USER CODE END vTaskLeds */
 }
+
+
 
 /**
   * @brief  This function is executed in case of error occurrence.
