@@ -18,10 +18,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "lcd.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,6 +49,35 @@ TIM_HandleTypeDef htim1;
 UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_tx;
 
+DMA_HandleTypeDef hdma_memtomem_dma2_stream1;
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for TaskLCD */
+osThreadId_t TaskLCDHandle;
+const osThreadAttr_t TaskLCD_attributes = {
+  .name = "TaskLCD",
+  .stack_size = 256 * 4,
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for TaskBlink */
+osThreadId_t TaskBlinkHandle;
+const osThreadAttr_t TaskBlink_attributes = {
+  .name = "TaskBlink",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for TaskLeds */
+osThreadId_t TaskLedsHandle;
+const osThreadAttr_t TaskLeds_attributes = {
+  .name = "TaskLeds",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -59,6 +89,11 @@ static void MX_DMA_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART1_UART_Init(void);
+void StartDefaultTask(void *argument);
+void vTaskLCD(void *argument);
+void vTaskBlink(void *argument);
+void vTaskLeds(void *argument);
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -104,6 +139,49 @@ int main(void)
 
   /* USER CODE END 2 */
 
+  /* Init scheduler */
+  osKernelInitialize();
+
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* creation of defaultTask */
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  /* creation of TaskLCD */
+  TaskLCDHandle = osThreadNew(vTaskLCD, NULL, &TaskLCD_attributes);
+
+  /* creation of TaskBlink */
+  TaskBlinkHandle = osThreadNew(vTaskBlink, NULL, &TaskBlink_attributes);
+
+  /* creation of TaskLeds */
+  TaskLedsHandle = osThreadNew(vTaskLeds, NULL, &TaskLeds_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
+
+  /* Start scheduler */
+  osKernelStart();
+  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -283,6 +361,8 @@ static void MX_USART1_UART_Init(void)
 
 /**
   * Enable DMA controller clock
+  * Configure DMA for memory to memory transfers
+  *   hdma_memtomem_dma2_stream1
   */
 static void MX_DMA_Init(void)
 {
@@ -290,12 +370,31 @@ static void MX_DMA_Init(void)
   /* DMA controller clock enable */
   __HAL_RCC_DMA2_CLK_ENABLE();
 
+  /* Configure DMA request hdma_memtomem_dma2_stream1 on DMA2_Stream1 */
+  hdma_memtomem_dma2_stream1.Instance = DMA2_Stream1;
+  hdma_memtomem_dma2_stream1.Init.Channel = DMA_CHANNEL_0;
+  hdma_memtomem_dma2_stream1.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma2_stream1.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma2_stream1.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma2_stream1.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+  hdma_memtomem_dma2_stream1.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+  hdma_memtomem_dma2_stream1.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma2_stream1.Init.Priority = DMA_PRIORITY_LOW;
+  hdma_memtomem_dma2_stream1.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  hdma_memtomem_dma2_stream1.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+  hdma_memtomem_dma2_stream1.Init.MemBurst = DMA_MBURST_SINGLE;
+  hdma_memtomem_dma2_stream1.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream1) != HAL_OK)
+  {
+    Error_Handler( );
+  }
+
   /* DMA interrupt init */
   /* DMA2_Stream2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
   /* DMA2_Stream7_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
 
 }
@@ -372,19 +471,19 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI3_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
@@ -394,6 +493,97 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_StartDefaultTask */
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void *argument)
+{
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_vTaskLCD */
+/**
+* @brief Function implementing the TaskLCD thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vTaskLCD */
+void vTaskLCD(void *argument)
+{
+  /* USER CODE BEGIN vTaskLCD */
+
+	/*
+	 * Stack usage for the
+	 * image processing with
+	 * chunks of 256 Bytes
+	 */
+	uint16_t *ITMLogoRAMBuffer;
+	ITMLogoRAMBuffer = (uint16_t*)calloc(ITMLOGO_SIZE, sizeof(uint16_t));
+	HAL_DMA_Start(&hdma_memtomem_dma2_stream1, (uint32_t)&ITMLogo.p, (uint32_t)ITMLogoRAMBuffer, ITMLOGO_SIZE);
+
+	LCD_init();
+	LCD_Test();
+	free(ITMLogoRAMBuffer);
+  for(;;)
+  {
+  	LCD_Test();
+
+  }
+  /* USER CODE END vTaskLCD */
+}
+
+/* USER CODE BEGIN Header_vTaskBlink */
+/**
+* @brief Function implementing the TaskBlink thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vTaskBlink */
+void vTaskBlink(void *argument)
+{
+  /* USER CODE BEGIN vTaskBlink */
+
+  for(;;)
+  {
+    HAL_GPIO_TogglePin(LED_GP_GPIO_Port, LED_GP_Pin);
+    osDelay(pdMS_TO_TICKS(250));
+  }
+  /* USER CODE END vTaskBlink */
+}
+
+/* USER CODE BEGIN Header_vTaskLeds */
+/**
+* @brief Function implementing the TaskLeds thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vTaskLeds */
+void vTaskLeds(void *argument)
+{
+  /* USER CODE BEGIN vTaskLeds */
+  /* Infinite loop */
+  for(;;)
+  {
+    HAL_GPIO_TogglePin(LED_COMM_GPIO_Port, LED_COMM_Pin);
+    osDelay(pdMS_TO_TICKS(100));
+    HAL_GPIO_TogglePin(LED_USB_GPIO_Port, LED_USB_Pin);
+    osDelay(pdMS_TO_TICKS(100));
+    HAL_GPIO_TogglePin(LED_CONTROL_GPIO_Port, LED_CONTROL_Pin);
+    osDelay(pdMS_TO_TICKS(100));
+  }
+  /* USER CODE END vTaskLeds */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
