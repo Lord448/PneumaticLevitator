@@ -12,6 +12,11 @@
 
 #define EEPROM_ADDR 0xA0
 
+typedef union TwoByte{
+	uint16_t data;
+	uint8_t sendData[2];
+};
+
 typedef struct EEPROM_uint8
 {
 	uint32_t Address;
