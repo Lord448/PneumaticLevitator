@@ -24,6 +24,8 @@
 /* USER CODE BEGIN Includes */
 #include "lcd.h"
 #include "ugui.h"
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,7 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define RGB565Color(R, G, B) (uint16_t)(r<<11 | g<<5 | b)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -62,7 +64,7 @@ const osThreadAttr_t defaultTask_attributes = {
 osThreadId_t TaskLCDHandle;
 const osThreadAttr_t TaskLCD_attributes = {
   .name = "TaskLCD",
-  .stack_size = 256 * 4,
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
 /* Definitions for TaskBlink */
@@ -201,11 +203,6 @@ int main(void)
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
-}
-
-void DMATrasferCpltCallback(DMA_HandleTypeDef *DmaHandle)
-{
-	osSemaphoreRelease(xSemaphoreDMACompleteHandle);
 }
 
 /**
@@ -531,6 +528,20 @@ void StartDefaultTask(void *argument)
 }
 
 /* USER CODE BEGIN Header_vTaskLCD */
+extern const uint16_t ITMLogoData[ITMLOGO_SIZE];
+
+void DMATrasferCpltCallback(DMA_HandleTypeDef *DmaHandle)
+{
+	osSemaphoreRelease(xSemaphoreDMACompleteHandle);
+}
+
+void DynamicErrorHandler(char *str)
+{
+	while(1)
+	{
+		/*Do Nothing, see the buffer with debugger*/
+	}
+}
 /**
 * @brief Function implementing the TaskLCD thread.
 * @param argument: Not used
@@ -540,36 +551,102 @@ void StartDefaultTask(void *argument)
 void vTaskLCD(void *argument)
 {
   /* USER CODE BEGIN vTaskLCD */
-
-	/*
-	 * Stack usage for the
-	 * image processing with
-	 * chunks of 256 Bytes
-	 */
 	uint16_t *ITMLogoRAMBuffer;
+	uint16_t *NonWhitePixelsValue;
+	uint32_t *NonWhitePixelsIndex;
+	uint16_t PixelsIndex = 0;
+
+	LCD_init();
+	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream1, HAL_DMA_XFER_CPLT_CB_ID, DMATrasferCpltCallback);
+
+	/*Fade white in*/
+	for(uint16_t r = 0, g = 0, b = 0; g < 63; r++, g+=2, b++)
+	{
+		UG_FillScreen(RGB565Color(r, g, b));
+		UG_Update();
+		osDelay(pdMS_TO_TICKS(20));
+	}
+
+	ITMLogoRAMBuffer = (uint16_t*)calloc(ITMLOGO_SIZE*2, sizeof(uint16_t));
+	/*Calloc Failure*/
+	if(ITMLogoRAMBuffer == NULL)
+	{
+		/*Report for the debugger*/
+		DynamicErrorHandler("ITMLogoRAMBuffer");
+	}
+	else
+	{
+		/*Do Nothing*/
+	}
+	HAL_DMA_Start_IT(&hdma_memtomem_dma2_stream1, (uint32_t)ITMLogoData, (uint32_t)ITMLogoRAMBuffer, ITMLOGO_SIZE);
+	osSemaphoreAcquire(xSemaphoreDMACompleteHandle, osWaitForever);
+
 	UG_BMP ITMLogoRAM = {
 		.p = ITMLogoRAMBuffer,
 		.width = 161,
 		.height = 153,
 		.bpp = BMP_BPP_16
 	};
-	uint16_t *Pixels;
 
-	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream1, HAL_DMA_XFER_CPLT_CB_ID, DMATrasferCpltCallback);
+	/*Getting the non white pixels*/
+	NonWhitePixelsValue = (uint16_t*)calloc(ITMLOGO_SIZE, sizeof(uint16_t));
+	NonWhitePixelsIndex = (uint32_t*)calloc(ITMLOGO_SIZE, sizeof(uint32_t));
+	if(NonWhitePixelsValue == NULL)
+	{
+		DynamicErrorHandler("NonWhitePixelsValue");
+	}
+	else if(NonWhitePixelsIndex == NULL)
+	{
+		DynamicErrorHandler("NonWhitePixelsIndex");
+	}
+	else
+	{
+		/*Do Nothing*/
+	}
+	PixelsIndex = 0; /*Reusing variable for as index for the buffers*/
+	for(uint16_t i = 0; i < ITMLOGO_SIZE*2; i++)
+	{
+		if((uint16_t)ITMLogoRAMBuffer[i] != 0xFFFF)
+		{
+			/*Found a non white pixel*/
+			NonWhitePixelsValue[PixelsIndex] = ITMLogoRAMBuffer[i];
+			NonWhitePixelsIndex[PixelsIndex] = i;
+			PixelsIndex++; /*At the end of the loop, will have the max number of data needed*/
+		}
+	}
+	/*Free RAM that is not used*/
+	NonWhitePixelsValue = realloc(NonWhitePixelsValue, (PixelsIndex+1)*sizeof(uint16_t));
+	NonWhitePixelsIndex = realloc(NonWhitePixelsIndex, (PixelsIndex+1)*sizeof(uint32_t));
 
-	ITMLogoRAMBuffer = (uint16_t*)calloc(ITMLOGO_SIZE, sizeof(uint16_t));
-	HAL_DMA_Start_IT(&hdma_memtomem_dma2_stream1, (uint32_t)&ITMLogo.p, (uint32_t)ITMLogoRAMBuffer, ITMLOGO_SIZE);
-	osSemaphoreAcquire(xSemaphoreDMACompleteHandle, osWaitForever);
-	UG_DrawBMP((LCD_WIDTH-ITMLogo.width)/2, (LCD_HEIGHT-ITMLogo.height)/2, &ITMLogoRAM);
-	osDelay(pdMS_TO_TICKS(500));
-	/*Process image*/
-	LCD_init();
-	LCD_Test();
+	/*Fade animation logo in*/
+	memset(ITMLogoRAMBuffer, 0xFFFF, ITMLOGO_SIZE*2); /*Setting white buffer*/
+	ITMLogoRAM.p = ITMLogoRAMBuffer;
+	while(memcmp(ITMLogoRAMBuffer, ITMLogoData, ITMLOGO_SIZE) != 0)
+	{
+		for(uint16_t i = 0; i < PixelsIndex; i++)
+		{
+			if(ITMLogoRAMBuffer[NonWhitePixelsIndex[i]] != NonWhitePixelsValue[i])
+			{
+				ITMLogoRAMBuffer[NonWhitePixelsIndex[i]]--; /*Until it gets the color*/
+			}
+		}
+		ITMLogoRAM.p = ITMLogoRAMBuffer;
+		UG_DrawBMP((LCD_WIDTH-ITMLogoRAM.width)/2, (LCD_HEIGHT-ITMLogoRAM.height)/2, &ITMLogoRAM);
+		UG_Update();
+		osDelay(pdMS_TO_TICKS(20));
+	}
+
+	UG_DrawBMP((LCD_WIDTH-ITMLogoRAM.width)/2, (LCD_HEIGHT-ITMLogoRAM.height)/2, &ITMLogoRAM);
+	UG_Update();
+	osDelay(pdMS_TO_TICKS(3000));
+
 	free(ITMLogoRAMBuffer);
+	free(NonWhitePixelsValue);
+	free(NonWhitePixelsIndex);
+	/*!HIGH RAM CONSUMPTION ZONE*/
   for(;;)
   {
   	LCD_Test();
-
   }
   /* USER CODE END vTaskLCD */
 }
@@ -616,8 +693,6 @@ void vTaskLeds(void *argument)
   }
   /* USER CODE END vTaskLeds */
 }
-
-
 
 /**
   * @brief  This function is executed in case of error occurrence.
