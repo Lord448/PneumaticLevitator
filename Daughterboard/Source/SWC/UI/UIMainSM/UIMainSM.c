@@ -1,5 +1,5 @@
 /**
- * @file      COM.h
+ * @file      UIMainSM.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
  * @brief     TODO
@@ -13,13 +13,16 @@
  *
  * @copyright Copyright (c) 2024
  */
+#include "UIMainSM.h"
 
-#ifndef SWC_COM_COM_H_
-#define SWC_COM_COM_H_
+MenuStages menuStage = sMainLobby; /*Global variable*/
 
-#include "main.h"
-#include "cmsis_os.h"
+void UIMainSM(void)
+{
 
-void vTaskCOM(void *argument);
+}
 
-#endif /* SWC_COM_COM_H_ */
+void UIChargeResources(void)
+{
+
+}

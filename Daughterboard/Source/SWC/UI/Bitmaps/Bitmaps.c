@@ -1,8 +1,11 @@
-/*
- * Bitmaps.c
+/**
+ * @file   Bitmaps.c
+ * @author Pedro Rojo (pedroeroca@outlook.com)
+ * @brief	 TODO
+ * @date   2023-12-27
  *
- *  Created on: Dec 27, 2023
- *      Author: lord448
+ * @copyright Copyright (c) 2023
+ * @license
  */
 
 #include "Bitmaps.h"

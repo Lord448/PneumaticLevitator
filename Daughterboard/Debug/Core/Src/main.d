@@ -52,9 +52,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Drivers/UGUI/ugui_image.h \
  /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Drivers/UGUI/ugui_progress.h \
  /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Drivers/UGUI/ugui_textbox.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Source/SWC/UI/Bitmaps.h \
+ /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Source/SWC/UI/Bitmaps/Bitmaps.h \
  /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Source/SWC/UI/UI.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Source/SWC/UI/Bitmaps.h
+ /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Source/SWC/UI/UIMainSM/UIMainSM.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -109,6 +109,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Drivers/UGUI/ugui_image.h:
 /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Drivers/UGUI/ugui_progress.h:
 /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Drivers/UGUI/ugui_textbox.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Source/SWC/UI/Bitmaps.h:
+/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Source/SWC/UI/Bitmaps/Bitmaps.h:
 /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Source/SWC/UI/UI.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Source/SWC/UI/Bitmaps.h:
+/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Daughterboard/Source/SWC/UI/UIMainSM/UIMainSM.h:

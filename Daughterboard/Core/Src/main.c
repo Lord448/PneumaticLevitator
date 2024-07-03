@@ -36,7 +36,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define RGB565Color(R, G, B) (uint16_t)(r<<11 | g<<5 | b)
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -65,7 +65,7 @@ const osThreadAttr_t TaskIdle_attributes = {
 osThreadId_t TaskUIHandle;
 const osThreadAttr_t TaskUI_attributes = {
   .name = "TaskUI",
-  .stack_size = 128 * 4,
+  .stack_size = 1023 * 4,
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
 /* Definitions for TaskBlink */
@@ -96,10 +96,27 @@ const osThreadAttr_t TaskCOM_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
+/* Definitions for TaskDiagAppl */
+osThreadId_t TaskDiagApplHandle;
+const osThreadAttr_t TaskDiagAppl_attributes = {
+  .name = "TaskDiagAppl",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
 /* Definitions for xSemaphoreDMAComplete */
 osSemaphoreId_t xSemaphoreDMACompleteHandle;
 const osSemaphoreAttr_t xSemaphoreDMAComplete_attributes = {
   .name = "xSemaphoreDMAComplete"
+};
+/* Definitions for xSemaphoreCOMReady */
+osSemaphoreId_t xSemaphoreCOMReadyHandle;
+const osSemaphoreAttr_t xSemaphoreCOMReady_attributes = {
+  .name = "xSemaphoreCOMReady"
+};
+/* Definitions for xEventFinishedInit */
+osEventFlagsId_t xEventFinishedInitHandle;
+const osEventFlagsAttr_t xEventFinishedInit_attributes = {
+  .name = "xEventFinishedInit"
 };
 /* USER CODE BEGIN PV */
 
@@ -118,6 +135,7 @@ void vTaskBlink(void *argument);
 void vTaskLeds(void *argument);
 void vTaskWdgM(void *argument);
 extern void vTaskCOM(void *argument);
+extern void vTaskDiagAppl(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -175,6 +193,9 @@ int main(void)
   /* creation of xSemaphoreDMAComplete */
   xSemaphoreDMACompleteHandle = osSemaphoreNew(1, 1, &xSemaphoreDMAComplete_attributes);
 
+  /* creation of xSemaphoreCOMReady */
+  xSemaphoreCOMReadyHandle = osSemaphoreNew(1, 1, &xSemaphoreCOMReady_attributes);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -206,9 +227,16 @@ int main(void)
   /* creation of TaskCOM */
   TaskCOMHandle = osThreadNew(vTaskCOM, NULL, &TaskCOM_attributes);
 
+  /* creation of TaskDiagAppl */
+  TaskDiagApplHandle = osThreadNew(vTaskDiagAppl, NULL, &TaskDiagAppl_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
+
+  /* Create the event(s) */
+  /* creation of xEventFinishedInit */
+  xEventFinishedInitHandle = osEventFlagsNew(&xEventFinishedInit_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
@@ -539,7 +567,7 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_vTaskIdle */
-__weak void vTaskIdle(void *argument)
+void vTaskIdle(void *argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */

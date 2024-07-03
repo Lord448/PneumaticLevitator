@@ -55,8 +55,9 @@
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2"/>
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Daughterboard/Drivers/UI/Inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Daughterboard/Source/SWC}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Daughterboard/Source/SWC/UI/Bitmaps}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Daughterboard/Source/SWC/UI}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Daughterboard/Source/SWC/UI/UIMainSM}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.893277119" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>

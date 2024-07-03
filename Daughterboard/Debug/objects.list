@@ -83,5 +83,7 @@
 "./Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.o"
 "./Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.o"
 "./Source/SWC/COM/COM.o"
-"./Source/SWC/UI/Bitmaps.o"
+"./Source/SWC/DiagAppl/DiagAppl.o"
+"./Source/SWC/UI/Bitmaps/Bitmaps.o"
 "./Source/SWC/UI/UI.o"
+"./Source/SWC/UI/UIMainSM/UIMainSM.o"

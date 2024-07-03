@@ -9,7 +9,10 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include Source/SWC/UI/UIMainSM/subdir.mk
+-include Source/SWC/UI/Bitmaps/subdir.mk
 -include Source/SWC/UI/subdir.mk
+-include Source/SWC/DiagAppl/subdir.mk
 -include Source/SWC/COM/subdir.mk
 -include Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/subdir.mk
 -include Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/subdir.mk

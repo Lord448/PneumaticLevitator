@@ -33,5 +33,8 @@ Middlewares/Third_Party/FreeRTOS/Source \
 Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
 Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang \
 Source/SWC/COM \
+Source/SWC/DiagAppl \
+Source/SWC/UI/Bitmaps \
 Source/SWC/UI \
+Source/SWC/UI/UIMainSM \
 

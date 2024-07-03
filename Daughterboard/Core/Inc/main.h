@@ -101,7 +101,7 @@ void Error_Handler(void);
 #define EncoderSW_EXTI_IRQn EXTI15_10_IRQn
 
 /* USER CODE BEGIN Private defines */
-
+#define FINISH_INIT_ID 0x1U
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
