@@ -53,6 +53,7 @@ const uint8_t init_cmd[] = {
 char str[32];
 
 static void LCD_Update(void);
+
 typedef struct{
   int8_t spi_sz;
   int8_t dma_sz;

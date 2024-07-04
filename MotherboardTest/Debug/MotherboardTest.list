@@ -606,7 +606,7 @@ int main(void)
  80006c0:	2100      	movs	r1, #0
  80006c2:	480e      	ldr	r0, [pc, #56]	; (80006fc <main+0x168>)
  80006c4:	f004 fbb0 	bl	8004e28 <HAL_TIM_PWM_Start>
-  HAL_GPIO_WritePin(EnablePWM_GPIO_Port, EnablePWM_Pin, 1);
+  HAL_GPIO_WritePin(EnablePWM_GPIO_Port, EnablePWM_Pin, 1); //Turning on the AND gate
  80006c8:	2201      	movs	r2, #1
  80006ca:	2120      	movs	r1, #32
  80006cc:	480f      	ldr	r0, [pc, #60]	; (800070c <main+0x178>)
