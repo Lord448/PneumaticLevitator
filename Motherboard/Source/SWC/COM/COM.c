@@ -14,7 +14,7 @@ void COM_Init(void)
 
 }
 
-void vTaskCOM_Runnable(void)
+void vTaskCOM(void *argument)
 {
 	COM_Init();
 	for(;;)

@@ -11,7 +11,7 @@ void EcuM_Init(void)
 
 }
 
-void vTaskEcuM_Runnable(void)
+void vTaskEcuM(void *argument)
 {
 	EcuM_Init();
 	for(;;)

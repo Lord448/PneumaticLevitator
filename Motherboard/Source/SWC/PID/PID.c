@@ -37,7 +37,7 @@ static struct PID{
 		.Set_Point = 0
 };
 
-static PID_SetConfigs(PIDConfigs *configs)
+static void PID_SetConfigs(PIDConfigs *configs)
 {
   /*TODO: Change the configs of the global PID structure based on the pointer*/
 }
@@ -55,7 +55,7 @@ void PID_Init(void)
 
 }
 
-void vTaskPID_Runnable(void)
+void vTaskPID(void *argument)
 {
 	uint32_t distance = 0;
 	PIDConfigs FIFOConfigs;

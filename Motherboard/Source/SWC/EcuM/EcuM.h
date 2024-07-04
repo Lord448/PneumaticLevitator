@@ -10,6 +10,6 @@
 
 void EcuM_Init(void);
 
-void vTaskEcuM_Runnable(void);
+void vTaskEcuM(void *argument);
 
 #endif /* SWC_ECUM_ECUM_H_ */

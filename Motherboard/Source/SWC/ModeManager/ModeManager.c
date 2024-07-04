@@ -5,8 +5,9 @@
  *      Author: lord448
  */
 
+#include "ModeManager.h"
 
-void vTaskModeManager_Runnable(void)
+void vTaskModeManager(void *argument)
 {
 
 	for(;;)

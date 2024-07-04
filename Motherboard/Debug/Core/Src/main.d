@@ -49,8 +49,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../USB_DEVICE/App/usb_device.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  ../USB_DEVICE/Target/usbd_conf.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/ModeManager/ModeManger.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/ModeManager/ModeManger.h \
  /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/DistanceSensor/DistanceSensor.h \
  /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/COM/COM.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
@@ -123,8 +121,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../USB_DEVICE/App/usb_device.h:
 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:
 ../USB_DEVICE/Target/usbd_conf.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/ModeManager/ModeManger.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/ModeManager/ModeManger.h:
 /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/DistanceSensor/DistanceSensor.h:
 /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/COM/COM.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:

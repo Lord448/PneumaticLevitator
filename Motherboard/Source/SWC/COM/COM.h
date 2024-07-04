@@ -19,7 +19,7 @@ typedef union PDU_t{
 
 void COM_Init(void);
 
-void vTaskCOM_Runnable(void);
+void vTaskCOM(void *argument);
 
 PDU_t COM_CreatePDU(uint8_t MessageID, uint32_t Data);
 
