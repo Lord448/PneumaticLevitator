@@ -23,6 +23,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lcd.h"
+#include "ugui.h"
+#include "UI.h"
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,18 +54,18 @@ UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_tx;
 
 DMA_HandleTypeDef hdma_memtomem_dma2_stream1;
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
+/* Definitions for TaskIdle */
+osThreadId_t TaskIdleHandle;
+const osThreadAttr_t TaskIdle_attributes = {
+  .name = "TaskIdle",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityLow,
 };
-/* Definitions for TaskLCD */
-osThreadId_t TaskLCDHandle;
-const osThreadAttr_t TaskLCD_attributes = {
-  .name = "TaskLCD",
-  .stack_size = 256 * 4,
+/* Definitions for TaskUI */
+osThreadId_t TaskUIHandle;
+const osThreadAttr_t TaskUI_attributes = {
+  .name = "TaskUI",
+  .stack_size = 1023 * 4,
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
 /* Definitions for TaskBlink */
@@ -78,6 +82,42 @@ const osThreadAttr_t TaskLeds_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
+/* Definitions for TaskWdgM */
+osThreadId_t TaskWdgMHandle;
+const osThreadAttr_t TaskWdgM_attributes = {
+  .name = "TaskWdgM",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for TaskCOM */
+osThreadId_t TaskCOMHandle;
+const osThreadAttr_t TaskCOM_attributes = {
+  .name = "TaskCOM",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for TaskDiagAppl */
+osThreadId_t TaskDiagApplHandle;
+const osThreadAttr_t TaskDiagAppl_attributes = {
+  .name = "TaskDiagAppl",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for xSemaphoreDMAComplete */
+osSemaphoreId_t xSemaphoreDMACompleteHandle;
+const osSemaphoreAttr_t xSemaphoreDMAComplete_attributes = {
+  .name = "xSemaphoreDMAComplete"
+};
+/* Definitions for xSemaphoreCOMReady */
+osSemaphoreId_t xSemaphoreCOMReadyHandle;
+const osSemaphoreAttr_t xSemaphoreCOMReady_attributes = {
+  .name = "xSemaphoreCOMReady"
+};
+/* Definitions for xEventFinishedInit */
+osEventFlagsId_t xEventFinishedInitHandle;
+const osEventFlagsAttr_t xEventFinishedInit_attributes = {
+  .name = "xEventFinishedInit"
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -89,10 +129,13 @@ static void MX_DMA_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART1_UART_Init(void);
-void StartDefaultTask(void *argument);
-void vTaskLCD(void *argument);
+void vTaskIdle(void *argument);
+extern void vTaskUI(void *argument);
 void vTaskBlink(void *argument);
 void vTaskLeds(void *argument);
+void vTaskWdgM(void *argument);
+extern void vTaskCOM(void *argument);
+extern void vTaskDiagAppl(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -146,6 +189,13 @@ int main(void)
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
+  /* Create the semaphores(s) */
+  /* creation of xSemaphoreDMAComplete */
+  xSemaphoreDMACompleteHandle = osSemaphoreNew(1, 1, &xSemaphoreDMAComplete_attributes);
+
+  /* creation of xSemaphoreCOMReady */
+  xSemaphoreCOMReadyHandle = osSemaphoreNew(1, 1, &xSemaphoreCOMReady_attributes);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -159,11 +209,11 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  /* creation of TaskIdle */
+  TaskIdleHandle = osThreadNew(vTaskIdle, NULL, &TaskIdle_attributes);
 
-  /* creation of TaskLCD */
-  TaskLCDHandle = osThreadNew(vTaskLCD, NULL, &TaskLCD_attributes);
+  /* creation of TaskUI */
+  TaskUIHandle = osThreadNew(vTaskUI, NULL, &TaskUI_attributes);
 
   /* creation of TaskBlink */
   TaskBlinkHandle = osThreadNew(vTaskBlink, NULL, &TaskBlink_attributes);
@@ -171,9 +221,22 @@ int main(void)
   /* creation of TaskLeds */
   TaskLedsHandle = osThreadNew(vTaskLeds, NULL, &TaskLeds_attributes);
 
+  /* creation of TaskWdgM */
+  TaskWdgMHandle = osThreadNew(vTaskWdgM, NULL, &TaskWdgM_attributes);
+
+  /* creation of TaskCOM */
+  TaskCOMHandle = osThreadNew(vTaskCOM, NULL, &TaskCOM_attributes);
+
+  /* creation of TaskDiagAppl */
+  TaskDiagApplHandle = osThreadNew(vTaskDiagAppl, NULL, &TaskDiagAppl_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
+
+  /* Create the event(s) */
+  /* creation of xEventFinishedInit */
+  xEventFinishedInitHandle = osEventFlagsNew(&xEventFinishedInit_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
@@ -390,6 +453,9 @@ static void MX_DMA_Init(void)
   }
 
   /* DMA interrupt init */
+  /* DMA2_Stream1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
   /* DMA2_Stream2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
@@ -494,14 +560,14 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_StartDefaultTask */
+/* USER CODE BEGIN Header_vTaskIdle */
 /**
-  * @brief  Function implementing the defaultTask thread.
+  * @brief  Function implementing the TaskIdle thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
+/* USER CODE END Header_vTaskIdle */
+void vTaskIdle(void *argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
@@ -510,37 +576,6 @@ void StartDefaultTask(void *argument)
     osDelay(1);
   }
   /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_vTaskLCD */
-/**
-* @brief Function implementing the TaskLCD thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_vTaskLCD */
-void vTaskLCD(void *argument)
-{
-  /* USER CODE BEGIN vTaskLCD */
-
-	/*
-	 * Stack usage for the
-	 * image processing with
-	 * chunks of 256 Bytes
-	 */
-	uint16_t *ITMLogoRAMBuffer;
-	ITMLogoRAMBuffer = (uint16_t*)calloc(ITMLOGO_SIZE, sizeof(uint16_t));
-	HAL_DMA_Start(&hdma_memtomem_dma2_stream1, (uint32_t)&ITMLogo.p, (uint32_t)ITMLogoRAMBuffer, ITMLOGO_SIZE);
-
-	LCD_init();
-	LCD_Test();
-	free(ITMLogoRAMBuffer);
-  for(;;)
-  {
-  	LCD_Test();
-
-  }
-  /* USER CODE END vTaskLCD */
 }
 
 /* USER CODE BEGIN Header_vTaskBlink */
@@ -581,8 +616,27 @@ void vTaskLeds(void *argument)
     osDelay(pdMS_TO_TICKS(100));
     HAL_GPIO_TogglePin(LED_CONTROL_GPIO_Port, LED_CONTROL_Pin);
     osDelay(pdMS_TO_TICKS(100));
+
   }
   /* USER CODE END vTaskLeds */
+}
+
+/* USER CODE BEGIN Header_vTaskWdgM */
+/**
+* @brief Function implementing the TaskWdgM thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vTaskWdgM */
+void vTaskWdgM(void *argument)
+{
+  /* USER CODE BEGIN vTaskWdgM */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END vTaskWdgM */
 }
 
 /**
