@@ -23,7 +23,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "ModeManager/ModeManger.h"
 #include "DistanceSensor/DistanceSensor.h"
 #include "DiagAppl/DiagAppl.h"
 #include "EcuM/EcuM.h"
@@ -202,13 +201,13 @@ static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM5_Init(void);
 void vTaskIdle(void *argument);
-void vTaskModeManager(void *argument);
-void vTaskPID(void *argument);
-void vTaskCOM(void *argument);
+extern void vTaskModeManager(void *argument);
+extern void vTaskPID(void *argument);
+extern void vTaskCOM(void *argument);
 void vTaskSensorActuator(void *argument);
 void vTaskWdgM(void *argument);
-void vTaskEcuM(void *argument);
-void vTaskDiagAppl(void *argument);
+extern void vTaskEcuM(void *argument);
+extern void vTaskDiagAppl(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -922,48 +921,6 @@ void vTaskIdle(void *argument)
   /* USER CODE END 5 */
 }
 
-/* USER CODE BEGIN Header_vTaskModeManager */
-/**
-* @brief Function implementing the ModeManager thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_vTaskModeManager */
-void vTaskModeManager(void *argument)
-{
-  /* USER CODE BEGIN vTaskModeManager */
-  vTaskModeManager_Runnable();
-  /* USER CODE END vTaskModeManager */
-}
-
-/* USER CODE BEGIN Header_vTaskPID */
-/**
-* @brief Function implementing the TaskPID thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_vTaskPID */
-void vTaskPID(void *argument)
-{
-  /* USER CODE BEGIN vTaskPID */
-  vTaskPID_Runnable();
-  /* USER CODE END vTaskPID */
-}
-
-/* USER CODE BEGIN Header_vTaskCOM */
-/**
-* @brief Function implementing the TaskCOM thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_vTaskCOM */
-void vTaskCOM(void *argument)
-{
-  /* USER CODE BEGIN vTaskCOM */
-	vTaskCOM_Runnable();
-  /* USER CODE END vTaskCOM */
-}
-
 /* USER CODE BEGIN Header_vTaskSensorActuator */
 /**
 * @brief Function implementing the TaskSensorActua thread.
@@ -1018,34 +975,6 @@ void vTaskWdgM(void *argument)
     osDelayUntil(ticks);
   }
   /* USER CODE END vTaskWdgM */
-}
-
-/* USER CODE BEGIN Header_vTaskEcuM */
-/**
-* @brief Function implementing the TaskEcuM thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_vTaskEcuM */
-void vTaskEcuM(void *argument)
-{
-  /* USER CODE BEGIN vTaskEcuM */
-	vTaskEcuM_Runnable();
-  /* USER CODE END vTaskEcuM */
-}
-
-/* USER CODE BEGIN Header_vTaskDiagAppl */
-/**
-* @brief Function implementing the TaskDiagAppl thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_vTaskDiagAppl */
-void vTaskDiagAppl(void *argument)
-{
-  /* USER CODE BEGIN vTaskDiagAppl */
-	vTaskDiagAppl_Runnable();
-  /* USER CODE END vTaskDiagAppl */
 }
 
 /**

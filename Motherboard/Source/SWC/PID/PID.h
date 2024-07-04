@@ -44,6 +44,6 @@ typedef struct PIDConfigs{
 
 void PID_Init(void);
 
-void vTaskPID_Runnable(void);
+void vTaskPID(void *argument);
 
 #endif /* SWC_PID_PID_H_ */

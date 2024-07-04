@@ -56,7 +56,7 @@
 "./Source/SWC/DistanceSensor/DistanceSensor.o"
 "./Source/SWC/EcuM/EcuM.o"
 "./Source/SWC/FAN/FAN.o"
-"./Source/SWC/ModeManager/ModeManger.o"
+"./Source/SWC/ModeManager/ModeManager.o"
 "./Source/SWC/NVM/EEPROMTypes.o"
 "./Source/SWC/NVM/NVM.o"
 "./Source/SWC/PID/PID.o"

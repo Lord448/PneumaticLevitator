@@ -44,8 +44,7 @@ typedef union {
 
 void COM_Init(void);
 
-void vTaskCOM_Runnable(void);
+void vTaskCOM(void *argument);
 uint8_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload) ;
-//uint16_t COM_SendMessage(uint8_t MessageID, uint32_t Data);
 
 #endif /* SWC_COM_COM_H_ */

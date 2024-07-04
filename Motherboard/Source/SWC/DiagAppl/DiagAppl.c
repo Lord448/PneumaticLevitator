@@ -11,7 +11,7 @@ void DiagAppl_Init(void)
 
 }
 
-void vTaskDiagAppl_Runnable(void)
+void vTaskDiagAppl(void *argument)
 {
 	DiagAppl_Init();
 	for(;;)

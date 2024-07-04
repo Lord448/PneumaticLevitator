@@ -10,6 +10,6 @@
 
 void DiagAppl_Init(void);
 
-void vTaskDiagAppl_Runnable(void);
+void vTaskDiagAppl(void *argument);
 
 #endif /* SWC_DIAGAPPL_DIAGAPPL_H_ */
