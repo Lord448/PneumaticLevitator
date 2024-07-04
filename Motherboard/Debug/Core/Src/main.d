@@ -49,29 +49,29 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../USB_DEVICE/App/usb_device.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  ../USB_DEVICE/Target/usbd_conf.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/ModeManager/ModeManger.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/ModeManager/ModeManger.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/DistanceSensor/DistanceSensor.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/COM/COM.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/ModeManager/ModeManger.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/ModeManager/ModeManger.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/DistanceSensor/DistanceSensor.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/COM/COM.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/COM/Signals.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/COM/COM.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/vl53l0x_api.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_api_strings.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_def.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_device.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_types.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_types.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_platform.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_def.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_platform_log.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_def.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_platform.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/platform/inc/vl53l0x_platform.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/DiagAppl/DiagAppl.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/EcuM/EcuM.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/PID/PID.h \
- /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/FAN/FAN.h
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/COM/Signals.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/COM/COM.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/vl53l0x_api.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_api_strings.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_def.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_device.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_types.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_types.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_platform.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_def.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_platform_log.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_def.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_platform.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/platform/inc/vl53l0x_platform.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/DiagAppl/DiagAppl.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/EcuM/EcuM.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/PID/PID.h \
+ /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/FAN/FAN.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -123,26 +123,26 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../USB_DEVICE/App/usb_device.h:
 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:
 ../USB_DEVICE/Target/usbd_conf.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/ModeManager/ModeManger.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/ModeManager/ModeManger.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/DistanceSensor/DistanceSensor.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/COM/COM.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/ModeManager/ModeManger.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/ModeManager/ModeManger.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/DistanceSensor/DistanceSensor.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/COM/COM.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/COM/Signals.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/COM/COM.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/vl53l0x_api.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_api_strings.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_def.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_device.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_types.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_types.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_platform.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_def.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_platform_log.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_def.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_platform.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/platform/inc/vl53l0x_platform.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/DiagAppl/DiagAppl.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/EcuM/EcuM.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/PID/PID.h:
-/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/Source/SWC/FAN/FAN.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/COM/Signals.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/COM/COM.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/vl53l0x_api.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_api_strings.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_def.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_device.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_types.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_types.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_platform.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_def.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_platform_log.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/core/inc/vl53l0x_def.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/core/inc/../../../../VL53L0X/Api/platform/inc/vl53l0x_platform.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Drivers/VL53L0X/Api/platform/inc/vl53l0x_platform.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/DiagAppl/DiagAppl.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/EcuM/EcuM.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/PID/PID.h:
+/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/Source/SWC/FAN/FAN.h:

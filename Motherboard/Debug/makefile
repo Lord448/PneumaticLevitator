@@ -78,8 +78,8 @@ all: main-build
 main-build: Motherboard.elf secondary-outputs
 
 # Tool invocations
-Motherboard.elf Motherboard.map: $(OBJS) $(USER_OBJS) /home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/STM32F411CEUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Motherboard.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/lord448/Documentos/TEC/9no/ControlDigital/PneumaticLevitator/Motherboard/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Motherboard.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Motherboard.elf Motherboard.map: $(OBJS) $(USER_OBJS) /home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/STM32F411CEUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Motherboard.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/themathgician/STM32_Projects/PneumaticLevitator/Motherboard/STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Motherboard.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
