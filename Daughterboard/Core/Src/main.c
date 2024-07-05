@@ -118,6 +118,16 @@ osEventFlagsId_t xEventFinishedInitHandle;
 const osEventFlagsAttr_t xEventFinishedInit_attributes = {
   .name = "xEventFinishedInit"
 };
+/* Definitions for xEventDID */
+osEventFlagsId_t xEventDIDHandle;
+const osEventFlagsAttr_t xEventDID_attributes = {
+  .name = "xEventDID"
+};
+/* Definitions for xEventDTC */
+osEventFlagsId_t xEventDTCHandle;
+const osEventFlagsAttr_t xEventDTC_attributes = {
+  .name = "xEventDTC"
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -237,6 +247,12 @@ int main(void)
   /* Create the event(s) */
   /* creation of xEventFinishedInit */
   xEventFinishedInitHandle = osEventFlagsNew(&xEventFinishedInit_attributes);
+
+  /* creation of xEventDID */
+  xEventDIDHandle = osEventFlagsNew(&xEventDID_attributes);
+
+  /* creation of xEventDTC */
+  xEventDTCHandle = osEventFlagsNew(&xEventDTC_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
