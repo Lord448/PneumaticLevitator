@@ -25,8 +25,9 @@
 #include "lcd.h"
 #include "ugui.h"
 #include "UI.h"
-#include <stdio.h>
-#include <string.h>
+#include "COM.h"
+#include "GPUResMan.h"
+#include "DiagAppl.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -53,7 +54,9 @@ TIM_HandleTypeDef htim1;
 UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_tx;
 
-DMA_HandleTypeDef hdma_memtomem_dma2_stream1;
+DMA_HandleTypeDef hdma_memtomem_dma2_stream3;
+DMA_HandleTypeDef hdma_memtomem_dma2_stream4;
+DMA_HandleTypeDef hdma_memtomem_dma2_stream5;
 /* Definitions for TaskIdle */
 osThreadId_t TaskIdleHandle;
 const osThreadAttr_t TaskIdle_attributes = {
@@ -103,6 +106,23 @@ const osThreadAttr_t TaskDiagAppl_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
+/* Definitions for TaskGPUResMan */
+osThreadId_t TaskGPUResManHandle;
+const osThreadAttr_t TaskGPUResMan_attributes = {
+  .name = "TaskGPUResMan",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for xFIFOSetGPUReq */
+osMessageQueueId_t xFIFOSetGPUReqHandle;
+const osMessageQueueAttr_t xFIFOSetGPUReq_attributes = {
+  .name = "xFIFOSetGPUReq"
+};
+/* Definitions for xFIFOGetGPUBuf */
+osMessageQueueId_t xFIFOGetGPUBufHandle;
+const osMessageQueueAttr_t xFIFOGetGPUBuf_attributes = {
+  .name = "xFIFOGetGPUBuf"
+};
 /* Definitions for xSemaphoreDMAComplete */
 osSemaphoreId_t xSemaphoreDMACompleteHandle;
 const osSemaphoreAttr_t xSemaphoreDMAComplete_attributes = {
@@ -112,6 +132,21 @@ const osSemaphoreAttr_t xSemaphoreDMAComplete_attributes = {
 osSemaphoreId_t xSemaphoreCOMReadyHandle;
 const osSemaphoreAttr_t xSemaphoreCOMReady_attributes = {
   .name = "xSemaphoreCOMReady"
+};
+/* Definitions for xSemaphoreDMACplt3 */
+osSemaphoreId_t xSemaphoreDMACplt3Handle;
+const osSemaphoreAttr_t xSemaphoreDMACplt3_attributes = {
+  .name = "xSemaphoreDMACplt3"
+};
+/* Definitions for xSemaphoreDMACplt4 */
+osSemaphoreId_t xSemaphoreDMACplt4Handle;
+const osSemaphoreAttr_t xSemaphoreDMACplt4_attributes = {
+  .name = "xSemaphoreDMACplt4"
+};
+/* Definitions for xSemaphoreDMACplt5 */
+osSemaphoreId_t xSemaphoreDMACplt5Handle;
+const osSemaphoreAttr_t xSemaphoreDMACplt5_attributes = {
+  .name = "xSemaphoreDMACplt5"
 };
 /* Definitions for xEventFinishedInit */
 osEventFlagsId_t xEventFinishedInitHandle;
@@ -129,7 +164,9 @@ const osEventFlagsAttr_t xEventDTC_attributes = {
   .name = "xEventDTC"
 };
 /* USER CODE BEGIN PV */
-
+extern osMemoryPoolId_t MemoryPool8;
+extern osMemoryPoolId_t MemoryPool16;
+extern osMemoryPoolId_t MemoryPool32;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -146,6 +183,7 @@ void vTaskLeds(void *argument);
 void vTaskWdgM(void *argument);
 extern void vTaskCOM(void *argument);
 extern void vTaskDiagAppl(void *argument);
+extern void vTaskGPUResMan(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -206,6 +244,15 @@ int main(void)
   /* creation of xSemaphoreCOMReady */
   xSemaphoreCOMReadyHandle = osSemaphoreNew(1, 1, &xSemaphoreCOMReady_attributes);
 
+  /* creation of xSemaphoreDMACplt3 */
+  xSemaphoreDMACplt3Handle = osSemaphoreNew(1, 1, &xSemaphoreDMACplt3_attributes);
+
+  /* creation of xSemaphoreDMACplt4 */
+  xSemaphoreDMACplt4Handle = osSemaphoreNew(1, 1, &xSemaphoreDMACplt4_attributes);
+
+  /* creation of xSemaphoreDMACplt5 */
+  xSemaphoreDMACplt5Handle = osSemaphoreNew(1, 1, &xSemaphoreDMACplt5_attributes);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -213,6 +260,13 @@ int main(void)
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
+
+  /* Create the queue(s) */
+  /* creation of xFIFOSetGPUReq */
+  xFIFOSetGPUReqHandle = osMessageQueueNew (16, sizeof(GPUReq_t), &xFIFOSetGPUReq_attributes);
+
+  /* creation of xFIFOGetGPUBuf */
+  xFIFOGetGPUBufHandle = osMessageQueueNew (16, sizeof(void *), &xFIFOGetGPUBuf_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -240,6 +294,9 @@ int main(void)
   /* creation of TaskDiagAppl */
   TaskDiagApplHandle = osThreadNew(vTaskDiagAppl, NULL, &TaskDiagAppl_attributes);
 
+  /* creation of TaskGPUResMan */
+  TaskGPUResManHandle = osThreadNew(vTaskGPUResMan, NULL, &TaskGPUResMan_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -255,7 +312,9 @@ int main(void)
   xEventDTCHandle = osEventFlagsNew(&xEventDTC_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
+  MemoryPool8 = osMemoryPoolNew(DEFAULT_POOL_SIZE, sizeof(uint8_t), NULL);
+  MemoryPool16 = osMemoryPoolNew(Byte_16To8(DEFAULT_POOL_SIZE), sizeof(uint16_t), NULL);
+  MemoryPool32 = osMemoryPoolNew(Byte_32To8(DEFAULT_POOL_SIZE), sizeof(uint32_t), NULL);
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
@@ -441,7 +500,9 @@ static void MX_USART1_UART_Init(void)
 /**
   * Enable DMA controller clock
   * Configure DMA for memory to memory transfers
-  *   hdma_memtomem_dma2_stream1
+  *   hdma_memtomem_dma2_stream3
+  *   hdma_memtomem_dma2_stream4
+  *   hdma_memtomem_dma2_stream5
   */
 static void MX_DMA_Init(void)
 {
@@ -449,29 +510,64 @@ static void MX_DMA_Init(void)
   /* DMA controller clock enable */
   __HAL_RCC_DMA2_CLK_ENABLE();
 
-  /* Configure DMA request hdma_memtomem_dma2_stream1 on DMA2_Stream1 */
-  hdma_memtomem_dma2_stream1.Instance = DMA2_Stream1;
-  hdma_memtomem_dma2_stream1.Init.Channel = DMA_CHANNEL_0;
-  hdma_memtomem_dma2_stream1.Init.Direction = DMA_MEMORY_TO_MEMORY;
-  hdma_memtomem_dma2_stream1.Init.PeriphInc = DMA_PINC_ENABLE;
-  hdma_memtomem_dma2_stream1.Init.MemInc = DMA_MINC_ENABLE;
-  hdma_memtomem_dma2_stream1.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
-  hdma_memtomem_dma2_stream1.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
-  hdma_memtomem_dma2_stream1.Init.Mode = DMA_NORMAL;
-  hdma_memtomem_dma2_stream1.Init.Priority = DMA_PRIORITY_LOW;
-  hdma_memtomem_dma2_stream1.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
-  hdma_memtomem_dma2_stream1.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
-  hdma_memtomem_dma2_stream1.Init.MemBurst = DMA_MBURST_SINGLE;
-  hdma_memtomem_dma2_stream1.Init.PeriphBurst = DMA_PBURST_SINGLE;
-  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream1) != HAL_OK)
+  /* Configure DMA request hdma_memtomem_dma2_stream3 on DMA2_Stream3 */
+  hdma_memtomem_dma2_stream3.Instance = DMA2_Stream3;
+  hdma_memtomem_dma2_stream3.Init.Channel = DMA_CHANNEL_0;
+  hdma_memtomem_dma2_stream3.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma2_stream3.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma2_stream3.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma2_stream3.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+  hdma_memtomem_dma2_stream3.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+  hdma_memtomem_dma2_stream3.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma2_stream3.Init.Priority = DMA_PRIORITY_MEDIUM;
+  hdma_memtomem_dma2_stream3.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  hdma_memtomem_dma2_stream3.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+  hdma_memtomem_dma2_stream3.Init.MemBurst = DMA_MBURST_SINGLE;
+  hdma_memtomem_dma2_stream3.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream3) != HAL_OK)
+  {
+    Error_Handler( );
+  }
+
+  /* Configure DMA request hdma_memtomem_dma2_stream4 on DMA2_Stream4 */
+  hdma_memtomem_dma2_stream4.Instance = DMA2_Stream4;
+  hdma_memtomem_dma2_stream4.Init.Channel = DMA_CHANNEL_0;
+  hdma_memtomem_dma2_stream4.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma2_stream4.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma2_stream4.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma2_stream4.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+  hdma_memtomem_dma2_stream4.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+  hdma_memtomem_dma2_stream4.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma2_stream4.Init.Priority = DMA_PRIORITY_MEDIUM;
+  hdma_memtomem_dma2_stream4.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  hdma_memtomem_dma2_stream4.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+  hdma_memtomem_dma2_stream4.Init.MemBurst = DMA_MBURST_SINGLE;
+  hdma_memtomem_dma2_stream4.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream4) != HAL_OK)
+  {
+    Error_Handler( );
+  }
+
+  /* Configure DMA request hdma_memtomem_dma2_stream5 on DMA2_Stream5 */
+  hdma_memtomem_dma2_stream5.Instance = DMA2_Stream5;
+  hdma_memtomem_dma2_stream5.Init.Channel = DMA_CHANNEL_0;
+  hdma_memtomem_dma2_stream5.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma2_stream5.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma2_stream5.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma2_stream5.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+  hdma_memtomem_dma2_stream5.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+  hdma_memtomem_dma2_stream5.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma2_stream5.Init.Priority = DMA_PRIORITY_MEDIUM;
+  hdma_memtomem_dma2_stream5.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  hdma_memtomem_dma2_stream5.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+  hdma_memtomem_dma2_stream5.Init.MemBurst = DMA_MBURST_SINGLE;
+  hdma_memtomem_dma2_stream5.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream5) != HAL_OK)
   {
     Error_Handler( );
   }
 
   /* DMA interrupt init */
-  /* DMA2_Stream1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
   /* DMA2_Stream2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);

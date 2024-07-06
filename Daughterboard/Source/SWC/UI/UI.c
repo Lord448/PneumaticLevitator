@@ -21,7 +21,7 @@
 extern osEventFlagsId_t xEventFinishedInitHandle;
 extern osSemaphoreId_t xSemaphoreDMACompleteHandle;
 extern osSemaphoreId_t xSemaphoreCOMReadyHandle;
-extern DMA_HandleTypeDef hdma_memtomem_dma2_stream1;
+extern DMA_HandleTypeDef hdma_memtomem_dma2_stream3;
 extern const uint16_t ITMLogoData[ITMLOGO_SIZE];
 
 static void FadeWhiteIn(uint8_t animDelay);
@@ -39,7 +39,7 @@ static void StringFadeOut(void);
 void vTaskUI(void *argument)
 {
 	LCD_init();
-	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream1, HAL_DMA_XFER_CPLT_CB_ID, DMATrasferCpltCallback);
+	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream3, HAL_DMA_XFER_CPLT_CB_ID, DMATrasferCpltCallback);
 	FadeWhiteIn(10);
 	ITMLogoFadeIn();
 	StringFadeIn();
@@ -97,7 +97,7 @@ static void ITMLogoFadeIn(void)
 	{
 		/*Do Nothing*/
 	}
-	HAL_DMA_Start_IT(&hdma_memtomem_dma2_stream1, (uint32_t)ITMLogoData, (uint32_t)ITMLogoRAMBuffer, ITMLOGO_SIZE);
+	HAL_DMA_Start_IT(&hdma_memtomem_dma2_stream3, (uint32_t)ITMLogoData, (uint32_t)ITMLogoRAMBuffer, ITMLOGO_SIZE);
 	osSemaphoreAcquire(xSemaphoreDMACompleteHandle, osWaitForever);
 
 	UG_BMP ITMLogoRAM = {
