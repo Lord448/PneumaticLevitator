@@ -1,7 +1,9 @@
 /**
  * @file      DiagAppl.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
+ *
  * @brief     TODO
+ *
  * @date      Jul 3, 2024
  *
  * @license   This Source Code Form is subject to the terms of 

@@ -1,20 +1,19 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2024 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ * @file      PID.c
+ * @author    Pedro Rojo (pedroeroca@outlook.com)
+ *
+ * @brief     Main program Body
+ *
+ * @date      May 29, 2024
+ *
+ * @license   This Source Code Form is subject to the terms of
+ *            the Mozilla Public License, v. 2.0. If a copy of
+ *            the MPL was not distributed with this file, You
+ *            can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * @copyright Copyright (c) 2024
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"

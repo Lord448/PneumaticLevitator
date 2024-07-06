@@ -1,6 +1,6 @@
 /**
  * @file      COM.h
- * @author    Pedro Rojo (pedroeroca@outlook.com)
+ * @author    TODO
  *
  * @brief     TODO
  *
