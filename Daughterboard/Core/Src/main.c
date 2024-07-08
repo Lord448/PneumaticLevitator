@@ -111,7 +111,7 @@ osThreadId_t TaskGPUResManHandle;
 const osThreadAttr_t TaskGPUResMan_attributes = {
   .name = "TaskGPUResMan",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityBelowNormal,
+  .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for xFIFOSetGPUReq */
 osMessageQueueId_t xFIFOSetGPUReqHandle;
@@ -312,9 +312,7 @@ int main(void)
   xEventDTCHandle = osEventFlagsNew(&xEventDTC_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
-  MemoryPool8 = osMemoryPoolNew(DEFAULT_POOL_SIZE, sizeof(uint8_t), NULL);
-  MemoryPool16 = osMemoryPoolNew(Byte_16To8(DEFAULT_POOL_SIZE), sizeof(uint16_t), NULL);
-  MemoryPool32 = osMemoryPoolNew(Byte_32To8(DEFAULT_POOL_SIZE), sizeof(uint32_t), NULL);
+  memoryPoolInit();
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */

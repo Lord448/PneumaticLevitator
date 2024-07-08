@@ -1,6 +1,6 @@
 /* USER CODE BEGIN Header */
 /**
- * @file      PID.c
+ * @file      main.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
  * @brief     Main program Body

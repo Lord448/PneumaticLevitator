@@ -1,15 +1,23 @@
 /**
- * @file      GPUResMan.h
- * @author    Pedro Rojo (pedroeroca@outlook.com)
+ * @file     GPUResMan.h
+ * @author   Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief    This component it's meant to load all the
+ * 			     graphical resources on memory pools and deliver
+ * 			     with hardware acceleration (DMA) to deliver on
+ * 			     memory pools with dynamic allocation to other
+ * 			     components that need a large amount of data
  *
- * @date      Jul 5, 2024
+ * 			     This component allows at least (TODO) of dynamic
+ * 			     memory buffers this component can reach only a
+ * 			     maximum size defined of "MAXIMUM_POOL_SIZE"
  *
- * @license   This Source Code Form is subject to the terms of 
- *            the Mozilla Public License, v. 2.0. If a copy of 
- *            the MPL was not distributed with this file, You 
- *            can obtain one at https://mozilla.org/MPL/2.0/.
+ * @date     Jul 5, 2024
+ *
+ * @license  This Source Code Form is subject to the terms of
+ *           the Mozilla Public License, v. 2.0. If a copy of
+ *           the MPL was not distributed with this file, You
+ *           can obtain one at https://mozilla.org/MPL/2.0/.
  *
  * @copyright Copyright (c) 2024
  */
@@ -28,19 +36,19 @@
 #define Byte_32To8(x) x/4 /*Macro to convert 32 bit format size to 8 bit*/
 
 #define DEFAULT_POOL_SIZE 256   /*Bytes*/
-#define MAXIMUM_POOL_SIZE 20480 /*20KB*/
+//#define MAXIMUM_POOL_SIZE 20480 /*20KB*/
 
 #define MEMORY_POOL_SIZE_ERROR 0 /*Error code returned from "osMemoryPoolGetCapacity()"*/
 
 typedef struct GPUReq_t{
 	osMemoryPoolId_t MemPoolID;
-	uint16_t BufferID;
 	uint16_t Size;
 	void *src;
 }GPUReq_t;
 
+void memoryPoolInit(void);
+void *memoryRequestResource(osMemoryPoolId_t MemPoolID, uint8_t Size, void *src, uint32_t Timeout);
 void vTaskGPUResMan(void *argument);
-void *requestMemoryPoolAlloc(osMemoryPoolId_t MemPoolID, uint8_t Size, void *src);
-result_t FreeMemoryPool(osMemoryPoolId_t MemPoolID);
+result_t FreeMemoryPool(osMemoryPoolId_t MemPoolID, void *block);
 
 #endif /* SWC_GPURESMAN_GPURESMAN_H_ */
