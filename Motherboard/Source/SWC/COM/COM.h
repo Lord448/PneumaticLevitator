@@ -11,6 +11,8 @@
 #include "main.h"
 #include "cmsis_os2.h"
 
+#define MAX_QUEUE_MESSAGES	16
+
 /* Definition of message types and priority (ensuring 4 bits) */
 
 typedef enum {
@@ -45,6 +47,7 @@ typedef union {
 void COM_Init(void);
 
 void vTaskCOM(void *argument);
-uint8_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload) ;
+uint8_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
+int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 
 #endif /* SWC_COM_COM_H_ */
