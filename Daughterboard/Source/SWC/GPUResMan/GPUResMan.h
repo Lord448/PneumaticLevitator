@@ -31,11 +31,12 @@
 #include <string.h>
 
 #define USE_HARDWARE_ACC /*When defined the hardware acceleration with DMA is enabled*/
+#define ALLOCATE_POOLS_AT_INIT /*When defined the OS allocate the memory pools at the start of "vTaskGPUResMan"*/
 
 #define Byte_16To8(x) x/2 /*Macro to convert 16 bit format size to 8 bit*/
 #define Byte_32To8(x) x/4 /*Macro to convert 32 bit format size to 8 bit*/
 
-#define DEFAULT_POOL_SIZE 256   /*Bytes*/
+#define INITIAL_POOL_SIZE 1   /*Bytes*/
 //#define MAXIMUM_POOL_SIZE 20480 /*20KB*/
 
 #define MEMORY_POOL_SIZE_ERROR 0 /*Error code returned from "osMemoryPoolGetCapacity()"*/
@@ -43,12 +44,12 @@
 typedef struct GPUReq_t{
 	osMemoryPoolId_t MemPoolID;
 	uint16_t Size;
-	void *src;
+	const void *src;
 }GPUReq_t;
 
 void memoryPoolInit(void);
-void *memoryRequestResource(osMemoryPoolId_t MemPoolID, uint8_t Size, void *src, uint32_t Timeout);
 void vTaskGPUResMan(void *argument);
+void *memoryRequestResource(osMemoryPoolId_t MemPoolID, uint32_t Size, const void *src, uint32_t Timeout);
 result_t FreeMemoryPool(osMemoryPoolId_t MemPoolID, void *block);
 
 #endif /* SWC_GPURESMAN_GPURESMAN_H_ */

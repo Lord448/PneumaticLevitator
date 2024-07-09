@@ -24,6 +24,8 @@
 #include "ugui.h"
 #include "cmsis_os.h"
 #include "Bitmaps.h"
+#include "OSHandler.h"
+#include "GPUResMan.h"
 #include "UIMainSM.h"
 #include "stm32f4xx_hal_dma.h"
 #include <stdio.h>

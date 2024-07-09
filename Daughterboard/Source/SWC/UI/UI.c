@@ -18,6 +18,7 @@
 
 #include "UI.h"
 
+extern volatile osMemoryPoolId_t MemoryPool16; /*Memory Pool designed for members of 2 Byte size*/
 extern osEventFlagsId_t xEventFinishedInitHandle;
 extern osSemaphoreId_t xSemaphoreDMACompleteHandle;
 extern osSemaphoreId_t xSemaphoreCOMReadyHandle;
@@ -39,8 +40,7 @@ static void StringFadeOut(void);
 void vTaskUI(void *argument)
 {
 	LCD_init();
-	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream3, HAL_DMA_XFER_CPLT_CB_ID, DMATrasferCpltCallback);
-	FadeWhiteIn(10);
+	FadeWhiteIn(5);
 	ITMLogoFadeIn();
 	StringFadeIn();
 	/*Charge all the graphic resources in BG*/
@@ -85,8 +85,10 @@ static void ITMLogoFadeIn(void)
 	uint32_t *NonWhitePixelsIndex;
 	uint16_t PixelsIndex = 0;
 
-	/*TODO: Change to memory pool to use heap memory instead of stack*/
-	ITMLogoRAMBuffer = (uint16_t*)calloc(ITMLOGO_SIZE*2, sizeof(uint16_t));
+	/*Check Heap Usage*/
+	volatile uint16_t heap = xPortGetFreeHeapSize();
+
+	ITMLogoRAMBuffer = (uint16_t*)memoryRequestResource(MemoryPool16, ITMLOGO_SIZE*2, ITMLogoData, osWaitForever);
 	/*Calloc Failure*/
 	if(ITMLogoRAMBuffer == NULL)
 	{
@@ -97,8 +99,6 @@ static void ITMLogoFadeIn(void)
 	{
 		/*Do Nothing*/
 	}
-	HAL_DMA_Start_IT(&hdma_memtomem_dma2_stream3, (uint32_t)ITMLogoData, (uint32_t)ITMLogoRAMBuffer, ITMLOGO_SIZE);
-	osSemaphoreAcquire(xSemaphoreDMACompleteHandle, osWaitForever);
 
 	UG_BMP ITMLogoRAM = {
 		.p = ITMLogoRAMBuffer,
@@ -107,7 +107,19 @@ static void ITMLogoFadeIn(void)
 		.bpp = BMP_BPP_16
 	};
 
-	/*Getting the non white pixels*/
+	heap = xPortGetFreeHeapSize();
+
+	UG_DrawBMP((LCD_WIDTH-ITMLogoRAM.width)/2, (LCD_HEIGHT-ITMLogoRAM.height)/2, &ITMLogoRAM);
+	UG_Update();
+	osDelay(pdMS_TO_TICKS(1000));
+	//FreeMemoryPool(MemoryPool16, ITMLogoRAMBuffer);
+	osMemoryPoolFree(MemoryPool16, ITMLogoRAMBuffer);
+
+	asm("nop");
+	heap = xPortGetFreeHeapSize();
+	asm("nop");
+
+	/*Getting the non white pixels
 	NonWhitePixelsValue = (uint16_t*)calloc(ITMLOGO_SIZE, sizeof(uint16_t));
 	NonWhitePixelsIndex = (uint32_t*)calloc(ITMLOGO_SIZE, sizeof(uint32_t));
 	if(NonWhitePixelsValue == NULL)
@@ -120,25 +132,25 @@ static void ITMLogoFadeIn(void)
 	}
 	else
 	{
-		/*Do Nothing*/
+		/*Do Nothing
 	}
-	PixelsIndex = 0; /*Reusing variable for as index for the buffers*/
+	PixelsIndex = 0; /*Reusing variable for as index for the buffers
 	for(uint16_t i = 0; i < ITMLOGO_SIZE*2; i++)
 	{
 		if((uint16_t)ITMLogoRAMBuffer[i] != 0xFFFF)
 		{
-			/*Found a non white pixel*/
+			/*Found a non white pixel
 			NonWhitePixelsValue[PixelsIndex] = ITMLogoRAMBuffer[i];
 			NonWhitePixelsIndex[PixelsIndex] = i;
-			PixelsIndex++; /*At the end of the loop, will have the max number of data needed*/
+			PixelsIndex++; /*At the end of the loop, will have the max number of data needed
 		}
 	}
-	/*Free RAM that is not used*/
+	/*Free RAM that is not used
 	NonWhitePixelsValue = realloc(NonWhitePixelsValue, (PixelsIndex+1)*sizeof(uint16_t));
 	NonWhitePixelsIndex = realloc(NonWhitePixelsIndex, (PixelsIndex+1)*sizeof(uint32_t));
 
-	/*Fade animation logo in*/
-	memset(ITMLogoRAMBuffer, 0xFFFF, ITMLOGO_SIZE*2); /*Setting white buffer*/
+	/*Fade animation logo in
+	memset(ITMLogoRAMBuffer, 0xFFFF, ITMLOGO_SIZE*2); /*Setting white buffer
 	ITMLogoRAM.p = ITMLogoRAMBuffer;
 	while(memcmp(ITMLogoRAMBuffer, ITMLogoData, ITMLOGO_SIZE) != 0)
 	{
@@ -146,7 +158,7 @@ static void ITMLogoFadeIn(void)
 		{
 			if(ITMLogoRAMBuffer[NonWhitePixelsIndex[i]] != NonWhitePixelsValue[i])
 			{
-				ITMLogoRAMBuffer[NonWhitePixelsIndex[i]]--; /*Until it gets the color*/
+				ITMLogoRAMBuffer[NonWhitePixelsIndex[i]]--; /*Until it gets the color
 			}
 		}
 		ITMLogoRAM.p = ITMLogoRAMBuffer;
@@ -187,9 +199,4 @@ static void DynamicErrorHandler(char *str)
 	{
 		/*Do nothing, check buffer "str" with debugger*/
 	}
-}
-
-void DMATrasferCpltCallback(DMA_HandleTypeDef *DmaHandle)
-{
-	osSemaphoreRelease(xSemaphoreDMACompleteHandle);
 }

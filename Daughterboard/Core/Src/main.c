@@ -31,6 +31,7 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -50,6 +51,7 @@ SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_tx;
 
 TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim11;
 
 UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_tx;
@@ -59,58 +61,98 @@ DMA_HandleTypeDef hdma_memtomem_dma2_stream4;
 DMA_HandleTypeDef hdma_memtomem_dma2_stream5;
 /* Definitions for TaskIdle */
 osThreadId_t TaskIdleHandle;
+uint32_t TaskIdleBuffer[ 128 ];
+osStaticThreadDef_t TaskIdleControlBlock;
 const osThreadAttr_t TaskIdle_attributes = {
   .name = "TaskIdle",
-  .stack_size = 128 * 4,
+  .cb_mem = &TaskIdleControlBlock,
+  .cb_size = sizeof(TaskIdleControlBlock),
+  .stack_mem = &TaskIdleBuffer[0],
+  .stack_size = sizeof(TaskIdleBuffer),
   .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for TaskUI */
 osThreadId_t TaskUIHandle;
+uint32_t TaskUIBuffer[ 1023 ];
+osStaticThreadDef_t TaskUIControlBlock;
 const osThreadAttr_t TaskUI_attributes = {
   .name = "TaskUI",
-  .stack_size = 1023 * 4,
+  .cb_mem = &TaskUIControlBlock,
+  .cb_size = sizeof(TaskUIControlBlock),
+  .stack_mem = &TaskUIBuffer[0],
+  .stack_size = sizeof(TaskUIBuffer),
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
 /* Definitions for TaskBlink */
 osThreadId_t TaskBlinkHandle;
+uint32_t TaskBlinkBuffer[ 128 ];
+osStaticThreadDef_t TaskBlinkControlBlock;
 const osThreadAttr_t TaskBlink_attributes = {
   .name = "TaskBlink",
-  .stack_size = 128 * 4,
+  .cb_mem = &TaskBlinkControlBlock,
+  .cb_size = sizeof(TaskBlinkControlBlock),
+  .stack_mem = &TaskBlinkBuffer[0],
+  .stack_size = sizeof(TaskBlinkBuffer),
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
 /* Definitions for TaskLeds */
 osThreadId_t TaskLedsHandle;
+uint32_t TaskLedsBuffer[ 128 ];
+osStaticThreadDef_t TaskLedsControlBlock;
 const osThreadAttr_t TaskLeds_attributes = {
   .name = "TaskLeds",
-  .stack_size = 128 * 4,
+  .cb_mem = &TaskLedsControlBlock,
+  .cb_size = sizeof(TaskLedsControlBlock),
+  .stack_mem = &TaskLedsBuffer[0],
+  .stack_size = sizeof(TaskLedsBuffer),
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
 /* Definitions for TaskWdgM */
 osThreadId_t TaskWdgMHandle;
+uint32_t TaskWdgMBuffer[ 128 ];
+osStaticThreadDef_t TaskWdgMControlBlock;
 const osThreadAttr_t TaskWdgM_attributes = {
   .name = "TaskWdgM",
-  .stack_size = 128 * 4,
+  .cb_mem = &TaskWdgMControlBlock,
+  .cb_size = sizeof(TaskWdgMControlBlock),
+  .stack_mem = &TaskWdgMBuffer[0],
+  .stack_size = sizeof(TaskWdgMBuffer),
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
 /* Definitions for TaskCOM */
 osThreadId_t TaskCOMHandle;
+uint32_t TaskCOMBuffer[ 128 ];
+osStaticThreadDef_t TaskCOMControlBlock;
 const osThreadAttr_t TaskCOM_attributes = {
   .name = "TaskCOM",
-  .stack_size = 128 * 4,
+  .cb_mem = &TaskCOMControlBlock,
+  .cb_size = sizeof(TaskCOMControlBlock),
+  .stack_mem = &TaskCOMBuffer[0],
+  .stack_size = sizeof(TaskCOMBuffer),
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
 /* Definitions for TaskDiagAppl */
 osThreadId_t TaskDiagApplHandle;
+uint32_t TaskDiagApplBuffer[ 128 ];
+osStaticThreadDef_t TaskDiagApplControlBlock;
 const osThreadAttr_t TaskDiagAppl_attributes = {
   .name = "TaskDiagAppl",
-  .stack_size = 128 * 4,
+  .cb_mem = &TaskDiagApplControlBlock,
+  .cb_size = sizeof(TaskDiagApplControlBlock),
+  .stack_mem = &TaskDiagApplBuffer[0],
+  .stack_size = sizeof(TaskDiagApplBuffer),
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
 /* Definitions for TaskGPUResMan */
 osThreadId_t TaskGPUResManHandle;
+uint32_t TaskGPUResManBuffer[ 256 ];
+osStaticThreadDef_t TaskGPUResManControlBlock;
 const osThreadAttr_t TaskGPUResMan_attributes = {
   .name = "TaskGPUResMan",
-  .stack_size = 128 * 4,
+  .cb_mem = &TaskGPUResManControlBlock,
+  .cb_size = sizeof(TaskGPUResManControlBlock),
+  .stack_mem = &TaskGPUResManBuffer[0],
+  .stack_size = sizeof(TaskGPUResManBuffer),
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for xFIFOSetGPUReq */
@@ -122,11 +164,6 @@ const osMessageQueueAttr_t xFIFOSetGPUReq_attributes = {
 osMessageQueueId_t xFIFOGetGPUBufHandle;
 const osMessageQueueAttr_t xFIFOGetGPUBuf_attributes = {
   .name = "xFIFOGetGPUBuf"
-};
-/* Definitions for xSemaphoreDMAComplete */
-osSemaphoreId_t xSemaphoreDMACompleteHandle;
-const osSemaphoreAttr_t xSemaphoreDMAComplete_attributes = {
-  .name = "xSemaphoreDMAComplete"
 };
 /* Definitions for xSemaphoreCOMReady */
 osSemaphoreId_t xSemaphoreCOMReadyHandle;
@@ -164,9 +201,9 @@ const osEventFlagsAttr_t xEventDTC_attributes = {
   .name = "xEventDTC"
 };
 /* USER CODE BEGIN PV */
-extern osMemoryPoolId_t MemoryPool8;
-extern osMemoryPoolId_t MemoryPool16;
-extern osMemoryPoolId_t MemoryPool32;
+osMemoryPoolId_t MemoryPool8;  /*Memory Pool designed for members of 1 Byte size*/
+osMemoryPoolId_t MemoryPool16; /*Memory Pool designed for members of 2 Byte size*/
+osMemoryPoolId_t MemoryPool32; /*Memory Pool designed for members of 4 Byte size*/
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -176,6 +213,7 @@ static void MX_DMA_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_TIM11_Init(void);
 void vTaskIdle(void *argument);
 extern void vTaskUI(void *argument);
 void vTaskBlink(void *argument);
@@ -226,8 +264,9 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM1_Init();
   MX_USART1_UART_Init();
+  MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
-
+  memoryPoolInit();
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -238,9 +277,6 @@ int main(void)
   /* USER CODE END RTOS_MUTEX */
 
   /* Create the semaphores(s) */
-  /* creation of xSemaphoreDMAComplete */
-  xSemaphoreDMACompleteHandle = osSemaphoreNew(1, 1, &xSemaphoreDMAComplete_attributes);
-
   /* creation of xSemaphoreCOMReady */
   xSemaphoreCOMReadyHandle = osSemaphoreNew(1, 1, &xSemaphoreCOMReady_attributes);
 
@@ -266,7 +302,7 @@ int main(void)
   xFIFOSetGPUReqHandle = osMessageQueueNew (16, sizeof(GPUReq_t), &xFIFOSetGPUReq_attributes);
 
   /* creation of xFIFOGetGPUBuf */
-  xFIFOGetGPUBufHandle = osMessageQueueNew (16, sizeof(void *), &xFIFOGetGPUBuf_attributes);
+  xFIFOGetGPUBufHandle = osMessageQueueNew (16, sizeof(void **), &xFIFOGetGPUBuf_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -312,7 +348,7 @@ int main(void)
   xEventDTCHandle = osEventFlagsNew(&xEventDTC_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
-  memoryPoolInit();
+
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
@@ -459,6 +495,37 @@ static void MX_TIM1_Init(void)
   /* USER CODE BEGIN TIM1_Init 2 */
 
   /* USER CODE END TIM1_Init 2 */
+
+}
+
+/**
+  * @brief TIM11 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM11_Init(void)
+{
+
+  /* USER CODE BEGIN TIM11_Init 0 */
+
+  /* USER CODE END TIM11_Init 0 */
+
+  /* USER CODE BEGIN TIM11_Init 1 */
+
+  /* USER CODE END TIM11_Init 1 */
+  htim11.Instance = TIM11;
+  htim11.Init.Prescaler = 0;
+  htim11.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim11.Init.Period = 1000-1;
+  htim11.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim11.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim11) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM11_Init 2 */
+
+  /* USER CODE END TIM11_Init 2 */
 
 }
 
