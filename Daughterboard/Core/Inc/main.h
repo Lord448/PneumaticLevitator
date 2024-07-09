@@ -37,6 +37,10 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+typedef enum bool {
+	false,
+	true
+}bool;
 typedef enum result {
 	OK = osOK,        /* 0*/
 	Error = osError,  /*-1*/

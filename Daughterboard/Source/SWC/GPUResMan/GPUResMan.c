@@ -28,10 +28,15 @@ extern osMemoryPoolId_t MemoryPool8;  /*Memory Pool designed for members of 1 By
 extern osMemoryPoolId_t MemoryPool16; /*Memory Pool designed for members of 2 Byte size*/
 extern osMemoryPoolId_t MemoryPool32; /*Memory Pool designed for members of 4 Byte size*/
 
+extern osMemoryPoolId_t MemoryPool16_UI_PixelsValue; /*Component Specific Memory Pool*/
+extern osMemoryPoolId_t MemoryPool16_UI_PixelsIndex; /*Component Specific Memory Pool*/
+
 extern DMA_HandleTypeDef hdma_memtomem_dma2_stream3; /*DMA Stream for 1 Byte data*/
 extern DMA_HandleTypeDef hdma_memtomem_dma2_stream4; /*DMA Stream for 2 Byte data*/
 extern DMA_HandleTypeDef hdma_memtomem_dma2_stream5; /*DMA Stream for 4 Byte data*/
+extern DMA_HandleTypeDef hdma_memtomem_dma2_stream0; /*DMA Stream for Empty fill (designed for 16 bit data)*/
 
+extern osSemaphoreId_t xSemaphoreDMACplt0Handle; /*DMA Semaphore for Stream 0*/
 extern osSemaphoreId_t xSemaphoreDMACplt3Handle; /*DMA Semaphore for Stream 3*/
 extern osSemaphoreId_t xSemaphoreDMACplt4Handle; /*DMA Semaphore for Stream 4*/
 extern osSemaphoreId_t xSemaphoreDMACplt5Handle; /*DMA Semaphore for Stream 5*/
@@ -42,6 +47,8 @@ extern osMessageQueueId_t xFIFOGetGPUBufHandle; /*FIFO to access the memory pool
 /*Function Prototypes*/
 static result_t allocateMemPool(osMemoryPoolId_t *MemPoolID, uint32_t size, const void *src, void **dest);
 static result_t copyBufferData(osMemoryPoolId_t *MemPoolID, const void *src, void *dest, uint32_t size);
+static result_t allocateEmptyMemPool(osMemoryPoolId_t *MemPoolID, uint32_t size, void **dest, bool cleanUp);
+static result_t cleanMemoryPool(void *initAddr, uint32_t size);
 static result_t changeMemoryPoolSize(osMemoryPoolId_t *MemPoolID, uint8_t newSize);
 static void DMATransferCpltCallback(DMA_HandleTypeDef *DmaHandle);
 
@@ -56,6 +63,9 @@ void memoryPoolInit(void)
   MemoryPool8 = osMemoryPoolNew(INITIAL_POOL_SIZE, sizeof(uint8_t), NULL);
   MemoryPool16 = osMemoryPoolNew(INITIAL_POOL_SIZE, sizeof(uint16_t), NULL);
   MemoryPool32 = osMemoryPoolNew(INITIAL_POOL_SIZE, sizeof(uint32_t), NULL);
+
+  MemoryPool16_UI_PixelsIndex = osMemoryPoolNew(INITIAL_POOL_SIZE, sizeof(uint16_t), NULL);
+  MemoryPool16_UI_PixelsValue = osMemoryPoolNew(INITIAL_POOL_SIZE, sizeof(uint16_t), NULL);
 }
 
 /**
@@ -75,13 +85,14 @@ void memoryPoolInit(void)
  * @param  Timeout: Timeout of the function gived on ticks
  * @retval void pointer with the address of the memory pool
  */
-void *memoryRequestResource(osMemoryPoolId_t MemPoolID, uint32_t Size, const void *src, uint32_t Timeout)
+void *memoryRequestResource(osMemoryPoolId_t MemPoolID, uint32_t size, const void *src, uint32_t Timeout)
 {
 	void *memoryPoolAddr;
 	/*Building the structure for the FIFO transmission*/
 	GPUReq_t GPUReq = {
 			.MemPoolID = MemPoolID,
-			.Size = Size,
+			.Size = size,
+			.OpReq.FillType = FillBuffer,
 			.src = src
 	};
 	/*Sending to the FIFO*/
@@ -89,6 +100,61 @@ void *memoryRequestResource(osMemoryPoolId_t MemPoolID, uint32_t Size, const voi
 	{
 		/*Poll the caller task to wait the data processed*/
 		osStatus_t result = osMessageQueueGet(xFIFOGetGPUBufHandle, &memoryPoolAddr, NULL, Timeout);
+		switch(result)
+		{
+			case osError:
+				memoryPoolAddr = NULL;
+				/*TODO Trigger DTC Error on Memory Pool FIFO Get*/
+			break;
+			case osErrorTimeout:
+				/*TODO Trigger DTC TimeoutError : Memory Pool FIFO Get*/
+				memoryPoolAddr = NULL;
+			break;
+			case osErrorResource:
+				/*TODO Trigger DTC osResource no available*/
+				memoryPoolAddr = NULL;
+			break;
+			case osErrorNoMemory:
+				/*TODO Trigger DTC Not Enough memory*/
+				memoryPoolAddr = NULL;
+			break;
+			case osErrorParameter:
+			case osErrorISR:
+			case osStatusReserved:
+				memoryPoolAddr = NULL;
+			case osOK:
+				/*Do Nothing, the pointer value has been charged through the API*/
+			default:
+			break;
+		}
+	}
+	else
+	{
+		/*Cannot put the data on the FIFO*/
+		/*TODO Trigger DTC Cannot send FIFO Data*/
+		memoryPoolAddr = NULL;
+	}
+	return memoryPoolAddr;
+}
+
+void *memoryRequestEmptyPool(osMemoryPoolId_t MemPoolID, uint32_t size, uint32_t Timeout, GPUOpType_t OpType)
+{
+	void *memoryPoolAddr;
+	/*Building the structure for the FIFO transmission*/
+	GPUReq_t GPUReq = {
+			.MemPoolID = MemPoolID,
+			.Size = size,
+			.OpReq.FillType = EmptyBuffer,
+			.OpReq.OpType = OpType,
+			.src = NULL
+	};
+
+	/*Sending to the FIFO*/
+	if(osOK == osMessageQueuePut(xFIFOSetGPUReqHandle, &GPUReq, 0U, 0U))
+	{
+		/*Poll the caller task to wait the data processed*/
+		osStatus_t result = osMessageQueueGet(xFIFOGetGPUBufHandle, &memoryPoolAddr, NULL, Timeout);
+
 		switch(result)
 		{
 			case osError:
@@ -140,6 +206,8 @@ void vTaskGPUResMan(void *argument)
 	uint8_t  *pBlock8 = NULL;
 	uint16_t *pBlock16 = NULL;
 	uint32_t *pBlock32 = NULL;
+	uint16_t *pBlockPixelsIndex = NULL;
+	uint16_t *pBlockPixelsValue = NULL;
 
 	/*Allocate the memory pools*/
 	pBlock8 = osMemoryPoolAlloc(MemoryPool8, osWaitForever);
@@ -163,9 +231,25 @@ void vTaskGPUResMan(void *argument)
 		/*TODO Turn on flag garbage*/
 		while(1); /*Halting the task until it's destroyed by garbage collector*/
 	}
+	pBlockPixelsIndex = osMemoryPoolAlloc(MemoryPool16_UI_PixelsIndex, osWaitForever);
+	if(NULL == pBlockPixelsIndex)
+	{
+		/*TODO Trigger DTC Not enough memory 32Block*/
+		/*TODO Turn on flag garbage*/
+		while(1); /*Halting the task until it's destroyed by garbage collector*/
+	}
+	pBlockPixelsValue = osMemoryPoolAlloc(MemoryPool16_UI_PixelsValue, osWaitForever);
+	if(NULL == pBlockPixelsValue)
+	{
+		/*TODO Trigger DTC Not enough memory 32Block*/
+		/*TODO Turn on flag garbage*/
+		while(1); /*Halting the task until it's destroyed by garbage collector*/
+	}
+
 #endif
 
 	/*Register all the DMA ISRs*/
+	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream0, HAL_DMA_XFER_CPLT_CB_ID, DMATransferCpltCallback);
 	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream3, HAL_DMA_XFER_CPLT_CB_ID, DMATransferCpltCallback);
 	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream4, HAL_DMA_XFER_CPLT_CB_ID, DMATransferCpltCallback);
 	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream5, HAL_DMA_XFER_CPLT_CB_ID, DMATransferCpltCallback);
@@ -173,14 +257,34 @@ void vTaskGPUResMan(void *argument)
 	{
 		/*Getting request for the memory pool*/
 		osMessageQueueGet(xFIFOSetGPUReqHandle, &GPUResReq, NULL, osWaitForever); /*Polling here the task*/
-		if(OK != allocateMemPool(&GPUResReq.MemPoolID, GPUResReq.Size, GPUResReq.src, &GPUBuf))
+
+		switch(GPUResReq.OpReq.FillType)
 		{
-			/*TODO All possible DTCs are covered, make a retry*/
-			GPUBuf = NULL;
-		}
-		else
-		{
-			/*Do Nothing*/
+			case FillBuffer:
+				if(OK != allocateMemPool(&GPUResReq.MemPoolID, GPUResReq.Size, GPUResReq.src, &GPUBuf))
+				{
+					/*TODO All possible DTCs are covered, make a retry*/
+					GPUBuf = NULL;
+				}
+				else
+				{
+					/*Do Nothing*/
+				}
+			break;
+			case EmptyBuffer:
+				if(OK != allocateEmptyMemPool(&GPUResReq.MemPoolID, GPUResReq.Size, &GPUBuf, true))
+				{
+					/*TODO All possible DTCs are covered, make a retry*/
+					GPUBuf = NULL;
+				}
+				else
+				{
+					/*Do Nothing*/
+				}
+			break;
+			default:
+				GPUBuf = NULL;
+			break;
 		}
 		/*Sending address of the memory allocated*/
 		osMessageQueuePut(xFIFOGetGPUBufHandle, &GPUBuf, 0U, 0U);
@@ -195,6 +299,7 @@ void vTaskGPUResMan(void *argument)
  */
 result_t FreeMemoryPool(osMemoryPoolId_t MemPoolID, void *block)
 {
+	/*TODO Add safe logic here or make this function a macro*/
 	return osOK == osMemoryPoolFree(MemPoolID, block) ? OK : Error;
 }
 
@@ -216,7 +321,7 @@ result_t FreeMemoryPool(osMemoryPoolId_t MemPoolID, void *block)
 static result_t allocateMemPool(osMemoryPoolId_t *MemPoolID, uint32_t size, const void *src, void **dest)
 {
 	result_t retval = Error; /*Result of the operation*/
-	void *BufferLocation;    /*Local buffer of the allocation*/
+	void *BufAddr; /*Local pointer for the address allocation*/
 
 #ifdef MAXIMUM_POOL_SIZE
 	if(MAXIMUM_POOL_SIZE >= size)
@@ -245,8 +350,8 @@ static result_t allocateMemPool(osMemoryPoolId_t *MemPoolID, uint32_t size, cons
 
 		if(Error != retval)
 		{
-			BufferLocation = osMemoryPoolAlloc(*MemPoolID, 0U); /*Allocating the memory*/
-			if(NULL == BufferLocation)
+			BufAddr = osMemoryPoolAlloc(*MemPoolID, 0U); /*Allocating the memory*/
+			if(NULL == BufAddr)
 			{
 				/*Cannot allocate the memory pool*/
 				/*TODO Trigger DTC "Not enough memory for memory pool "X"*/
@@ -255,10 +360,10 @@ static result_t allocateMemPool(osMemoryPoolId_t *MemPoolID, uint32_t size, cons
 			else
 			{
 				/*Memory Pool allocated succesfully*/
-				if(OK == copyBufferData(MemPoolID, src, BufferLocation, size))
+				if(OK == copyBufferData(MemPoolID, src, BufAddr, size))
 				{
 					/*Data copied to the buffer*/
-					*dest = BufferLocation;
+					*dest = BufAddr;
 					retval = OK;
 				}
 				else
@@ -332,6 +437,94 @@ static result_t copyBufferData(osMemoryPoolId_t *MemPoolID, const void *src, voi
 }
 
 /**
+ * @brief
+ * @param
+ * @param
+ * @retval
+ */
+static result_t allocateEmptyMemPool(osMemoryPoolId_t *MemPoolID, uint32_t size, void **dest, bool cleanUp)
+{
+	result_t retval = Error; /*Result of the operation*/
+	void *BufAddr; /*Local pointer for the address allocation*/
+
+#ifdef MAXIMUM_POOL_SIZE
+	if(MAXIMUM_POOL_SIZE >= size)
+#else
+	if(1)
+#endif
+	{
+		/*Size inside the bounds*/
+		uint32_t poolSize = osMemoryPoolGetCapacity(*MemPoolID);
+
+		if(poolSize != size && poolSize != MEMORY_POOL_SIZE_ERROR)
+		{
+			/*The memory pool doesn't have the required size*/
+			retval = changeMemoryPoolSize(MemPoolID, size);
+		}
+		else if(MEMORY_POOL_SIZE_ERROR == poolSize)
+		{
+			/*The memory pool were not allocated*/
+			/*TODO Trigger DTC "Memory Pool "X" were not allocated"*/
+			retval = Error;
+		}
+		else
+		{
+			/*Do Nothing, The memory pool have the required size*/
+		}
+
+		if(Error != retval)
+		{
+			BufAddr = osMemoryPoolAlloc(*MemPoolID, 0U); /*Allocating the memory*/
+			if(NULL == BufAddr)
+			{
+				/*Cannot allocate the memory pool*/
+				/*TODO Trigger DTC "Not enough memory for memory pool "X"*/
+				retval = Error;
+			}
+			else
+			{
+				/*Memory pool allocated successfully*/
+				if(cleanUp)
+				{
+					retval = cleanMemoryPool(&BufAddr, size);
+				}
+				else
+				{
+					retval = OK;
+				}
+			}
+		}
+	}
+	return retval;
+}
+
+/**
+ * @brief
+ * @param
+ * @param
+ * @retval
+ */
+static result_t cleanMemoryPool(void *initAddr, uint32_t size)
+{
+	result_t retval = OK;
+	const uint16_t ValueToFill = 0;
+#ifdef USE_HARDWARE_ACC
+	if(HAL_OK == HAL_DMA_Start_IT(&hdma_memtomem_dma2_stream0, (uint32_t)&ValueToFill, (uint32_t)initAddr, size))
+	{
+		retval = osOK == osSemaphoreAcquire(xSemaphoreDMACplt0Handle, osWaitForever) ? OK : Error;
+	}
+	else
+	{
+		/*TODO Trigger DTC cannot use DMA*/
+		retval = Error;
+	}
+#else
+	memset(&initAddr, size);
+#endif
+	return retval;
+}
+
+/**
  * @brief  Change the size of a memory pool by destroying
  *         the OS object and creating a new one with the desired size
  * @param  MemPoolID: ID of the OS resource
@@ -376,7 +569,12 @@ static result_t changeMemoryPoolSize(osMemoryPoolId_t *MemPoolID, uint8_t newSiz
  */
 static void DMATransferCpltCallback(DMA_HandleTypeDef *DmaHandle)
 {
-	if(DMA2_Stream3 == DmaHandle->Instance)
+	if(DMA2_Stream0 == DmaHandle->Instance)
+	{
+		/*It's DMA Stream 0 - Fill with zero*/
+		osSemaphoreRelease(xSemaphoreDMACplt0Handle);
+	}
+	else if(DMA2_Stream3 == DmaHandle->Instance)
 	{
 		/*It's DMA Stream 3 - 8 Bit*/
 		osSemaphoreRelease(xSemaphoreDMACplt3Handle);

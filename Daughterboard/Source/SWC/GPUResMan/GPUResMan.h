@@ -31,7 +31,7 @@
 #include <string.h>
 
 #define USE_HARDWARE_ACC /*When defined the hardware acceleration with DMA is enabled*/
-#define ALLOCATE_POOLS_AT_INIT /*When defined the OS allocate the memory pools at the start of "vTaskGPUResMan"*/
+//#define ALLOCATE_POOLS_AT_INIT /*When defined the OS allocate the memory pools at the start of "vTaskGPUResMan"*/
 
 #define Byte_16To8(x) x/2 /*Macro to convert 16 bit format size to 8 bit*/
 #define Byte_32To8(x) x/4 /*Macro to convert 32 bit format size to 8 bit*/
@@ -41,15 +41,46 @@
 
 #define MEMORY_POOL_SIZE_ERROR 0 /*Error code returned from "osMemoryPoolGetCapacity()"*/
 
+/**
+ * @brief Defines the fill type of the buffer
+ */
+typedef enum GPUFillType{
+	FillBuffer, /*Fill the buffer with a selected address*/
+	EmptyBuffer /*Don't fill the buffer*/
+}GPUFillType;
+
+/**
+ * @brief Defines the type of the dynamic operation
+ * @note  This type it's only used when the "EmptyBuffer"
+ *        operation it's selected
+ */
+typedef enum GPUOpType_t {
+	MallocType, /*Leave the buffer with garbage*/
+	CallocType  /*Fill the buffer with 0's*/
+}GPUOpType_t;
+
+/**
+ * @brief Structure that have the types of the Operations reqs
+ */
+typedef struct GPUOpReq_t {
+		GPUFillType FillType;
+		GPUOpType_t OpType; /*This value it's only valid when "EmptyBuffer" it's selected*/
+}GPUOpReq_t;
+
+/**
+ * @brief Structure that handle the communication of data via FIFO
+ */
 typedef struct GPUReq_t{
 	osMemoryPoolId_t MemPoolID;
 	uint16_t Size;
+	GPUOpReq_t OpReq;
 	const void *src;
 }GPUReq_t;
 
 void memoryPoolInit(void);
 void vTaskGPUResMan(void *argument);
-void *memoryRequestResource(osMemoryPoolId_t MemPoolID, uint32_t Size, const void *src, uint32_t Timeout);
+void *memoryRequestResource(osMemoryPoolId_t MemPoolID, uint32_t size, const void *src, uint32_t Timeout);
+void *memoryRequestEmptyPool(osMemoryPoolId_t MemPoolID, uint32_t size, uint32_t Timeout, GPUOpType_t OpType);
 result_t FreeMemoryPool(osMemoryPoolId_t MemPoolID, void *block);
 
 #endif /* SWC_GPURESMAN_GPURESMAN_H_ */

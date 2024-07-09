@@ -32,6 +32,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
+typedef StaticSemaphore_t osStaticSemaphoreDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -59,6 +60,7 @@ DMA_HandleTypeDef hdma_usart1_tx;
 DMA_HandleTypeDef hdma_memtomem_dma2_stream3;
 DMA_HandleTypeDef hdma_memtomem_dma2_stream4;
 DMA_HandleTypeDef hdma_memtomem_dma2_stream5;
+DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
 /* Definitions for TaskIdle */
 osThreadId_t TaskIdleHandle;
 uint32_t TaskIdleBuffer[ 128 ];
@@ -172,18 +174,35 @@ const osSemaphoreAttr_t xSemaphoreCOMReady_attributes = {
 };
 /* Definitions for xSemaphoreDMACplt3 */
 osSemaphoreId_t xSemaphoreDMACplt3Handle;
+osStaticSemaphoreDef_t xSemaphoreDMACplt3ControlBlock;
 const osSemaphoreAttr_t xSemaphoreDMACplt3_attributes = {
-  .name = "xSemaphoreDMACplt3"
+  .name = "xSemaphoreDMACplt3",
+  .cb_mem = &xSemaphoreDMACplt3ControlBlock,
+  .cb_size = sizeof(xSemaphoreDMACplt3ControlBlock),
 };
 /* Definitions for xSemaphoreDMACplt4 */
 osSemaphoreId_t xSemaphoreDMACplt4Handle;
+osStaticSemaphoreDef_t xSemaphoreDMACplt4ControlBlock;
 const osSemaphoreAttr_t xSemaphoreDMACplt4_attributes = {
-  .name = "xSemaphoreDMACplt4"
+  .name = "xSemaphoreDMACplt4",
+  .cb_mem = &xSemaphoreDMACplt4ControlBlock,
+  .cb_size = sizeof(xSemaphoreDMACplt4ControlBlock),
 };
 /* Definitions for xSemaphoreDMACplt5 */
 osSemaphoreId_t xSemaphoreDMACplt5Handle;
+osStaticSemaphoreDef_t xSemaphoreDMACplt5ControlBlock;
 const osSemaphoreAttr_t xSemaphoreDMACplt5_attributes = {
-  .name = "xSemaphoreDMACplt5"
+  .name = "xSemaphoreDMACplt5",
+  .cb_mem = &xSemaphoreDMACplt5ControlBlock,
+  .cb_size = sizeof(xSemaphoreDMACplt5ControlBlock),
+};
+/* Definitions for xSemaphoreDMACplt0 */
+osSemaphoreId_t xSemaphoreDMACplt0Handle;
+osStaticSemaphoreDef_t xSemaphoreDMACplt0ControlBlock;
+const osSemaphoreAttr_t xSemaphoreDMACplt0_attributes = {
+  .name = "xSemaphoreDMACplt0",
+  .cb_mem = &xSemaphoreDMACplt0ControlBlock,
+  .cb_size = sizeof(xSemaphoreDMACplt0ControlBlock),
 };
 /* Definitions for xEventFinishedInit */
 osEventFlagsId_t xEventFinishedInitHandle;
@@ -201,9 +220,12 @@ const osEventFlagsAttr_t xEventDTC_attributes = {
   .name = "xEventDTC"
 };
 /* USER CODE BEGIN PV */
-osMemoryPoolId_t MemoryPool8;  /*Memory Pool designed for members of 1 Byte size*/
-osMemoryPoolId_t MemoryPool16; /*Memory Pool designed for members of 2 Byte size*/
-osMemoryPoolId_t MemoryPool32; /*Memory Pool designed for members of 4 Byte size*/
+osMemoryPoolId_t MemoryPool8;  /*Generic Memory Pool designed for members of 1 Byte size*/
+osMemoryPoolId_t MemoryPool16; /*Generic Memory Pool designed for members of 2 Byte size*/
+osMemoryPoolId_t MemoryPool32; /*Generic Memory Pool designed for members of 4 Byte size*/
+
+osMemoryPoolId_t MemoryPool16_UI_PixelsValue; /*Component Specific Memory Pool*/
+osMemoryPoolId_t MemoryPool16_UI_PixelsIndex; /*Component Specific Memory Pool*/
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -288,6 +310,9 @@ int main(void)
 
   /* creation of xSemaphoreDMACplt5 */
   xSemaphoreDMACplt5Handle = osSemaphoreNew(1, 1, &xSemaphoreDMACplt5_attributes);
+
+  /* creation of xSemaphoreDMACplt0 */
+  xSemaphoreDMACplt0Handle = osSemaphoreNew(1, 1, &xSemaphoreDMACplt0_attributes);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -568,6 +593,7 @@ static void MX_USART1_UART_Init(void)
   *   hdma_memtomem_dma2_stream3
   *   hdma_memtomem_dma2_stream4
   *   hdma_memtomem_dma2_stream5
+  *   hdma_memtomem_dma2_stream0
   */
 static void MX_DMA_Init(void)
 {
@@ -628,6 +654,25 @@ static void MX_DMA_Init(void)
   hdma_memtomem_dma2_stream5.Init.MemBurst = DMA_MBURST_SINGLE;
   hdma_memtomem_dma2_stream5.Init.PeriphBurst = DMA_PBURST_SINGLE;
   if (HAL_DMA_Init(&hdma_memtomem_dma2_stream5) != HAL_OK)
+  {
+    Error_Handler( );
+  }
+
+  /* Configure DMA request hdma_memtomem_dma2_stream0 on DMA2_Stream0 */
+  hdma_memtomem_dma2_stream0.Instance = DMA2_Stream0;
+  hdma_memtomem_dma2_stream0.Init.Channel = DMA_CHANNEL_0;
+  hdma_memtomem_dma2_stream0.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma2_stream0.Init.PeriphInc = DMA_PINC_DISABLE;
+  hdma_memtomem_dma2_stream0.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma2_stream0.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+  hdma_memtomem_dma2_stream0.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+  hdma_memtomem_dma2_stream0.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma2_stream0.Init.Priority = DMA_PRIORITY_MEDIUM;
+  hdma_memtomem_dma2_stream0.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  hdma_memtomem_dma2_stream0.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+  hdma_memtomem_dma2_stream0.Init.MemBurst = DMA_MBURST_SINGLE;
+  hdma_memtomem_dma2_stream0.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream0) != HAL_OK)
   {
     Error_Handler( );
   }
