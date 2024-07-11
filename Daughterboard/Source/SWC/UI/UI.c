@@ -18,10 +18,17 @@
 
 #include "UI.h"
 
+extern osMemoryPoolId_t MemoryPool16; /*Memory Pool designed for members of 2 Byte size*/
+extern osMemoryPoolId_t MemoryPool16_UI_PixelsValue; /*Component Specific Memory Pool*/
+extern osMemoryPoolId_t MemoryPool16_UI_PixelsIndex; /*Component Specific Memory Pool*/
+
 extern osEventFlagsId_t xEventFinishedInitHandle;
+
 extern osSemaphoreId_t xSemaphoreDMACompleteHandle;
 extern osSemaphoreId_t xSemaphoreCOMReadyHandle;
-extern DMA_HandleTypeDef hdma_memtomem_dma2_stream1;
+
+extern DMA_HandleTypeDef hdma_memtomem_dma2_stream3;
+
 extern const uint16_t ITMLogoData[ITMLOGO_SIZE];
 
 static void FadeWhiteIn(uint8_t animDelay);
@@ -39,8 +46,7 @@ static void StringFadeOut(void);
 void vTaskUI(void *argument)
 {
 	LCD_init();
-	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream1, HAL_DMA_XFER_CPLT_CB_ID, DMATrasferCpltCallback);
-	FadeWhiteIn(10);
+	FadeWhiteIn(5);
 	ITMLogoFadeIn();
 	StringFadeIn();
 	/*Charge all the graphic resources in BG*/
@@ -82,23 +88,22 @@ static void ITMLogoFadeIn(void)
 {
 	uint16_t *ITMLogoRAMBuffer;
 	uint16_t *NonWhitePixelsValue;
-	uint32_t *NonWhitePixelsIndex;
+	uint16_t *NonWhitePixelsIndex;
 	uint16_t PixelsIndex = 0;
 
-	/*TODO: Change to memory pool to use heap memory instead of stack*/
-	ITMLogoRAMBuffer = (uint16_t*)calloc(ITMLOGO_SIZE*2, sizeof(uint16_t));
+	ITMLogoRAMBuffer = (uint16_t*)memoryRequestResource(MemoryPool16, ITMLOGO_SIZE*2, ITMLogoData, osWaitForever);
 	/*Calloc Failure*/
 	if(ITMLogoRAMBuffer == NULL)
 	{
+		/*Trigger DTC not enough RAM*/
+		/*Skip the animation*/
 		/*Report for the debugger*/
-		DynamicErrorHandler("ITMLogoRAMBuffer");
+		DynamicErrorHandler("ITMLogoRAMBuffer"); /*TODO remove this*/
 	}
 	else
 	{
 		/*Do Nothing*/
 	}
-	HAL_DMA_Start_IT(&hdma_memtomem_dma2_stream1, (uint32_t)ITMLogoData, (uint32_t)ITMLogoRAMBuffer, ITMLOGO_SIZE);
-	osSemaphoreAcquire(xSemaphoreDMACompleteHandle, osWaitForever);
 
 	UG_BMP ITMLogoRAM = {
 		.p = ITMLogoRAMBuffer,
@@ -108,15 +113,30 @@ static void ITMLogoFadeIn(void)
 	};
 
 	/*Getting the non white pixels*/
-	NonWhitePixelsValue = (uint16_t*)calloc(ITMLOGO_SIZE, sizeof(uint16_t));
-	NonWhitePixelsIndex = (uint32_t*)calloc(ITMLOGO_SIZE, sizeof(uint32_t));
+	for(uint16_t i = 0; i < ITMLOGO_SIZE*2; i++)
+	{
+		if((uint16_t)ITMLogoRAMBuffer[i] != WHITE_PIXEL)
+		{
+			/*Found a non white pixel*/
+			PixelsIndex++;
+		}
+	}
+	/*By here we have the amount of non white pixels, so we can allocate the pools*/
+	NonWhitePixelsIndex = (uint16_t*)memoryRequestEmptyPool(MemoryPool16_UI_PixelsIndex, PixelsIndex, osWaitForever, MallocType);
+	NonWhitePixelsValue = (uint16_t*)memoryRequestEmptyPool(MemoryPool16_UI_PixelsValue, PixelsIndex, osWaitForever, MallocType);
 	if(NonWhitePixelsValue == NULL)
 	{
-		DynamicErrorHandler("NonWhitePixelsValue");
+		/*Trigger DTC not enough RAM*/
+		/*Skip the animation*/
+		/*Report for the debugger*/
+		DynamicErrorHandler("NonWhitePixelsValue"); /*TODO remove this*/
 	}
 	else if(NonWhitePixelsIndex == NULL)
 	{
-		DynamicErrorHandler("NonWhitePixelsIndex");
+		/*Trigger DTC not enough RAM*/
+		/*Skip the animation*/
+		/*Report for the debugger*/
+		DynamicErrorHandler("NonWhitePixelsIndex"); /*TODO remove this*/
 	}
 	else
 	{
@@ -133,9 +153,6 @@ static void ITMLogoFadeIn(void)
 			PixelsIndex++; /*At the end of the loop, will have the max number of data needed*/
 		}
 	}
-	/*Free RAM that is not used*/
-	NonWhitePixelsValue = realloc(NonWhitePixelsValue, (PixelsIndex+1)*sizeof(uint16_t));
-	NonWhitePixelsIndex = realloc(NonWhitePixelsIndex, (PixelsIndex+1)*sizeof(uint32_t));
 
 	/*Fade animation logo in*/
 	memset(ITMLogoRAMBuffer, 0xFFFF, ITMLOGO_SIZE*2); /*Setting white buffer*/
@@ -152,7 +169,7 @@ static void ITMLogoFadeIn(void)
 		ITMLogoRAM.p = ITMLogoRAMBuffer;
 		UG_DrawBMP((LCD_WIDTH-ITMLogoRAM.width)/2, (LCD_HEIGHT-ITMLogoRAM.height)/2, &ITMLogoRAM);
 		UG_Update();
-		osDelay(pdMS_TO_TICKS(20));
+		osDelay(pdMS_TO_TICKS(10));
 	}
 
 	UG_DrawBMP((LCD_WIDTH-ITMLogoRAM.width)/2, (LCD_HEIGHT-ITMLogoRAM.height)/2, &ITMLogoRAM);
@@ -187,9 +204,4 @@ static void DynamicErrorHandler(char *str)
 	{
 		/*Do nothing, check buffer "str" with debugger*/
 	}
-}
-
-void DMATrasferCpltCallback(DMA_HandleTypeDef *DmaHandle)
-{
-	osSemaphoreRelease(xSemaphoreDMACompleteHandle);
 }

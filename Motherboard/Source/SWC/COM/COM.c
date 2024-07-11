@@ -1,8 +1,17 @@
-/*
- * COM.c
+/**
+ * @file      COM.c
+ * @author    TODO
  *
- *  Created on: 29 may 2024
- *      Author: lord448
+ * @brief     TODO
+ *
+ * @date      May 29, 2024
+ *
+ * @license   This Source Code Form is subject to the terms of
+ *            the Mozilla Public License, v. 2.0. If a copy of
+ *            the MPL was not distributed with this file, You
+ *            can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * @copyright Copyright (c) 2024
  */
 
 #include "COM.h"
@@ -14,7 +23,7 @@ void COM_Init(void)
 
 }
 
-void vTaskCOM_Runnable(void)
+void vTaskCOM(void *argument)
 {
 	COM_Init();
 	for(;;)

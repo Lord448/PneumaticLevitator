@@ -1,10 +1,10 @@
 /**
- * @file      DiagAppl.h
- * @author    Pedro Rojo (pedroeroca@outlook.com)
+ * @file      ModeManager.h
+ * @author    TODO
  *
  * @brief     TODO
  *
- * @date      Jun 2, 2024
+ * @date      May 29, 2024
  *
  * @license   This Source Code Form is subject to the terms of
  *            the Mozilla Public License, v. 2.0. If a copy of
@@ -14,14 +14,9 @@
  * @copyright Copyright (c) 2024
  */
 
-#ifndef SWC_DIAGAPPL_DIAGAPPL_H_
-#define SWC_DIAGAPPL_DIAGAPPL_H_
+#ifndef SWC_MODEMANAGER_MODEMANAGER_H_
+#define SWC_MODEMANAGER_MODEMANAGER_H_
 
-#include "DIDList.h"
-#include "DTCList.h"
+void vTaskModeManager(void *argument);
 
-void DiagAppl_Init(void);
-
-void vTaskDiagAppl(void *argument);
-
-#endif /* SWC_DIAGAPPL_DIAGAPPL_H_ */
+#endif /* SWC_MODEMANAGER_MODEMANAGER_H_ */

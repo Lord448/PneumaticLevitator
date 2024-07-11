@@ -1,8 +1,17 @@
-	/*
- * PID.c
+/**
+ * @file      PID.c
+ * @author    TODO
  *
- *  Created on: May 29, 2024
- *      Author: @noescine
+ * @brief     TODO
+ *
+ * @date      May 29, 2024
+ *
+ * @license   This Source Code Form is subject to the terms of
+ *            the Mozilla Public License, v. 2.0. If a copy of
+ *            the MPL was not distributed with this file, You
+ *            can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * @copyright Copyright (c) 2024
  */
 
 #include "PID.h"
@@ -37,7 +46,7 @@ static struct PID{
 		.Set_Point = 0
 };
 
-static PID_SetConfigs(PIDConfigs *configs)
+static void PID_SetConfigs(PIDConfigs *configs)
 {
   /*TODO: Change the configs of the global PID structure based on the pointer*/
 }
@@ -55,7 +64,7 @@ void PID_Init(void)
 
 }
 
-void vTaskPID_Runnable(void)
+void vTaskPID(void *argument)
 {
 	uint32_t distance = 0;
 	PIDConfigs FIFOConfigs;

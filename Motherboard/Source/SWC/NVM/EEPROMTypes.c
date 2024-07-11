@@ -1,8 +1,17 @@
-/*
- * EEPROMTypes.c
+/**
+ * @file      EEPROMTypes.c
+ * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- *  Created on: Dec 6, 2023
- *      Author: lord448
+ * @brief     TODO
+ *
+ * @date      Dec 6, 2023
+ *
+ * @license   This Source Code Form is subject to the terms of
+ *            the Mozilla Public License, v. 2.0. If a copy of
+ *            the MPL was not distributed with this file, You
+ *            can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * @copyright Copyright (c) 2024
  */
 
 #include "EEPROMTypes.h"
