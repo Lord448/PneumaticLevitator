@@ -17,6 +17,8 @@
 #ifndef SWC_ECUM_ECUM_H_
 #define SWC_ECUM_ECUM_H_
 
+#include "NVM/NVM.h"
+
 void EcuM_Init(void);
 
 void vTaskEcuM(void *argument);
