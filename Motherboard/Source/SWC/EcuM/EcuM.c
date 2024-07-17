@@ -13,6 +13,7 @@
  *
  * @copyright Copyright (c) 2024
  */
+#include "EcuM.h"
 
 void EcuM_Init(void)
 {
