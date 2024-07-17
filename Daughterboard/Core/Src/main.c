@@ -18,13 +18,21 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "lcd.h"
+#include "ugui.h"
+#include "UI.h"
+#include "COM.h"
+#include "GPUResMan.h"
+#include "DiagAppl.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticTask_t osStaticThreadDef_t;
+typedef StaticSemaphore_t osStaticSemaphoreDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -44,12 +52,180 @@ SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_tx;
 
 TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim11;
 
 UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_tx;
 
+DMA_HandleTypeDef hdma_memtomem_dma2_stream3;
+DMA_HandleTypeDef hdma_memtomem_dma2_stream4;
+DMA_HandleTypeDef hdma_memtomem_dma2_stream5;
+DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
+/* Definitions for TaskIdle */
+osThreadId_t TaskIdleHandle;
+uint32_t TaskIdleBuffer[ 128 ];
+osStaticThreadDef_t TaskIdleControlBlock;
+const osThreadAttr_t TaskIdle_attributes = {
+  .name = "TaskIdle",
+  .cb_mem = &TaskIdleControlBlock,
+  .cb_size = sizeof(TaskIdleControlBlock),
+  .stack_mem = &TaskIdleBuffer[0],
+  .stack_size = sizeof(TaskIdleBuffer),
+  .priority = (osPriority_t) osPriorityLow,
+};
+/* Definitions for TaskUI */
+osThreadId_t TaskUIHandle;
+uint32_t TaskUIBuffer[ 1023 ];
+osStaticThreadDef_t TaskUIControlBlock;
+const osThreadAttr_t TaskUI_attributes = {
+  .name = "TaskUI",
+  .cb_mem = &TaskUIControlBlock,
+  .cb_size = sizeof(TaskUIControlBlock),
+  .stack_mem = &TaskUIBuffer[0],
+  .stack_size = sizeof(TaskUIBuffer),
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for TaskBlink */
+osThreadId_t TaskBlinkHandle;
+uint32_t TaskBlinkBuffer[ 128 ];
+osStaticThreadDef_t TaskBlinkControlBlock;
+const osThreadAttr_t TaskBlink_attributes = {
+  .name = "TaskBlink",
+  .cb_mem = &TaskBlinkControlBlock,
+  .cb_size = sizeof(TaskBlinkControlBlock),
+  .stack_mem = &TaskBlinkBuffer[0],
+  .stack_size = sizeof(TaskBlinkBuffer),
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for TaskLeds */
+osThreadId_t TaskLedsHandle;
+uint32_t TaskLedsBuffer[ 128 ];
+osStaticThreadDef_t TaskLedsControlBlock;
+const osThreadAttr_t TaskLeds_attributes = {
+  .name = "TaskLeds",
+  .cb_mem = &TaskLedsControlBlock,
+  .cb_size = sizeof(TaskLedsControlBlock),
+  .stack_mem = &TaskLedsBuffer[0],
+  .stack_size = sizeof(TaskLedsBuffer),
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for TaskWdgM */
+osThreadId_t TaskWdgMHandle;
+uint32_t TaskWdgMBuffer[ 128 ];
+osStaticThreadDef_t TaskWdgMControlBlock;
+const osThreadAttr_t TaskWdgM_attributes = {
+  .name = "TaskWdgM",
+  .cb_mem = &TaskWdgMControlBlock,
+  .cb_size = sizeof(TaskWdgMControlBlock),
+  .stack_mem = &TaskWdgMBuffer[0],
+  .stack_size = sizeof(TaskWdgMBuffer),
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for TaskCOM */
+osThreadId_t TaskCOMHandle;
+uint32_t TaskCOMBuffer[ 128 ];
+osStaticThreadDef_t TaskCOMControlBlock;
+const osThreadAttr_t TaskCOM_attributes = {
+  .name = "TaskCOM",
+  .cb_mem = &TaskCOMControlBlock,
+  .cb_size = sizeof(TaskCOMControlBlock),
+  .stack_mem = &TaskCOMBuffer[0],
+  .stack_size = sizeof(TaskCOMBuffer),
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for TaskDiagAppl */
+osThreadId_t TaskDiagApplHandle;
+uint32_t TaskDiagApplBuffer[ 128 ];
+osStaticThreadDef_t TaskDiagApplControlBlock;
+const osThreadAttr_t TaskDiagAppl_attributes = {
+  .name = "TaskDiagAppl",
+  .cb_mem = &TaskDiagApplControlBlock,
+  .cb_size = sizeof(TaskDiagApplControlBlock),
+  .stack_mem = &TaskDiagApplBuffer[0],
+  .stack_size = sizeof(TaskDiagApplBuffer),
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for TaskGPUResMan */
+osThreadId_t TaskGPUResManHandle;
+uint32_t TaskGPUResManBuffer[ 256 ];
+osStaticThreadDef_t TaskGPUResManControlBlock;
+const osThreadAttr_t TaskGPUResMan_attributes = {
+  .name = "TaskGPUResMan",
+  .cb_mem = &TaskGPUResManControlBlock,
+  .cb_size = sizeof(TaskGPUResManControlBlock),
+  .stack_mem = &TaskGPUResManBuffer[0],
+  .stack_size = sizeof(TaskGPUResManBuffer),
+  .priority = (osPriority_t) osPriorityAboveNormal,
+};
+/* Definitions for xFIFOSetGPUReq */
+osMessageQueueId_t xFIFOSetGPUReqHandle;
+const osMessageQueueAttr_t xFIFOSetGPUReq_attributes = {
+  .name = "xFIFOSetGPUReq"
+};
+/* Definitions for xFIFOGetGPUBuf */
+osMessageQueueId_t xFIFOGetGPUBufHandle;
+const osMessageQueueAttr_t xFIFOGetGPUBuf_attributes = {
+  .name = "xFIFOGetGPUBuf"
+};
+/* Definitions for xSemaphoreCOMReady */
+osSemaphoreId_t xSemaphoreCOMReadyHandle;
+const osSemaphoreAttr_t xSemaphoreCOMReady_attributes = {
+  .name = "xSemaphoreCOMReady"
+};
+/* Definitions for xSemaphoreDMACplt3 */
+osSemaphoreId_t xSemaphoreDMACplt3Handle;
+osStaticSemaphoreDef_t xSemaphoreDMACplt3ControlBlock;
+const osSemaphoreAttr_t xSemaphoreDMACplt3_attributes = {
+  .name = "xSemaphoreDMACplt3",
+  .cb_mem = &xSemaphoreDMACplt3ControlBlock,
+  .cb_size = sizeof(xSemaphoreDMACplt3ControlBlock),
+};
+/* Definitions for xSemaphoreDMACplt4 */
+osSemaphoreId_t xSemaphoreDMACplt4Handle;
+osStaticSemaphoreDef_t xSemaphoreDMACplt4ControlBlock;
+const osSemaphoreAttr_t xSemaphoreDMACplt4_attributes = {
+  .name = "xSemaphoreDMACplt4",
+  .cb_mem = &xSemaphoreDMACplt4ControlBlock,
+  .cb_size = sizeof(xSemaphoreDMACplt4ControlBlock),
+};
+/* Definitions for xSemaphoreDMACplt5 */
+osSemaphoreId_t xSemaphoreDMACplt5Handle;
+osStaticSemaphoreDef_t xSemaphoreDMACplt5ControlBlock;
+const osSemaphoreAttr_t xSemaphoreDMACplt5_attributes = {
+  .name = "xSemaphoreDMACplt5",
+  .cb_mem = &xSemaphoreDMACplt5ControlBlock,
+  .cb_size = sizeof(xSemaphoreDMACplt5ControlBlock),
+};
+/* Definitions for xSemaphoreDMACplt0 */
+osSemaphoreId_t xSemaphoreDMACplt0Handle;
+osStaticSemaphoreDef_t xSemaphoreDMACplt0ControlBlock;
+const osSemaphoreAttr_t xSemaphoreDMACplt0_attributes = {
+  .name = "xSemaphoreDMACplt0",
+  .cb_mem = &xSemaphoreDMACplt0ControlBlock,
+  .cb_size = sizeof(xSemaphoreDMACplt0ControlBlock),
+};
+/* Definitions for xEventFinishedInit */
+osEventFlagsId_t xEventFinishedInitHandle;
+const osEventFlagsAttr_t xEventFinishedInit_attributes = {
+  .name = "xEventFinishedInit"
+};
+/* Definitions for xEventDID */
+osEventFlagsId_t xEventDIDHandle;
+const osEventFlagsAttr_t xEventDID_attributes = {
+  .name = "xEventDID"
+};
+/* Definitions for xEventDTC */
+osEventFlagsId_t xEventDTCHandle;
+const osEventFlagsAttr_t xEventDTC_attributes = {
+  .name = "xEventDTC"
+};
 /* USER CODE BEGIN PV */
+osMemoryPoolId_t MemoryPool8;  /*Generic Memory Pool designed for members of 1 Byte size*/
+osMemoryPoolId_t MemoryPool16; /*Generic Memory Pool designed for members of 2 Byte size*/
+osMemoryPoolId_t MemoryPool32; /*Generic Memory Pool designed for members of 4 Byte size*/
 
+osMemoryPoolId_t MemoryPool16_UI_PixelsValue; /*Component Specific Memory Pool*/
+osMemoryPoolId_t MemoryPool16_UI_PixelsIndex; /*Component Specific Memory Pool*/
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -59,6 +235,16 @@ static void MX_DMA_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_TIM11_Init(void);
+void vTaskIdle(void *argument);
+extern void vTaskUI(void *argument);
+void vTaskBlink(void *argument);
+void vTaskLeds(void *argument);
+void vTaskWdgM(void *argument);
+extern void vTaskCOM(void *argument);
+extern void vTaskDiagAppl(void *argument);
+extern void vTaskGPUResMan(void *argument);
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -100,10 +286,99 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM1_Init();
   MX_USART1_UART_Init();
+  MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
-
+  memoryPoolInit();
   /* USER CODE END 2 */
 
+  /* Init scheduler */
+  osKernelInitialize();
+
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* Create the semaphores(s) */
+  /* creation of xSemaphoreCOMReady */
+  xSemaphoreCOMReadyHandle = osSemaphoreNew(1, 1, &xSemaphoreCOMReady_attributes);
+
+  /* creation of xSemaphoreDMACplt3 */
+  xSemaphoreDMACplt3Handle = osSemaphoreNew(1, 1, &xSemaphoreDMACplt3_attributes);
+
+  /* creation of xSemaphoreDMACplt4 */
+  xSemaphoreDMACplt4Handle = osSemaphoreNew(1, 1, &xSemaphoreDMACplt4_attributes);
+
+  /* creation of xSemaphoreDMACplt5 */
+  xSemaphoreDMACplt5Handle = osSemaphoreNew(1, 1, &xSemaphoreDMACplt5_attributes);
+
+  /* creation of xSemaphoreDMACplt0 */
+  xSemaphoreDMACplt0Handle = osSemaphoreNew(1, 1, &xSemaphoreDMACplt0_attributes);
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* Create the queue(s) */
+  /* creation of xFIFOSetGPUReq */
+  xFIFOSetGPUReqHandle = osMessageQueueNew (16, sizeof(GPUReq_t), &xFIFOSetGPUReq_attributes);
+
+  /* creation of xFIFOGetGPUBuf */
+  xFIFOGetGPUBufHandle = osMessageQueueNew (16, sizeof(void **), &xFIFOGetGPUBuf_attributes);
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* creation of TaskIdle */
+  TaskIdleHandle = osThreadNew(vTaskIdle, NULL, &TaskIdle_attributes);
+
+  /* creation of TaskUI */
+  TaskUIHandle = osThreadNew(vTaskUI, NULL, &TaskUI_attributes);
+
+  /* creation of TaskBlink */
+  TaskBlinkHandle = osThreadNew(vTaskBlink, NULL, &TaskBlink_attributes);
+
+  /* creation of TaskLeds */
+  TaskLedsHandle = osThreadNew(vTaskLeds, NULL, &TaskLeds_attributes);
+
+  /* creation of TaskWdgM */
+  TaskWdgMHandle = osThreadNew(vTaskWdgM, NULL, &TaskWdgM_attributes);
+
+  /* creation of TaskCOM */
+  TaskCOMHandle = osThreadNew(vTaskCOM, NULL, &TaskCOM_attributes);
+
+  /* creation of TaskDiagAppl */
+  TaskDiagApplHandle = osThreadNew(vTaskDiagAppl, NULL, &TaskDiagAppl_attributes);
+
+  /* creation of TaskGPUResMan */
+  TaskGPUResManHandle = osThreadNew(vTaskGPUResMan, NULL, &TaskGPUResMan_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* Create the event(s) */
+  /* creation of xEventFinishedInit */
+  xEventFinishedInitHandle = osEventFlagsNew(&xEventFinishedInit_attributes);
+
+  /* creation of xEventDID */
+  xEventDIDHandle = osEventFlagsNew(&xEventDID_attributes);
+
+  /* creation of xEventDTC */
+  xEventDTCHandle = osEventFlagsNew(&xEventDTC_attributes);
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+
+  /* USER CODE END RTOS_EVENTS */
+
+  /* Start scheduler */
+  osKernelStart();
+  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -249,6 +524,37 @@ static void MX_TIM1_Init(void)
 }
 
 /**
+  * @brief TIM11 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM11_Init(void)
+{
+
+  /* USER CODE BEGIN TIM11_Init 0 */
+
+  /* USER CODE END TIM11_Init 0 */
+
+  /* USER CODE BEGIN TIM11_Init 1 */
+
+  /* USER CODE END TIM11_Init 1 */
+  htim11.Instance = TIM11;
+  htim11.Init.Prescaler = 0;
+  htim11.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim11.Init.Period = 1000-1;
+  htim11.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim11.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim11) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM11_Init 2 */
+
+  /* USER CODE END TIM11_Init 2 */
+
+}
+
+/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -283,6 +589,11 @@ static void MX_USART1_UART_Init(void)
 
 /**
   * Enable DMA controller clock
+  * Configure DMA for memory to memory transfers
+  *   hdma_memtomem_dma2_stream3
+  *   hdma_memtomem_dma2_stream4
+  *   hdma_memtomem_dma2_stream5
+  *   hdma_memtomem_dma2_stream0
   */
 static void MX_DMA_Init(void)
 {
@@ -290,12 +601,88 @@ static void MX_DMA_Init(void)
   /* DMA controller clock enable */
   __HAL_RCC_DMA2_CLK_ENABLE();
 
+  /* Configure DMA request hdma_memtomem_dma2_stream3 on DMA2_Stream3 */
+  hdma_memtomem_dma2_stream3.Instance = DMA2_Stream3;
+  hdma_memtomem_dma2_stream3.Init.Channel = DMA_CHANNEL_0;
+  hdma_memtomem_dma2_stream3.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma2_stream3.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma2_stream3.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma2_stream3.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+  hdma_memtomem_dma2_stream3.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+  hdma_memtomem_dma2_stream3.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma2_stream3.Init.Priority = DMA_PRIORITY_MEDIUM;
+  hdma_memtomem_dma2_stream3.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  hdma_memtomem_dma2_stream3.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+  hdma_memtomem_dma2_stream3.Init.MemBurst = DMA_MBURST_SINGLE;
+  hdma_memtomem_dma2_stream3.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream3) != HAL_OK)
+  {
+    Error_Handler( );
+  }
+
+  /* Configure DMA request hdma_memtomem_dma2_stream4 on DMA2_Stream4 */
+  hdma_memtomem_dma2_stream4.Instance = DMA2_Stream4;
+  hdma_memtomem_dma2_stream4.Init.Channel = DMA_CHANNEL_0;
+  hdma_memtomem_dma2_stream4.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma2_stream4.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma2_stream4.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma2_stream4.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+  hdma_memtomem_dma2_stream4.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+  hdma_memtomem_dma2_stream4.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma2_stream4.Init.Priority = DMA_PRIORITY_MEDIUM;
+  hdma_memtomem_dma2_stream4.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  hdma_memtomem_dma2_stream4.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+  hdma_memtomem_dma2_stream4.Init.MemBurst = DMA_MBURST_SINGLE;
+  hdma_memtomem_dma2_stream4.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream4) != HAL_OK)
+  {
+    Error_Handler( );
+  }
+
+  /* Configure DMA request hdma_memtomem_dma2_stream5 on DMA2_Stream5 */
+  hdma_memtomem_dma2_stream5.Instance = DMA2_Stream5;
+  hdma_memtomem_dma2_stream5.Init.Channel = DMA_CHANNEL_0;
+  hdma_memtomem_dma2_stream5.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma2_stream5.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma2_stream5.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma2_stream5.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+  hdma_memtomem_dma2_stream5.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+  hdma_memtomem_dma2_stream5.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma2_stream5.Init.Priority = DMA_PRIORITY_MEDIUM;
+  hdma_memtomem_dma2_stream5.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  hdma_memtomem_dma2_stream5.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+  hdma_memtomem_dma2_stream5.Init.MemBurst = DMA_MBURST_SINGLE;
+  hdma_memtomem_dma2_stream5.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream5) != HAL_OK)
+  {
+    Error_Handler( );
+  }
+
+  /* Configure DMA request hdma_memtomem_dma2_stream0 on DMA2_Stream0 */
+  hdma_memtomem_dma2_stream0.Instance = DMA2_Stream0;
+  hdma_memtomem_dma2_stream0.Init.Channel = DMA_CHANNEL_0;
+  hdma_memtomem_dma2_stream0.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma2_stream0.Init.PeriphInc = DMA_PINC_DISABLE;
+  hdma_memtomem_dma2_stream0.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma2_stream0.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+  hdma_memtomem_dma2_stream0.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+  hdma_memtomem_dma2_stream0.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma2_stream0.Init.Priority = DMA_PRIORITY_MEDIUM;
+  hdma_memtomem_dma2_stream0.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  hdma_memtomem_dma2_stream0.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+  hdma_memtomem_dma2_stream0.Init.MemBurst = DMA_MBURST_SINGLE;
+  hdma_memtomem_dma2_stream0.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream0) != HAL_OK)
+  {
+    Error_Handler( );
+  }
+
   /* DMA interrupt init */
   /* DMA2_Stream2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
   /* DMA2_Stream7_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
 
 }
@@ -372,19 +759,19 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI3_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
@@ -394,6 +781,85 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_vTaskIdle */
+/**
+  * @brief  Function implementing the TaskIdle thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_vTaskIdle */
+void vTaskIdle(void *argument)
+{
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_vTaskBlink */
+/**
+* @brief Function implementing the TaskBlink thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vTaskBlink */
+void vTaskBlink(void *argument)
+{
+  /* USER CODE BEGIN vTaskBlink */
+
+  for(;;)
+  {
+    HAL_GPIO_TogglePin(LED_GP_GPIO_Port, LED_GP_Pin);
+    osDelay(pdMS_TO_TICKS(250));
+  }
+  /* USER CODE END vTaskBlink */
+}
+
+/* USER CODE BEGIN Header_vTaskLeds */
+/**
+* @brief Function implementing the TaskLeds thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vTaskLeds */
+void vTaskLeds(void *argument)
+{
+  /* USER CODE BEGIN vTaskLeds */
+  /* Infinite loop */
+  for(;;)
+  {
+    HAL_GPIO_TogglePin(LED_COMM_GPIO_Port, LED_COMM_Pin);
+    osDelay(pdMS_TO_TICKS(100));
+    HAL_GPIO_TogglePin(LED_USB_GPIO_Port, LED_USB_Pin);
+    osDelay(pdMS_TO_TICKS(100));
+    HAL_GPIO_TogglePin(LED_CONTROL_GPIO_Port, LED_CONTROL_Pin);
+    osDelay(pdMS_TO_TICKS(100));
+
+  }
+  /* USER CODE END vTaskLeds */
+}
+
+/* USER CODE BEGIN Header_vTaskWdgM */
+/**
+* @brief Function implementing the TaskWdgM thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vTaskWdgM */
+void vTaskWdgM(void *argument)
+{
+  /* USER CODE BEGIN vTaskWdgM */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END vTaskWdgM */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

@@ -1,8 +1,17 @@
-/*
- * EEPROMTypes.h
+/**
+ * @file      EEPROMTypes.h
+ * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- *  Created on: Dec 6, 2023
- *      Author: lord448
+ * @brief     TODO
+ *
+ * @date      Dec 6, 2023
+ *
+ * @license   This Source Code Form is subject to the terms of
+ *            the Mozilla Public License, v. 2.0. If a copy of
+ *            the MPL was not distributed with this file, You
+ *            can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * @copyright Copyright (c) 2024
  */
 
 #ifndef INC_EEPROMTYPES_H_
@@ -15,7 +24,7 @@
 typedef union TwoByte{
 	uint16_t data;
 	uint8_t sendData[2];
-};
+}TwoByte;
 
 typedef struct EEPROM_uint8
 {
