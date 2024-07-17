@@ -72,8 +72,8 @@ void DistanceSensor_MainRunnable(void)
 		if(RangingData.RangeMilliMeter > past_measure+MeasureTolerance || RangingData.RangeMilliMeter < past_measure-MeasureTolerance)
 		{
 			distance = Reference - RangingData.RangeMilliMeter;
-			distance_PDU.rawData = distance;
-			distance_PDU.chunks[4] = 0; /*TODO: Add the message ID*/
+			//distance_PDU.rawData = distance;
+			//distance_PDU.chunks[4] = 0; /*TODO: Add the message ID*/
 			osMessageQueuePut(xFIFO_DistanceHandle, &distance, 0U, 0U); /*Sending to PID*/
 			osMessageQueuePut(xFIFO_COMHandle, &distance_PDU, 0U, 0U); /*Sending to COM*/
 		}

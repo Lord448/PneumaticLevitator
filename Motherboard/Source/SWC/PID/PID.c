@@ -113,7 +113,7 @@ void vTaskPID(void *argument)
 		/*Sending to the actuator*/
 		osMessageQueuePut(xFIFO_ControlActionHandle, &PID.ControlAction, 0U, 0U);
 		/*Sending to the COM module*/
-		ControlAction_PDU = COM_CreatePDU(0, PID.ControlAction);
+		//ControlAction_PDU = COM_CreatePDU(0, PID.ControlAction);
 		osMessageQueuePut(xFIFO_COMHandle, &ControlAction_PDU, 0U, 0U);
 		PID.Past_Error = PID.Error;
 	}
