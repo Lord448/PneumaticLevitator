@@ -32,7 +32,6 @@ typedef enum {
     MSG_TYPE_MAX = 15  /* Limit to 4 bits */
 } MessageType;
 
-
 typedef enum {
     PRIORITY_LOW = 0,
     PRIORITY_MEDIUM,
@@ -52,6 +51,17 @@ typedef union {
 
     uint8_t rawData[6];             /* Access as byte array */
 } PDU_t;
+
+/* 80-bit Diagnostics PDU Union */
+typedef union DiagPDU{
+	struct PDUFields{
+		uint8_t PDU_ID;    /* 8 bits for the PDU control information */
+		uint8_t SID;       /* 8 bits for the service data identifier */
+		uint64_t payload;  /* 64 bits for the message content */
+	}fields;
+
+	uint8_t rawData[10]; /* Access as byte array */
+} DiagPDU_t;
 
 void COM_Init(void);
 
