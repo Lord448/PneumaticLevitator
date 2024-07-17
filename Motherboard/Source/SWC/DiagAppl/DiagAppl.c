@@ -14,6 +14,17 @@
  * @copyright Copyright (c) 2024
  */
 
+/*
+ 	 	 	 	 	        GENERAL DIAGNOSTICS FRAME
+ 	 	 	 	 	 	 	 	 	     (BASED ON  UDS)
+  |------------------|----------------|---------------|
+  |	       PCI       |       SID      |       RPD     |
+  | Protocol Control |  Service Data  |  Request Data |
+  |    Information   |   Identifier   |   Parameters  |
+  |      (0xAA)      |                |               |
+	|------------------|----------------|---------------|
+*/
+
 #include "DiagAppl.h"
 
 void DiagAppl_Init(void)
