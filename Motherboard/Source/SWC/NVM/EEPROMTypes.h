@@ -24,7 +24,7 @@
 typedef union TwoByte{
 	uint16_t data;
 	uint8_t sendData[2];
-};
+}TwoByte;
 
 typedef struct EEPROM_uint8
 {

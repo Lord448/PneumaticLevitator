@@ -31,12 +31,22 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "cmsis_os.h"
+#include "cmsis_os2.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+typedef enum bool{
+	false,
+	true
+}bool;
 
+typedef enum result {
+	OK = osOK,        /* 0*/
+	Error = osError,  /*-1*/
+	Warning = 1
+}result_t;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
