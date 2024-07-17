@@ -20,6 +20,13 @@
 #include "main.h"
 #include "cmsis_os.h"
 
+/*TODO Erase when COM it's finished*/
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
+#include "usbd_cdc_if.h"
+/*TODO Erase when COM it's finished*/
+
 #define EEPROM_SIZE 512
 
 /**
@@ -56,10 +63,10 @@ typedef union NVMType16
 																	NVMType32 : nvmSave_32Bit, \
 																	float    : nvmSave_float)(variable, value)
 
-void nvmSave_8Bit(uint16_t NVMVariable, uint8_t value);
-void nvmSave_16Bit(uint16_t NVMVariable, NVMType16 value);
-void nvmSave_32Bit(uint16_t NVMVariable, NVMType32 value);
-void nvmSave_float(uint16_t NVMVariable, float value);
+result_t nvmSave_8Bit(uint16_t NVMVariable, uint8_t value);
+result_t nvmSave_16Bit(uint16_t NVMVariable, NVMType16 value);
+result_t nvmSave_32Bit(uint16_t NVMVariable, NVMType32 value);
+result_t nvmSave_float(uint16_t NVMVariable, float value);
 
 /**
  * ---------------------------------------------------------
@@ -74,10 +81,10 @@ void nvmSave_float(uint16_t NVMVariable, float value);
 																	NVMType32 *: nvmRead_32Bit  \
 																	float	*		: nvmRead_float)(variable, value)
 
-void nvmRead_8Bit(uint16_t NVMVariable, uint8_t *data);
-void nvmRead_16Bit(uint16_t NVMVariable, NVMType16 *data);
-void nvmRead_32Bit(uint16_t NVMVariable, NVMType32 *data);
-void nvmRead_float(uint16_t NVMVariable, float *data);
+result_t nvmRead_8Bit(uint16_t NVMVariable, uint8_t *data);
+result_t nvmRead_16Bit(uint16_t NVMVariable, NVMType16 *data);
+result_t nvmRead_32Bit(uint16_t NVMVariable, NVMType32 *data);
+result_t nvmRead_float(uint16_t NVMVariable, float *data);
 
 /**
  * ---------------------------------------------------------
@@ -86,7 +93,7 @@ void nvmRead_float(uint16_t NVMVariable, float *data);
  */
 uint8_t *nvmRegionDump(uint16_t startAddr, uint16_t endAddr);
 uint8_t *nvmMemoryDump(void);
-void nvmClear(void);
-void nvmLoadDefaultValues(void);
+result_t nvmClear(void);
+result_t nvmLoadDefaultValues(void);
 
 #endif /* SWC_NVM_NVM_H_ */

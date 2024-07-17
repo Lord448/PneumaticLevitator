@@ -21,6 +21,7 @@
  * ---------------------------------------------------------
  */
 
+static result_t SendUSB(char *format, ...); /*TODO Erase when COM it's finished*/
 
 /**
  * ---------------------------------------------------------
@@ -35,9 +36,9 @@
  * @param  value: value of the variable
  * @retval result of the operation
  */
-void nvmSave_8Bit(uint16_t NVMVariable, uint8_t value)
+result_t nvmSave_8Bit(uint16_t NVMVariable, uint8_t value)
 {
-
+	return OK; /*TODO: Stubbed code*/
 }
 
 /**
@@ -47,9 +48,9 @@ void nvmSave_8Bit(uint16_t NVMVariable, uint8_t value)
  * @param  value: value of the variable
  * @retval result of the operation
  */
-void nvmSave_16Bit(uint16_t NVMVariable, NVMType16 value)
+result_t nvmSave_16Bit(uint16_t NVMVariable, NVMType16 value)
 {
-
+	return OK; /*TODO: Stubbed code*/
 }
 
 /**
@@ -59,9 +60,9 @@ void nvmSave_16Bit(uint16_t NVMVariable, NVMType16 value)
  * @param  value: value of the variable
  * @retval result of the operation
  */
-void nvmSave_32Bit(uint16_t NVMVariable, NVMType32 value)
+result_t nvmSave_32Bit(uint16_t NVMVariable, NVMType32 value)
 {
-
+	return OK; /*TODO: Stubbed code*/
 }
 
 /**
@@ -71,9 +72,9 @@ void nvmSave_32Bit(uint16_t NVMVariable, NVMType32 value)
  * @param  value: value of the variable
  * @retval result of the operation
  */
-void nvmSave_float(uint16_t NVMVariable, float value)
+result_t nvmSave_float(uint16_t NVMVariable, float value)
 {
-
+	return OK; /*TODO: Stubbed code*/
 }
 
 /**
@@ -89,9 +90,9 @@ void nvmSave_float(uint16_t NVMVariable, float value)
  * @param  value: value of the variable
  * @retval result of the operation
  */
-void nvmRead_8Bit(uint16_t NVMVariable, uint8_t *data)
+result_t nvmRead_8Bit(uint16_t NVMVariable, uint8_t *data)
 {
-
+	return OK; /*TODO: Stubbed code*/
 }
 
 /**
@@ -101,9 +102,9 @@ void nvmRead_8Bit(uint16_t NVMVariable, uint8_t *data)
  * @param  value: value of the variable
  * @retval result of the operation
  */
-void nvmRead_16Bit(uint16_t NVMVariable, NVMType16 *data)
+result_t nvmRead_16Bit(uint16_t NVMVariable, NVMType16 *data)
 {
-
+	return OK; /*TODO: Stubbed code*/
 }
 
 /**
@@ -113,9 +114,9 @@ void nvmRead_16Bit(uint16_t NVMVariable, NVMType16 *data)
  * @param  value: value of the variable
  * @retval result of the operation
  */
-void nvmRead_32Bit(uint16_t NVMVariable, NVMType32 *data)
+result_t nvmRead_32Bit(uint16_t NVMVariable, NVMType32 *data)
 {
-
+	return OK; /*TODO: Stubbed code*/
 }
 
 /**
@@ -125,9 +126,9 @@ void nvmRead_32Bit(uint16_t NVMVariable, NVMType32 *data)
  * @param  value: value of the variable
  * @retval result of the operation
  */
-void nvmRead_float(uint16_t NVMVariable, float *data)
+result_t nvmRead_float(uint16_t NVMVariable, float *data)
 {
-
+	return OK; /*TODO: Stubbed code*/
 }
 
 /**
@@ -150,7 +151,7 @@ void nvmRead_float(uint16_t NVMVariable, float *data)
  */
 uint8_t *nvmRegionDump(uint16_t startAddr, uint16_t endAddr)
 {
-	return NULL; /*Stubbed code*/
+	return NULL; /*TODO: Stubbed code*/
 }
 
 /**
@@ -168,25 +169,26 @@ uint8_t *nvmRegionDump(uint16_t startAddr, uint16_t endAddr)
  */
 uint8_t *nvmMemoryDump(void)
 {
-	return NULL; /*Stubbed code*/
+	SendUSB("Sample"); /*TODO: Stubbed Code to avoid warnings*/
+	return NULL; /*TODO: Stubbed code*/
 }
 
 /**
  * @brief  Fills the hole EEPROM memory with zeroes
  * @retval result: the result of the operation
  */
-void nvmClear(void)
+result_t nvmClear(void)
 {
-
+	return OK; /*TODO: Stubbed code*/
 }
 
 /**
  * @brief  Loads the default values on the EEPROM memory
  * @retval the result of the operation
  */
-void nvmLoadDefaultValues(void)
+result_t nvmLoadDefaultValues(void)
 {
-
+	return OK; /*TODO: Stubbed code*/
 }
 
 /**
@@ -195,3 +197,27 @@ void nvmLoadDefaultValues(void)
  * ---------------------------------------------------------
  */
 
+static result_t SendUSB(char *format, ...) /*TODO: Instrumented code*/
+{
+	result_t retval = OK;
+	char buffer[1024];
+	va_list args;
+
+	va_start(args, format);
+	/*Filling buffer with zeroes*/
+	memset(buffer, 0, sizeof(buffer));
+	/*Filling the buffer with variadic args*/
+	retval = vsprintf(buffer, format, args);
+	if(USBD_OK == CDC_getReady() && OK == retval)
+	{
+		/*The USB is ready to transmit and the buffer is filled*/
+		CDC_Transmit_FS((uint8_t *)buffer, strlen(buffer));
+	}
+	else
+	{
+		/*The data cannot be transmitted*/
+		retval = Error;
+	}
+	va_end(args);
+	return retval;
+}
