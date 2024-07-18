@@ -60,12 +60,24 @@ static void PID_SetConfigs(PIDConfigs *configs)
         PID.Limits.I 	= configs->Limits.I;
         PID.Limits.D 	= configs->Limits.D;
         PID.Limits.Control = configs->Limits.Control;
+
+        EEPROM_Write(&PID);
     }
 }
-int EEPROM_Read(struct PID *PID) {		//stubbed code	TODO
-
+int EEPROM_Read(struct PID *pid) {
+    // Implementación de ejemplo, adaptada según tu hardware específico.
+    // Leer datos de EEPROM a la estructura PID.
+    // Retorna 0 si es exitoso, -1 si falla.
 	return -1;
 }
+
+int EEPROM_Write(const struct PID *pid) {
+    // Implementación de ejemplo, adaptada según tu hardware específico.
+    // Escribir los datos de la estructura PID en EEPROM.
+    // Retorna 0 si es exitoso, -1 si falla.
+	return -1;
+}
+
 
 void PID_Init(void)
 {
