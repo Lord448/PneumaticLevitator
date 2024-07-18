@@ -117,6 +117,7 @@ extern char ResBuffer[64];
 extern uint8_t ReceiveFlag;
 extern osMessageQueueId_t xFIFO_DiagShortHandle;
 extern osMessageQueueId_t xFIFO_DiagsLongHandle;
+extern osEventFlagsId_t xEventDiagnosticsHandle;
 /* USER CODE END EXPORTED_VARIABLES */
 
 /**
@@ -284,6 +285,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   /*TODO: Instrumented code (handle all on COM)*/
   if(DIAGNOSTICS_PCI == Buf[0])
   {
+  	vTaskSuspendAll();
   	/* It's a diagnostics frame */
   	uint32_t payloadSize = strlen((char *)Buf)-PDU_CONTROL_SIZE;
 
@@ -305,14 +307,16 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   	{
   		/* Fits in a regular PDU */
   		result = CDC_SendPDU32Bit(Buf, payloadSize);
+
   	}
   }
   else
   {
   	/*TODO Implement regular logic*/
   }
-  /*Build the */
+
 #endif
+
   return result;
   /* USER CODE END 6 */
 }
@@ -394,6 +398,9 @@ static int8_t CDC_SendPDU32Bit(uint8_t *Buf, uint32_t payloadSize)
 {
 	int8_t result = USBD_OK;
 	uint32_t payloadBuf = 0;
+
+	/* Setting the flag for PDU processing */
+	osEventFlagsSet(xEventDiagnosticsHandle, PCI_SINGLE_STREAM_32BIT);
 	/* Fill the payload buffer*/
 	for(uint16_t index = 2, shift = 0; index < payloadSize; index++, shift+=8)
 		payloadBuf |= Buf[index]<<shift; /* Data will be analyzed with memory pointer transposition */
@@ -419,6 +426,9 @@ static int8_t CDC_SendPDU64Bit(uint8_t *Buf, uint32_t payloadSize)
 {
 	int8_t result = USBD_OK;
 	uint64_t payloadBuf = 0;
+
+	/* Setting the flag for PDU processing */
+	osEventFlagsSet(xEventDiagnosticsHandle, PCI_SINGLE_STREAM_64BIT);
 	/* Fill the payload buffer*/
 	for(uint16_t index = 2, shift = 0; index < payloadSize; index++, shift+=8)
 		payloadBuf |= Buf[index]<<shift; /* Data will be analyzed with memory pointer transposition */
@@ -459,7 +469,8 @@ static int8_t CDC_SendPDU64BitCompound(uint8_t *Buf, uint32_t payloadSize)
 	/*Sending the PDU to DiagAppl*/
 	result = osOK == osMessageQueuePut(xFIFO_DiagsLongHandle, &diagPDU, 0U, 0U) ?
 			USBD_OK : USBD_FAIL;
-
+	/* Setting the flag for PDU processing */
+	osEventFlagsSet(xEventDiagnosticsHandle, PCI_COMPOUND_STREAM_64BIT);
 	/*Transmit the rest of the payload*/
 	while(index < payloadSize && USBD_OK == result)
 	{
@@ -477,6 +488,7 @@ static int8_t CDC_SendPDU64BitCompound(uint8_t *Buf, uint32_t payloadSize)
 		result = osOK == osMessageQueuePut(xFIFO_DiagsLongHandle, &diagPDULoop, 0U, 0U) ?
 				USBD_OK : USBD_FAIL;
 	}
+	osEventFlagsSet(xEventDiagnosticsHandle, PCI_COMPOUND_END_STREAM);
 	return result;
 }
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */

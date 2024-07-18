@@ -17,6 +17,8 @@
 #ifndef SWC_DIAGAPPL_DIDLIST_H_
 #define SWC_DIAGAPPL_DIDLIST_H_
 
+#include "NVM/NVM.h"
+
 /*
  *-----------------------------------------
  *          SESSION CONTROL DIDs
@@ -54,5 +56,7 @@
  *        READ DATA BY ADDRESS DIDs
  *-----------------------------------------
  */
+
+
 
 #endif /* SWC_DIAGAPPL_DIDLIST_H_ */

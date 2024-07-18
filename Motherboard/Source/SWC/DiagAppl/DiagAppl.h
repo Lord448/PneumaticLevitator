@@ -20,6 +20,7 @@
 #include "main.h"
 #include "DIDList.h"
 #include "DTCList.h"
+#include "COM/COM.h"
 
 /*
  	 	 	 	 	        GENERAL DIAGNOSTICS FRAME
@@ -67,12 +68,19 @@
  *           PDU INDENTIFIERS
  *-----------------------------------------
  */
-#define PCI_SINGLE_STREAM_32BIT    0x32
-#define PCI_SINGLE_STREAM_64BIT    0x64
-#define PCI_COMPOUND_STREAM_32BIT  0xAA
-#define PCI_COMPOUND_STREAM_64BIT  0xBB
-#define PCI_COMPOUND_END_STREAM    0xCC
+#define PCI_SINGLE_STREAM_32BIT    (uint16_t) 1<<1
+#define PCI_SINGLE_STREAM_64BIT    (uint16_t) 1<<2
+#define PCI_COMPOUND_STREAM_32BIT  (uint16_t) 1<<3
+#define PCI_COMPOUND_STREAM_64BIT  (uint16_t) 1<<4
+#define PCI_COMPOUND_END_STREAM    (uint16_t) 1<<5
 
+/*
+ *-----------------------------------------
+ *           COMPONENT SYMBOLS
+ *-----------------------------------------
+ */
+#define QUEUE_GET_TIMEOUT pdMS_TO_TICKS(1000) /*ms*/
+#define SID_D rawData[1] /*Dependency on the PDU structure*/
 
 void DiagAppl_Init(void);
 

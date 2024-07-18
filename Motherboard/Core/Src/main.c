@@ -190,6 +190,11 @@ osSemaphoreId_t xSemaphore_PID_InitHandle;
 const osSemaphoreAttr_t xSemaphore_PID_Init_attributes = {
   .name = "xSemaphore_PID_Init"
 };
+/* Definitions for xEventDiagnostics */
+osEventFlagsId_t xEventDiagnosticsHandle;
+const osEventFlagsAttr_t xEventDiagnostics_attributes = {
+  .name = "xEventDiagnostics"
+};
 /* USER CODE BEGIN PV */
 char ResBuffer[64];
 uint8_t ReceiveFlag;
@@ -343,6 +348,10 @@ int main(void)
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
+
+  /* Create the event(s) */
+  /* creation of xEventDiagnostics */
+  xEventDiagnosticsHandle = osEventFlagsNew(&xEventDiagnostics_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
