@@ -27,6 +27,9 @@
 
 #include "DiagAppl.h"
 
+extern osMessageQueueId_t xFIFO_DiagsLongHandle;
+extern osMessageQueueId_t xFIFO_DiagShortHandle;
+
 void DiagAppl_Init(void)
 {
 
@@ -40,3 +43,5 @@ void vTaskDiagAppl(void *argument)
 
 	}
 }
+
+//void sendDiagnosticStream(uint32)

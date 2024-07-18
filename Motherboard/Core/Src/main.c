@@ -170,6 +170,16 @@ osMessageQueueId_t xFIFO_PIDConfigsHandle;
 const osMessageQueueAttr_t xFIFO_PIDConfigs_attributes = {
   .name = "xFIFO_PIDConfigs"
 };
+/* Definitions for xFIFO_DiagsLong */
+osMessageQueueId_t xFIFO_DiagsLongHandle;
+const osMessageQueueAttr_t xFIFO_DiagsLong_attributes = {
+  .name = "xFIFO_DiagsLong"
+};
+/* Definitions for xFIFO_DiagShort */
+osMessageQueueId_t xFIFO_DiagShortHandle;
+const osMessageQueueAttr_t xFIFO_DiagShort_attributes = {
+  .name = "xFIFO_DiagShort"
+};
 /* Definitions for xSemaphore_PID */
 osSemaphoreId_t xSemaphore_PIDHandle;
 const osSemaphoreAttr_t xSemaphore_PID_attributes = {
@@ -294,6 +304,12 @@ int main(void)
 
   /* creation of xFIFO_PIDConfigs */
   xFIFO_PIDConfigsHandle = osMessageQueueNew (16, sizeof(PIDConfigs), &xFIFO_PIDConfigs_attributes);
+
+  /* creation of xFIFO_DiagsLong */
+  xFIFO_DiagsLongHandle = osMessageQueueNew (16, sizeof(DiagPDU_t), &xFIFO_DiagsLong_attributes);
+
+  /* creation of xFIFO_DiagShort */
+  xFIFO_DiagShortHandle = osMessageQueueNew (16, sizeof(PDU_t), &xFIFO_DiagShort_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */

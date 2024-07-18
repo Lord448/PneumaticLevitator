@@ -17,6 +17,7 @@
 #ifndef SWC_DIAGAPPL_DIAGAPPL_H_
 #define SWC_DIAGAPPL_DIAGAPPL_H_
 
+#include "main.h"
 #include "DIDList.h"
 #include "DTCList.h"
 
@@ -36,6 +37,8 @@
  *        UDS SERVICES IDENTIFIERS
  *-----------------------------------------
  */
+#define DIAGNOSTICS_PCI                         0xAA /* ID for the diagnostics frame */
+#define NULL_SERVICE														0x00 /**/
 /*Diagnostic and Communication management*/
 #define SERVICE_SESSION_CONTROL_REQUEST         0x10
 #define SERVICE_SESSION_COTROL_RESPONSE         0x50
@@ -68,6 +71,7 @@
 #define PCI_SINGLE_STREAM_64BIT    0x64
 #define PCI_COMPOUND_STREAM_32BIT  0xAA
 #define PCI_COMPOUND_STREAM_64BIT  0xBB
+#define PCI_COMPOUND_END_STREAM    0xCC
 
 
 void DiagAppl_Init(void);
