@@ -28,6 +28,7 @@
 #include "PID/PID.h"
 #include "FAN/FAN.h"
 #include "COM/COM.h"
+#include "NVM/NVM.h"
 #include "COM/Signals.h"
 /* USER CODE END Includes */
 
@@ -180,7 +181,19 @@ osSemaphoreId_t xSemaphore_PID_InitHandle;
 const osSemaphoreAttr_t xSemaphore_PID_Init_attributes = {
   .name = "xSemaphore_PID_Init"
 };
+/* Definitions for xSemaphore_DMA_TransferCplt */
+osSemaphoreId_t xSemaphore_DMA_TransferCpltHandle;
+const osSemaphoreAttr_t xSemaphore_DMA_TransferCplt_attributes = {
+  .name = "xSemaphore_DMA_TransferCplt"
+};
+/* Definitions for xSemaphore_MemoryPoolUsed */
+osSemaphoreId_t xSemaphore_MemoryPoolUsedHandle;
+const osSemaphoreAttr_t xSemaphore_MemoryPoolUsed_attributes = {
+  .name = "xSemaphore_MemoryPoolUsed"
+};
 /* USER CODE BEGIN PV */
+osMemoryPoolId_t MemoryPoolNVM;  /* Memory Pool for NVM data allocation*/
+
 char ResBuffer[64];
 uint8_t ReceiveFlag;
 /* USER CODE END PV */
@@ -257,7 +270,7 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
-
+  MemoryPoolNVM = osMemoryPoolNew(EEPROM_SIZE, sizeof(uint8_t), NULL);
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -273,6 +286,12 @@ int main(void)
 
   /* creation of xSemaphore_PID_Init */
   xSemaphore_PID_InitHandle = osSemaphoreNew(1, 1, &xSemaphore_PID_Init_attributes);
+
+  /* creation of xSemaphore_DMA_TransferCplt */
+  xSemaphore_DMA_TransferCpltHandle = osSemaphoreNew(1, 1, &xSemaphore_DMA_TransferCplt_attributes);
+
+  /* creation of xSemaphore_MemoryPoolUsed */
+  xSemaphore_MemoryPoolUsedHandle = osSemaphoreNew(1, 1, &xSemaphore_MemoryPoolUsed_attributes);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -963,7 +982,8 @@ void vTaskWdgM(void *argument)
   /* USER CODE BEGIN vTaskWdgM */
 	const TickType_t ticksForResetWDG = pdMS_TO_TICKS(500); //WDG @ 500ms
 	TickType_t ticks;
-
+	/* Init functions for services components */
+	NVM_Init();
 	HAL_IWDG_Init(&hiwdg);
 	ticks = osKernelGetTickCount();
   /* Infinite loop */

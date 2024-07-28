@@ -43,8 +43,9 @@ typedef enum bool{
 }bool;
 
 typedef enum result {
-	OK = osOK,        /* 0*/
-	Error = osError,  /*-1*/
+	OK = osOK,                /* 0*/
+	Error = osError,          /*-1*/
+	Timeout = osErrorTimeout, /*-2*/
 	Warning = 1
 }result_t;
 /* USER CODE END ET */

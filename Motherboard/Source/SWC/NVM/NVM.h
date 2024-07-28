@@ -27,7 +27,11 @@
 #include "usbd_cdc_if.h"
 /*TODO Erase when COM it's finished*/
 
+#define EEPROM_ADDR 0b1010000
 #define EEPROM_SIZE 512
+
+#define MEMORY_POOL_USED_FLAG 1
+#define EEPROM_USED_FLAG      2
 
 /**
  * @brief Union for the 32 bit data handling
@@ -91,8 +95,10 @@ result_t nvmRead_float(uint16_t NVMVariable, float *data);
  * 					      MEMORY CONTROL FUNCTIONS
  * ---------------------------------------------------------
  */
-uint8_t *nvmRegionDump(uint16_t startAddr, uint16_t endAddr);
+void NVM_Init(void);
+uint8_t *nvmRegionDump(uint16_t startAddr, uint16_t endAddr, uint32_t timeout);
 uint8_t *nvmMemoryDump(void);
+result_t NVM_freeMemoryPool(uint8_t *blockPointer);
 result_t nvmClear(void);
 result_t nvmLoadDefaultValues(void);
 
