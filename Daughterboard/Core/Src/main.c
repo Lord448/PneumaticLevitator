@@ -75,7 +75,7 @@ const osThreadAttr_t TaskIdle_attributes = {
 };
 /* Definitions for TaskUI */
 osThreadId_t TaskUIHandle;
-uint32_t TaskUIBuffer[ 1023 ];
+uint32_t TaskUIBuffer[ 10240 ];
 osStaticThreadDef_t TaskUIControlBlock;
 const osThreadAttr_t TaskUI_attributes = {
   .name = "TaskUI",
