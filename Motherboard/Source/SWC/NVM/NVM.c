@@ -26,7 +26,6 @@ extern osMemoryPoolId_t MemoryPoolNVM; /* Memory Pool for NVM data allocation*/
  * ---------------------------------------------------------
  */
 
-static result_t SendUSB(char *format, ...); /*TODO Erase when COM it's finished*/
 static result_t transferEEPROMData(uint16_t startAddr, uint16_t endAddr, uint8_t *memoryPool, uint32_t timeout);
 
 /**
@@ -52,7 +51,7 @@ void NVM_Init(void)
  * @param  value: value of the variable
  * @retval result of the operation
  */
-result_t nvmSave_8Bit(uint16_t NVMVariable, uint8_t value)
+result_t NVM_save8Bit(uint16_t NVMVariable, uint8_t value)
 {
 	return OK; /*TODO: Stubbed code*/
 }
@@ -64,7 +63,7 @@ result_t nvmSave_8Bit(uint16_t NVMVariable, uint8_t value)
  * @param  value: value of the variable
  * @retval result of the operation
  */
-result_t nvmSave_16Bit(uint16_t NVMVariable, NVMType16 value)
+result_t NVM_save16Bit(uint16_t NVMVariable, NVMType16 value)
 {
 	return OK; /*TODO: Stubbed code*/
 }
@@ -76,7 +75,7 @@ result_t nvmSave_16Bit(uint16_t NVMVariable, NVMType16 value)
  * @param  value: value of the variable
  * @retval result of the operation
  */
-result_t nvmSave_32Bit(uint16_t NVMVariable, NVMType32 value)
+result_t NVM_save32Bit(uint16_t NVMVariable, NVMType32 value)
 {
 	return OK; /*TODO: Stubbed code*/
 }
@@ -88,7 +87,7 @@ result_t nvmSave_32Bit(uint16_t NVMVariable, NVMType32 value)
  * @param  value: value of the variable
  * @retval result of the operation
  */
-result_t nvmSave_float(uint16_t NVMVariable, float value)
+result_t NVM_saveFloat(uint16_t NVMVariable, float value)
 {
 	return OK; /*TODO: Stubbed code*/
 }
@@ -106,7 +105,7 @@ result_t nvmSave_float(uint16_t NVMVariable, float value)
  * @param  value: value of the variable
  * @retval result of the operation
  */
-result_t nvmRead_8Bit(uint16_t NVMVariable, uint8_t *data)
+result_t NVM_read8Bit(uint16_t NVMVariable, uint8_t *data)
 {
 	return OK; /*TODO: Stubbed code*/
 }
@@ -118,7 +117,7 @@ result_t nvmRead_8Bit(uint16_t NVMVariable, uint8_t *data)
  * @param  value: value of the variable
  * @retval result of the operation
  */
-result_t nvmRead_16Bit(uint16_t NVMVariable, NVMType16 *data)
+result_t NVM_read16Bit(uint16_t NVMVariable, NVMType16 *data)
 {
 	return OK; /*TODO: Stubbed code*/
 }
@@ -130,7 +129,7 @@ result_t nvmRead_16Bit(uint16_t NVMVariable, NVMType16 *data)
  * @param  value: value of the variable
  * @retval result of the operation
  */
-result_t nvmRead_32Bit(uint16_t NVMVariable, NVMType32 *data)
+result_t NVM_read32Bit(uint16_t NVMVariable, NVMType32 *data)
 {
 	return OK; /*TODO: Stubbed code*/
 }
@@ -142,7 +141,7 @@ result_t nvmRead_32Bit(uint16_t NVMVariable, NVMType32 *data)
  * @param  value: value of the variable
  * @retval result of the operation
  */
-result_t nvmRead_float(uint16_t NVMVariable, float *data)
+result_t NVM_readFloat(uint16_t NVMVariable, float *data)
 {
 	return OK; /*TODO: Stubbed code*/
 }
@@ -165,7 +164,7 @@ result_t nvmRead_float(uint16_t NVMVariable, float *data)
  * @param  endAddr: End Address of the memory dump
  * @retval uint8_t* : Pointer of the memory allocated (TODO: Possible use of void * pointer)
  */
-uint8_t *nvmRegionDump(uint16_t startAddr, uint16_t endAddr, uint32_t timeout)
+uint8_t *NVM_regionDump(uint16_t startAddr, uint16_t endAddr, uint32_t timeout)
 {
 	osStatus result;
 	uint8_t *buffPointer = NULL;
@@ -216,7 +215,7 @@ uint8_t *nvmRegionDump(uint16_t startAddr, uint16_t endAddr, uint32_t timeout)
 
 /**
  * @brief  This function returns a pointer to the buffer with
- *         the data of the hole memory
+ *         the data of the whole memory
  * @note   This function allocates dynamic memory so
  *         once the buffer is no longer used the memory
  *         needs to be deallocated
@@ -227,10 +226,9 @@ uint8_t *nvmRegionDump(uint16_t startAddr, uint16_t endAddr, uint32_t timeout)
  *         TODO: Possible static memory allocation
  * @retval uint8_t *: Pointer to the buffer
  */
-uint8_t *nvmMemoryDump(void)
+uint8_t *NVM_memoryDump(uint32_t timeout)
 {
-	SendUSB("Sample"); /*TODO: Stubbed Code to avoid warnings*/
-	return NULL; /*TODO: Stubbed code*/
+	return NVM_regionDump(EEPROM_INIT_ADDR, EEPROM_END_ADDR, timeout);
 }
 
 /**
@@ -261,7 +259,7 @@ result_t NVM_freeMemoryPool(uint8_t *blockPointer)
  * @brief  Fills the hole EEPROM memory with zeroes
  * @retval result: the result of the operation
  */
-result_t nvmClear(void)
+result_t NVM_clear(void)
 {
 	return OK; /*TODO: Stubbed code*/
 }
@@ -270,7 +268,7 @@ result_t nvmClear(void)
  * @brief  Loads the default values on the EEPROM memory
  * @retval the result of the operation
  */
-result_t nvmLoadDefaultValues(void)
+result_t NVM_loadDefaultValues(void)
 {
 	return OK; /*TODO: Stubbed code*/
 }
@@ -362,30 +360,6 @@ static result_t transferEEPROMData(uint16_t startAddr, uint16_t endAddr, uint8_t
 	return result;
 }
 
-static result_t SendUSB(char *format, ...) /*TODO: Instrumented code*/
-{
-	result_t retval = OK;
-	char buffer[1024];
-	va_list args;
-
-	va_start(args, format);
-	/*Filling buffer with zeroes*/
-	memset(buffer, 0, sizeof(buffer));
-	/*Filling the buffer with variadic args*/
-	retval = vsprintf(buffer, format, args);
-	if(USBD_OK == CDC_getReady() && OK == retval)
-	{
-		/*The USB is ready to transmit and the buffer is filled*/
-		CDC_Transmit_FS((uint8_t *)buffer, strlen(buffer));
-	}
-	else
-	{
-		/*The data cannot be transmitted*/
-		retval = Error;
-	}
-	va_end(args);
-	return retval;
-}
 
 /**
  * ---------------------------------------------------------

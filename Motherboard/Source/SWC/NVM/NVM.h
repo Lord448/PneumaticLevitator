@@ -20,15 +20,10 @@
 #include "main.h"
 #include "cmsis_os.h"
 
-/*TODO Erase when COM it's finished*/
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-#include "usbd_cdc_if.h"
-/*TODO Erase when COM it's finished*/
-
 #define EEPROM_ADDR 0b1010000
 #define EEPROM_SIZE 512
+#define EEPROM_INIT_ADDR 0
+#define EEPROM_END_ADDR  512
 
 #define MEMORY_POOL_USED_FLAG 1
 #define EEPROM_USED_FLAG      2
@@ -61,16 +56,16 @@ typedef union NVMType16
  */
 
 /*nvmSave overload interface*/
-#define nvmSave(variable, value) _Generic((value),					\
-																	uint8_t  : nvmSave_8Bit,  \
-																	NVMType16 : nvmSave_16Bit, \
-																	NVMType32 : nvmSave_32Bit, \
-																	float    : nvmSave_float)(variable, value)
+#define NVM_save(variable, value) _Generic((value),					\
+																	uint8_t   : NVM_save8Bit,  \
+																	NVMType16 : NVM_save16Bit, \
+																	NVMType32 : NVM_save32Bit, \
+																	float     : NVM_saveFloat)(variable, value)
 
-result_t nvmSave_8Bit(uint16_t NVMVariable, uint8_t value);
-result_t nvmSave_16Bit(uint16_t NVMVariable, NVMType16 value);
-result_t nvmSave_32Bit(uint16_t NVMVariable, NVMType32 value);
-result_t nvmSave_float(uint16_t NVMVariable, float value);
+result_t NVM_save8Bit(uint16_t NVMVariable, uint8_t value);
+result_t NVM_save16Bit(uint16_t NVMVariable, NVMType16 value);
+result_t NVM_save32Bit(uint16_t NVMVariable, NVMType32 value);
+result_t NVM_saveFloat(uint16_t NVMVariable, float value);
 
 /**
  * ---------------------------------------------------------
@@ -79,16 +74,16 @@ result_t nvmSave_float(uint16_t NVMVariable, float value);
  */
 
 /*nvmRead overload interface*/
-#define nvmRead(variable, value) _Generic((value),					 \
-																	uint8_t * : nvmRead_8Bit   \
-																	NVMType16 *: nvmRead_16Bit  \
-																	NVMType32 *: nvmRead_32Bit  \
-																	float	*		: nvmRead_float)(variable, value)
+#define NVM_read(variable, value) _Generic((value),					 \
+																	uint8_t   *: NVM_read8Bit   \
+																	NVMType16 *: NVM_read16Bit  \
+																	NVMType32 *: NVM_read32Bit  \
+																	float	  *: NVM_readFloat)(variable, value)
 
-result_t nvmRead_8Bit(uint16_t NVMVariable, uint8_t *data);
-result_t nvmRead_16Bit(uint16_t NVMVariable, NVMType16 *data);
-result_t nvmRead_32Bit(uint16_t NVMVariable, NVMType32 *data);
-result_t nvmRead_float(uint16_t NVMVariable, float *data);
+result_t NVM_read8Bit(uint16_t NVMVariable, uint8_t *data);
+result_t NVM_read16Bit(uint16_t NVMVariable, NVMType16 *data);
+result_t NVM_read32Bit(uint16_t NVMVariable, NVMType32 *data);
+result_t NVM_readFloat(uint16_t NVMVariable, float *data);
 
 /**
  * ---------------------------------------------------------
@@ -96,10 +91,10 @@ result_t nvmRead_float(uint16_t NVMVariable, float *data);
  * ---------------------------------------------------------
  */
 void NVM_Init(void);
-uint8_t *nvmRegionDump(uint16_t startAddr, uint16_t endAddr, uint32_t timeout);
-uint8_t *nvmMemoryDump(void);
+uint8_t *NVM_regionDump(uint16_t startAddr, uint16_t endAddr, uint32_t timeout);
+uint8_t *NVM_memoryDump(uint32_t timeout);
 result_t NVM_freeMemoryPool(uint8_t *blockPointer);
-result_t nvmClear(void);
-result_t nvmLoadDefaultValues(void);
+result_t NVM_clear(void);
+result_t NVM_loadDefaultValues(void);
 
 #endif /* SWC_NVM_NVM_H_ */
