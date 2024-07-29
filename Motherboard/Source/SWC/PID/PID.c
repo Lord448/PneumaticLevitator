@@ -16,8 +16,6 @@
 
 #include "PID.h"
 
-static const uint32_t NO_LIMIT = 0;
-
 extern osMessageQueueId_t xFIFO_ControlActionHandle;
 extern osMessageQueueId_t xFIFO_DistanceHandle;
 extern osMessageQueueId_t xFIFO_PIDConfigsHandle;
@@ -62,23 +60,9 @@ static void PID_SetConfigs(PIDConfigs *configs)
         PID.Limits.D 	= configs->Limits.D;
         PID.Limits.Control = configs->Limits.Control;
 
-        EEPROM_Write(&PID);
+        //EEPROM_Write(&PID);
     }
 }
-int EEPROM_Read(struct PID *pid) {
-    // Implementación de ejemplo, adaptada según tu hardware específico.
-    // Leer datos de EEPROM a la estructura PID.
-    // Retorna 0 si es exitoso, -1 si falla.
-	return -1;
-}
-
-int EEPROM_Write(const struct PID *pid) {
-    // Implementación de ejemplo, adaptada según tu hardware específico.
-    // Escribir los datos de la estructura PID en EEPROM.
-    // Retorna 0 si es exitoso, -1 si falla.
-	return -1;
-}
-
 
 void PID_Init(void)
 {
@@ -86,12 +70,12 @@ void PID_Init(void)
     if (osSemaphoreAcquire(xSemaphore_PID_InitHandle, osWaitForever) == osOK) {
         /* Fill the local PID structure with the values of the EEPROM memory */
         // Supongamos que hay una función para leer de EEPROM; todo
-        if (EEPROM_Read(&PID) != EEPROM_OK) {
+        //if (EEPROM_Read(&PID) != EEPROM_OK) {
             /* If EEPROM read fails, fill the structure with the default values */
-            PID.Gains.Kp = KP_DEFAULT;
-            PID.Gains.Ki = KI_DEFAULT;
-            PID.Gains.Kd = KD_DEFAULT;
-        }
+          //  PID.Gains.Kp = KP_DEFAULT;
+          //  PID.Gains.Ki = KI_DEFAULT;
+          //  PID.Gains.Kd = KD_DEFAULT;
+        //}
     } else {
         /* Fill the structure with the default values */
         PID.Gains.Kp = KP_DEFAULT;
