@@ -5,4 +5,5 @@
 [Dd]ebug
 .launch
 **/Debug/*
+DaughterBoardTest/DaughterBoardTest Debug.launch
 .~lock.**

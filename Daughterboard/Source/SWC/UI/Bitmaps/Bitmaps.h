@@ -12,8 +12,11 @@
 
 #include "ugui.h"
 
-#define ITMLOGO_SIZE 24633
+//#define ITM_LOGO_SIZE 24633
+#define IMAGE_SIZE(image) sizeof(image.p)
 
 extern UG_BMP ITMLogo;
+extern UG_BMP ITMLogoSmall;
+extern UG_BMP AnimatedPCFan;
 
 #endif /* UI_BITMAPS_BITMAPS_H_ */
