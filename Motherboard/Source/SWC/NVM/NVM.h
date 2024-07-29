@@ -19,6 +19,7 @@
 
 #include "main.h"
 #include "cmsis_os.h"
+#include "NVMVariables.h"
 
 #define EEPROM_ADDR 0b1010000
 #define EEPROM_SIZE 512
@@ -27,6 +28,8 @@
 
 #define MEMORY_POOL_USED_FLAG 1
 #define EEPROM_USED_FLAG      2
+
+#define EEPROM_I2C_WRITE(MemAddress, pData, Size, Timeout) HAL_I2C_Mem_Write(&hi2c2, EEPROM_ADDR, MemAddress, sizeof(uint8_t), pData, Size, Timeout)
 
 /**
  * @brief Union for the 32 bit data handling

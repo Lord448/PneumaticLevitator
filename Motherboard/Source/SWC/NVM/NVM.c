@@ -270,6 +270,34 @@ result_t NVM_clear(void)
  */
 result_t NVM_loadDefaultValues(void)
 {
+	/*TODO:In case of creating a new doc NVMVariables.c move the variables*/
+	/*Configurations region*/
+	const bool FabricConfigDefaultVal = true;
+	const ActionMode ModeDefaultVal = AutoPID;
+	/*PID region*/
+	const NVMType32 KpDefaultVal = {.dataFloat = 0};
+	const NVMType32 KiDefaultVal = {.dataFloat = 0};
+	const NVMType32 KdDefaultVal = {.dataFloat = 0};
+	const NVMType32 PlimitDefaultVal = {.data32 = 0};
+	const NVMType32 IlimitDefaultVal = {.data32 = 0};
+	const NVMType32 DlimitDefaultVal = {.data32 = 0};
+	const NVMType32 SetpointDefaultVal = {.data32 = 250};
+	/*Diagnostics Motherboard region*/
+
+
+	/*Configurations variables*/
+	EEPROM_I2C_WRITE(FABRIC_CONFIG_BASE_ADDR, (uint8_t *)&FabricConfigDefaultVal, sizeof(uint8_t), 100);
+	EEPROM_I2C_WRITE(MODE_CONFIG_BASE_ADDR, (uint8_t *)&ModeDefaultVal, sizeof(uint8_t), 100);
+	/*PID variables*/
+	EEPROM_I2C_WRITE(KP_PID_BASE_ADDR, (uint8_t *)KpDefaultVal.rawData, sizeof(NVMType32), 100);
+	EEPROM_I2C_WRITE(KI_PID_BASE_ADDR, (uint8_t *)KiDefaultVal.rawData, sizeof(NVMType32), 100);
+	EEPROM_I2C_WRITE(KD_PID_BASE_ADDR, (uint8_t *)KdDefaultVal.rawData, sizeof(NVMType32), 100);
+	EEPROM_I2C_WRITE(PLIMIT_PID_BASE_ADDR, (uint8_t *)PlimitDefaultVal.rawData, sizeof(NVMType32), 100);
+	EEPROM_I2C_WRITE(ILIMIT_PID_BASE_ADDR, (uint8_t *)IlimitDefaultVal.rawData, sizeof(NVMType32), 100);
+	EEPROM_I2C_WRITE(DLIMIT_PID_BASE_ADDR, (uint8_t *)DlimitDefaultVal.rawData, sizeof(NVMType32), 100);
+	EEPROM_I2C_WRITE(SETPOINT_PID_BASE_ADDR, (uint8_t *)SetpointDefaultVal.rawData, sizeof(NVMType32), 100);
+	/*Diagnostics Mother*/
+	/*Diagnostics Daughter*/
 	return OK; /*TODO: Stubbed code*/
 }
 
