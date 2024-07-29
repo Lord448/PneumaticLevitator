@@ -68,21 +68,16 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define LED_GP_Pin GPIO_PIN_13
 #define LED_GP_GPIO_Port GPIOC
-#define Down_IT_Pin GPIO_PIN_15
-#define Down_IT_GPIO_Port GPIOC
-#define Down_IT_EXTI_IRQn EXTI15_10_IRQn
-#define Left_IT_Pin GPIO_PIN_0
-#define Left_IT_GPIO_Port GPIOA
-#define Left_IT_EXTI_IRQn EXTI0_IRQn
-#define Ok_IT_Pin GPIO_PIN_1
-#define Ok_IT_GPIO_Port GPIOA
-#define Ok_IT_EXTI_IRQn EXTI1_IRQn
-#define Right_IT_Pin GPIO_PIN_2
-#define Right_IT_GPIO_Port GPIOA
-#define Right_IT_EXTI_IRQn EXTI2_IRQn
-#define Up_IT_Pin GPIO_PIN_3
-#define Up_IT_GPIO_Port GPIOA
-#define Up_IT_EXTI_IRQn EXTI3_IRQn
+#define BtnDown_Pin GPIO_PIN_15
+#define BtnDown_GPIO_Port GPIOC
+#define BtnLeft_Pin GPIO_PIN_0
+#define BtnLeft_GPIO_Port GPIOA
+#define BtnOK_Pin GPIO_PIN_1
+#define BtnOK_GPIO_Port GPIOA
+#define BtnRight_Pin GPIO_PIN_2
+#define BtnRight_GPIO_Port GPIOA
+#define BtnUP_Pin GPIO_PIN_3
+#define BtnUP_GPIO_Port GPIOA
 #define LCD_DC_Pin GPIO_PIN_4
 #define LCD_DC_GPIO_Port GPIOA
 #define LCD_SCK_Pin GPIO_PIN_5
@@ -95,6 +90,9 @@ void Error_Handler(void);
 #define LCD_CS_GPIO_Port GPIOB
 #define LCD_BLK_Pin GPIO_PIN_1
 #define LCD_BLK_GPIO_Port GPIOB
+#define Reset_IT_Pin GPIO_PIN_12
+#define Reset_IT_GPIO_Port GPIOB
+#define Reset_IT_EXTI_IRQn EXTI15_10_IRQn
 #define LED_COMM_Pin GPIO_PIN_13
 #define LED_COMM_GPIO_Port GPIOB
 #define LED_USB_Pin GPIO_PIN_14
@@ -108,6 +106,8 @@ void Error_Handler(void);
 #define EncoderSW_Pin GPIO_PIN_10
 #define EncoderSW_GPIO_Port GPIOA
 #define EncoderSW_EXTI_IRQn EXTI15_10_IRQn
+#define BtnMenu_Pin GPIO_PIN_11
+#define BtnMenu_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 #define FINISH_INIT_ID 0x1U

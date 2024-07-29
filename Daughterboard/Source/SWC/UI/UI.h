@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define WINDOW_MAX_OBJECTS 20
+#define WINDOW_MAX_OBJECTS 30
 
 #define SKIP_INTRO_ANIM
 
@@ -49,6 +49,6 @@
 
 void vTaskUI(void *argument);
 UG_RESULT UI_TextboxCreate(UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye);
-void DMATrasferCpltCallback(DMA_HandleTypeDef *DmaHandle);
+UG_RESULT UI_CheckboxCreate(UG_WINDOW* wnd, UG_CHECKBOX* chb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye);
 
 #endif /* UI_H_ */
