@@ -28,6 +28,11 @@ extern osMemoryPoolId_t MemoryPoolNVM; /* Memory Pool for NVM data allocation*/
 
 static result_t transferEEPROMData(uint16_t startAddr, uint16_t endAddr, uint8_t *memoryPool, uint32_t timeout);
 
+#ifdef MAKE_HARD_CODED_TEST
+/* Instrumented code prototypes */
+static void readDefaultValues(void);
+#endif
+
 /**
  * ---------------------------------------------------------
  * 					          INIT FUNCTION
@@ -36,6 +41,12 @@ static result_t transferEEPROMData(uint16_t startAddr, uint16_t endAddr, uint8_t
 void NVM_Init(void)
 {
 	osSemaphoreRelease(xSemaphore_MemoryPoolUsedHandle);
+
+#ifdef MAKE_HARD_CODED_TEST
+	/* Hard coded test of the component */
+	NVM_loadDefaultValues();
+	readDefaultValues();
+#endif
 }
 
 /**
@@ -391,7 +402,7 @@ static result_t transferEEPROMData(uint16_t startAddr, uint16_t endAddr, uint8_t
 
 /**
  * ---------------------------------------------------------
- * 					 SOFTWARE COMPONENT CALLBACKS
+ * 					    SOFTWARE COMPONENT CALLBACKS
  * ---------------------------------------------------------
  */
 
@@ -405,3 +416,45 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef * hi2c)
 {
 	osSemaphoreRelease(xSemaphore_DMA_TransferCpltHandle);
 }
+
+#ifdef MAKE_HARD_CODED_TEST
+
+/**
+ * ---------------------------------------------------------
+ * 					    HARD CODED TESTING SOFTWARE
+ * ---------------------------------------------------------
+ */
+
+static result_t SendUSB(char *format, ...) /*TODO: Instrumented code*/
+{
+	result_t retval = OK;
+	char buffer[1024];
+	va_list args;
+
+	va_start(args, format);
+	/*Filling buffer with zeroes*/
+	memset(buffer, 0, sizeof(buffer));
+	/*Filling the buffer with variadic args*/
+	retval = vsprintf(buffer, format, args);
+	if(USBD_OK == CDC_getReady() && OK == retval)
+	{
+		/*The USB is ready to transmit and the buffer is filled*/
+		CDC_Transmit_FS((uint8_t *)buffer, strlen(buffer));
+	}
+	else
+	{
+		/*The data cannot be transmitted*/
+		retval = Error;
+	}
+	va_end(args);
+	return retval;
+}
+
+static void readDefaultValues(void)
+{
+	bool FabricConfig = false;
+	EEPROM_I2C_READ(FABRIC_CONFIG_BASE_ADDR, (uint8_t *)FabricConfig, sizeof(uint8_t), 100);
+	SendUSB("FabricConfig: %d", FabricConfig);
+}
+
+#endif

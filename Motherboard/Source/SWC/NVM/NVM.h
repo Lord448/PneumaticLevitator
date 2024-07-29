@@ -21,6 +21,15 @@
 #include "cmsis_os.h"
 #include "NVMVariables.h"
 
+#define MAKE_HARD_CODED_TEST
+
+#ifdef MAKE_HARD_CODED_TEST
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
+#include "usbd_cdc_if.h"
+#endif
+
 #define EEPROM_ADDR 0b1010000
 #define EEPROM_SIZE 512
 #define EEPROM_INIT_ADDR 0
@@ -30,6 +39,7 @@
 #define EEPROM_USED_FLAG      2
 
 #define EEPROM_I2C_WRITE(MemAddress, pData, Size, Timeout) HAL_I2C_Mem_Write(&hi2c2, EEPROM_ADDR, MemAddress, sizeof(uint8_t), pData, Size, Timeout)
+#define EEPROM_I2C_READ(MemAddress, pData, Size, Timeout) HAL_I2C_Mem_Read(&hi2c2, EEPROM_ADDR, MemAddress, sizeof(uint8_t), pData, Size, Timeout)
 
 /**
  * @brief Union for the 32 bit data handling

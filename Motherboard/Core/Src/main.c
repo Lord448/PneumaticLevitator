@@ -99,7 +99,7 @@ osThreadId_t TaskIdleHandle;
 const osThreadAttr_t TaskIdle_attributes = {
   .name = "TaskIdle",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityRealtime,
 };
 /* Definitions for TaskModeManager */
 osThreadId_t TaskModeManagerHandle;
@@ -929,7 +929,8 @@ void vTaskIdle(void *argument)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
   /*TODO: Implement strategy for CPU Load measures*/
-
+  NVM_Init();
+  osThreadSetPriority(TaskIdleHandle, osPriorityLow);
   /* Infinite loop */
   for(;;)
   {
