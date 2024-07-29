@@ -17,8 +17,6 @@
 #ifndef SWC_PID_PID_H_
 #define SWC_PID_PID_H_
 
-#define true	1
-#define false	0
 #define NO_LIMIT 0
 #define EEPROM_OK 0
 
