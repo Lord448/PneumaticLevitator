@@ -22,13 +22,13 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "DistanceSensor/DistanceSensor.h"
-#include "DiagAppl/DiagAppl.h"
-#include "EcuM/EcuM.h"
-#include "PID/PID.h"
-#include "FAN/FAN.h"
-#include "COM/COM.h"
-#include "COM/Signals.h"
+#include "DistanceSensor.h"
+#include "DiagAppl.h"
+#include "EcuM.h"
+#include "PID.h"
+#include "FAN.h"
+#include "COM.h"
+#include "Signals.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

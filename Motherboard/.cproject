@@ -58,6 +58,14 @@
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2"/>
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/COM}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/DiagAppl}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/DistanceSensor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/FAN}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/EcuM}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/ModeManager}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/NVM}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/PID}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1762603191" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
