@@ -7,20 +7,21 @@
  * @date      May 29, 2024
  *
  * @license   This Source Code Form is subject to the terms of
- * 			  the Mozilla Public License, v. 2.0. If a copy of
- * 		 	  the MPL was not distributed with this file, You
- * 			  can obtain one at https://mozilla.org/MPL/2.0/.
+ *            the Mozilla Public License, v. 2.0. If a copy of
+ *            the MPL was not distributed with this file, You
+ *            can obtain one at https://mozilla.org/MPL/2.0/.
  *
  * @copyright Copyright (c) 2024
  */
 
 #include "PID.h"
 
+static const uint32_t NO_LIMIT = 0;
 
 extern osMessageQueueId_t xFIFO_ControlActionHandle;
 extern osMessageQueueId_t xFIFO_DistanceHandle;
 extern osMessageQueueId_t xFIFO_PIDConfigsHandle;
-extern osMessageQueueId_t xFIFO_CconfigsOMHandle;
+extern osMessageQueueId_t xFIFO_COMHandle;
 
 extern osSemaphoreId_t xSemaphore_PIDHandle;
 extern osSemaphoreId_t xSemaphore_PID_InitHandle;

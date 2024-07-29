@@ -29,14 +29,9 @@ extern osSemaphoreId_t xSemaphoreCOMReadyHandle;
 
 extern DMA_HandleTypeDef hdma_memtomem_dma2_stream3;
 
-extern const uint16_t ITMLogoData[ITMLOGO_SIZE];
+extern const uint16_t ITMLogoData[IMAGE_SIZE(ITMLogo)];
 
-static void FadeWhiteIn(uint8_t animDelay);
-static void ITMLogoFadeIn(void);
-static void ITMLogoFadeOut(void);
-static void DynamicErrorHandler(char *str);
-static void StringFadeIn(void);
-static void StringFadeOut(void);
+extern UG_WINDOW mainWindow;
 
 /**
 * @brief Function implementing the TaskUI thread.
@@ -46,162 +41,89 @@ static void StringFadeOut(void);
 void vTaskUI(void *argument)
 {
 	LCD_init();
+#ifndef SKIP_INTRO_ANIM
 	FadeWhiteIn(5);
 	ITMLogoFadeIn();
 	StringFadeIn();
-	/*Charge all the graphic resources in BG*/
+#endif
+	/* Creating and loading all the graphical resources */
+	MainMenu_buildObjects();
 	/*Report to motherboard that all is ready to run*/
-	osSemaphoreAcquire(xSemaphoreCOMReadyHandle, osWaitForever); /*Wait until Motherboard is ready*/
-	StringFadeOut();
-	/*Letting the rest of the tasks to run*/
-	osEventFlagsSet(xEventFinishedInitHandle, FINISH_INIT_ID);
-	ITMLogoFadeOut();
+	//osSemaphoreAcquire(xSemaphoreCOMReadyHandle, osWaitForever); /*Wait until Motherboard is ready*/
 
+#ifndef SKIP_INTRO_ANIM
+  osDelay(pdMS_TO_TICKS(5000));
+	StringFadeOut();
+	ITMLogoFadeOut();
+#endif
+
+	UG_WindowShow(&mainWindow);
+	UG_Update();
+	osDelay(pdMS_TO_TICKS(5000));
   for(;;)
   {
   	/*TODO: Possible implementation of parsed loop scheme*/
-  	LCD_Test(); /*TODO Remove the test from here*/
+  	//LCD_Test(); /*TODO Remove the test from here*/
+
   }
 }
 
 /**
- * @brief Fades in the white color on the screen
- * @param Delay for the animation in milliseconds
- * @retval none
+ * @brief
+ * @param
+ * @param
+ * @param
+ * @param
+ * @param
+ * @param
+ * @param
+ * @retval
  */
-static void FadeWhiteIn(uint8_t animDelay)
+UG_RESULT UI_TextboxCreate(UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye)
 {
-	for(uint16_t r = 0, g = 0, b = 0; g < 63; r++, g+=2, b++)
-	{
-		UG_FillScreen(RGB565Color(r, g, b));
-		UG_Update();
-		osDelay(pdMS_TO_TICKS(animDelay));
-	}
+	UG_RESULT result;
+	result = UG_TextboxCreate(wnd, txb, id, xs, ys, xe, ye);
+	if(result != 0)
+		return result;
+	result = UG_TextboxSetFont(wnd, id, TEXTBOX_FONT);
+	if(result != 0)
+		return result;
+	result = UG_TextboxSetBackColor(wnd, id, C_WHITE_94);
+	if(result != 0)
+		return result;
+	result = UG_TextboxSetForeColor(wnd, id, C_BLACK);
+	if(result != 0)
+		return result;
+	result = UG_TextboxSetAlignment(wnd, id, ALIGN_CENTER);
+	if(result != 0)
+		return result;
+	return result;
 }
 
-/**
- * @brief Fades in and then fades out the logo
- * @param none
- * @retval none
- */
-static void ITMLogoFadeIn(void)
+UG_RESULT UI_CheckboxCreate(UG_WINDOW* wnd, UG_CHECKBOX* chb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye)
 {
-	uint16_t *ITMLogoRAMBuffer;
-	uint16_t *NonWhitePixelsValue;
-	uint16_t *NonWhitePixelsIndex;
-	uint16_t PixelsIndex = 0;
-
-	ITMLogoRAMBuffer = (uint16_t*)memoryRequestResource(MemoryPool16, ITMLOGO_SIZE*2, ITMLogoData, osWaitForever);
-	/*Calloc Failure*/
-	if(ITMLogoRAMBuffer == NULL)
-	{
-		/*Trigger DTC not enough RAM*/
-		/*Skip the animation*/
-		/*Report for the debugger*/
-		DynamicErrorHandler("ITMLogoRAMBuffer"); /*TODO remove this*/
-	}
-	else
-	{
-		/*Do Nothing*/
-	}
-
-	UG_BMP ITMLogoRAM = {
-		.p = ITMLogoRAMBuffer,
-		.width = 161,
-		.height = 153,
-		.bpp = BMP_BPP_16
-	};
-
-	/*Getting the non white pixels*/
-	for(uint16_t i = 0; i < ITMLOGO_SIZE*2; i++)
-	{
-		if((uint16_t)ITMLogoRAMBuffer[i] != WHITE_PIXEL)
-		{
-			/*Found a non white pixel*/
-			PixelsIndex++;
-		}
-	}
-	/*By here we have the amount of non white pixels, so we can allocate the pools*/
-	NonWhitePixelsIndex = (uint16_t*)memoryRequestEmptyPool(MemoryPool16_UI_PixelsIndex, PixelsIndex, osWaitForever, MallocType);
-	NonWhitePixelsValue = (uint16_t*)memoryRequestEmptyPool(MemoryPool16_UI_PixelsValue, PixelsIndex, osWaitForever, MallocType);
-	if(NonWhitePixelsValue == NULL)
-	{
-		/*Trigger DTC not enough RAM*/
-		/*Skip the animation*/
-		/*Report for the debugger*/
-		DynamicErrorHandler("NonWhitePixelsValue"); /*TODO remove this*/
-	}
-	else if(NonWhitePixelsIndex == NULL)
-	{
-		/*Trigger DTC not enough RAM*/
-		/*Skip the animation*/
-		/*Report for the debugger*/
-		DynamicErrorHandler("NonWhitePixelsIndex"); /*TODO remove this*/
-	}
-	else
-	{
-		/*Do Nothing*/
-	}
-	PixelsIndex = 0; /*Reusing variable for as index for the buffers*/
-	for(uint16_t i = 0; i < ITMLOGO_SIZE*2; i++)
-	{
-		if((uint16_t)ITMLogoRAMBuffer[i] != 0xFFFF)
-		{
-			/*Found a non white pixel*/
-			NonWhitePixelsValue[PixelsIndex] = ITMLogoRAMBuffer[i];
-			NonWhitePixelsIndex[PixelsIndex] = i;
-			PixelsIndex++; /*At the end of the loop, will have the max number of data needed*/
-		}
-	}
-
-	/*Fade animation logo in*/
-	memset(ITMLogoRAMBuffer, 0xFFFF, ITMLOGO_SIZE*2); /*Setting white buffer*/
-	ITMLogoRAM.p = ITMLogoRAMBuffer;
-	while(memcmp(ITMLogoRAMBuffer, ITMLogoData, ITMLOGO_SIZE) != 0)
-	{
-		for(uint16_t i = 0; i < PixelsIndex; i++)
-		{
-			if(ITMLogoRAMBuffer[NonWhitePixelsIndex[i]] != NonWhitePixelsValue[i])
-			{
-				ITMLogoRAMBuffer[NonWhitePixelsIndex[i]]--; /*Until it gets the color*/
-			}
-		}
-		ITMLogoRAM.p = ITMLogoRAMBuffer;
-		UG_DrawBMP((LCD_WIDTH-ITMLogoRAM.width)/2, (LCD_HEIGHT-ITMLogoRAM.height)/2, &ITMLogoRAM);
-		UG_Update();
-		osDelay(pdMS_TO_TICKS(10));
-	}
-
-	UG_DrawBMP((LCD_WIDTH-ITMLogoRAM.width)/2, (LCD_HEIGHT-ITMLogoRAM.height)/2, &ITMLogoRAM);
-	UG_Update();
-	osDelay(pdMS_TO_TICKS(3000));
-
-	free(ITMLogoRAMBuffer);
-	free(NonWhitePixelsValue);
-	free(NonWhitePixelsIndex);
-	/*!HIGH RAM CONSUMPTION ZONE*/
-}
-
-static void ITMLogoFadeOut(void)
-{
-
-}
-
-static void StringFadeIn(void)
-{
-
-}
-
-static void StringFadeOut(void)
-{
-
-}
-
-static void DynamicErrorHandler(char *str)
-{
-	/*Halting the task*/
-	while(1)
-	{
-		/*Do nothing, check buffer "str" with debugger*/
-	}
+	result_t result;
+	result = UG_CheckboxCreate(wnd, chb, id, xs, ys, xe, ye);
+	if(result != 0)
+		return result;
+	result = UG_CheckboxSetAlignment(wnd, id, ALIGN_CENTER);
+	if(result != 0)
+			return result;
+	result = UG_CheckboxSetForeColor(wnd, id, C_GRAY);
+	if(result != 0)
+			return result;
+	result = UG_CheckboxSetForeColor(wnd, id, C_BLACK);
+	if(result != 0)
+			return result;
+	result = UG_CheckboxSetAlternateBackColor(wnd, id, C_BLACK);
+	if(result != 0)
+			return result;
+	result = UG_CheckboxSetAlternateForeColor(wnd, id, C_GRAY);
+	if(result != 0)
+			return result;
+	result = UG_CheckboxSetFont(wnd, id, FONT_6X8);
+	if(result != 0)
+			return result;
+	result = UG_CheckboxSetBackColor(wnd, id, C_WHITE);
+	return result;
 }

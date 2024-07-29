@@ -27,22 +27,28 @@
 #include "OSHandler.h"
 #include "GPUResMan.h"
 #include "UIMainSM.h"
+#include "Anim.h"
+#include "MainMenu.h"
 #include "stm32f4xx_hal_dma.h"
 #include <stdio.h>
 #include <string.h>
 
-#define WHITE_PIXEL 0xFFFF
+#define WINDOW_MAX_OBJECTS 30
 
+#define SKIP_INTRO_ANIM
+
+/**
+ * ---------------------------------------------------------
+ * 					        FUNCTION LIKE MACRO
+ * ---------------------------------------------------------
+ */
+/*Helps on the creation of a BMP*/
+#define UI_ImageCreate(window, ImgObj, IMG_ID, xs, ys) UG_ImageCreate(window, ImgObj, IMG_ID, xs, ys, 0, 0)
 /*Macro to convert RGB color to RGB565 color code*/
 #define RGB565Color(R, G, B) (uint16_t)(r<<11 | g<<5 | b)
 
-#define ASSIGN_ITM_LOGO(bmp) \
-		bmp.p = ITMLogoRAMBuffer; \
-		bmp.width = 161;     \
-		bmp.height = 153;    \
-		bmp.bpp = BMP_BPP_16;
-
 void vTaskUI(void *argument);
-void DMATrasferCpltCallback(DMA_HandleTypeDef *DmaHandle);
+UG_RESULT UI_TextboxCreate(UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye);
+UG_RESULT UI_CheckboxCreate(UG_WINDOW* wnd, UG_CHECKBOX* chb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye);
 
 #endif /* UI_H_ */

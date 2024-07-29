@@ -28,6 +28,7 @@
 #include "COM.h"
 #include "GPUResMan.h"
 #include "DiagAppl.h"
+#include "HMI.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,7 +64,7 @@ DMA_HandleTypeDef hdma_memtomem_dma2_stream5;
 DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
 /* Definitions for TaskIdle */
 osThreadId_t TaskIdleHandle;
-uint32_t TaskIdleBuffer[ 128 ];
+uint32_t TaskIdleBuffer[ 64 ];
 osStaticThreadDef_t TaskIdleControlBlock;
 const osThreadAttr_t TaskIdle_attributes = {
   .name = "TaskIdle",
@@ -71,11 +72,11 @@ const osThreadAttr_t TaskIdle_attributes = {
   .cb_size = sizeof(TaskIdleControlBlock),
   .stack_mem = &TaskIdleBuffer[0],
   .stack_size = sizeof(TaskIdleBuffer),
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityRealtime,
 };
 /* Definitions for TaskUI */
 osThreadId_t TaskUIHandle;
-uint32_t TaskUIBuffer[ 1023 ];
+uint32_t TaskUIBuffer[ 10240 ];
 osStaticThreadDef_t TaskUIControlBlock;
 const osThreadAttr_t TaskUI_attributes = {
   .name = "TaskUI",
@@ -83,23 +84,11 @@ const osThreadAttr_t TaskUI_attributes = {
   .cb_size = sizeof(TaskUIControlBlock),
   .stack_mem = &TaskUIBuffer[0],
   .stack_size = sizeof(TaskUIBuffer),
-  .priority = (osPriority_t) osPriorityBelowNormal,
-};
-/* Definitions for TaskBlink */
-osThreadId_t TaskBlinkHandle;
-uint32_t TaskBlinkBuffer[ 128 ];
-osStaticThreadDef_t TaskBlinkControlBlock;
-const osThreadAttr_t TaskBlink_attributes = {
-  .name = "TaskBlink",
-  .cb_mem = &TaskBlinkControlBlock,
-  .cb_size = sizeof(TaskBlinkControlBlock),
-  .stack_mem = &TaskBlinkBuffer[0],
-  .stack_size = sizeof(TaskBlinkBuffer),
-  .priority = (osPriority_t) osPriorityBelowNormal,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for TaskLeds */
 osThreadId_t TaskLedsHandle;
-uint32_t TaskLedsBuffer[ 128 ];
+uint32_t TaskLedsBuffer[ 64 ];
 osStaticThreadDef_t TaskLedsControlBlock;
 const osThreadAttr_t TaskLeds_attributes = {
   .name = "TaskLeds",
@@ -119,7 +108,7 @@ const osThreadAttr_t TaskWdgM_attributes = {
   .cb_size = sizeof(TaskWdgMControlBlock),
   .stack_mem = &TaskWdgMBuffer[0],
   .stack_size = sizeof(TaskWdgMBuffer),
-  .priority = (osPriority_t) osPriorityBelowNormal,
+  .priority = (osPriority_t) osPriorityRealtime,
 };
 /* Definitions for TaskCOM */
 osThreadId_t TaskCOMHandle;
@@ -131,7 +120,7 @@ const osThreadAttr_t TaskCOM_attributes = {
   .cb_size = sizeof(TaskCOMControlBlock),
   .stack_mem = &TaskCOMBuffer[0],
   .stack_size = sizeof(TaskCOMBuffer),
-  .priority = (osPriority_t) osPriorityBelowNormal,
+  .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for TaskDiagAppl */
 osThreadId_t TaskDiagApplHandle;
@@ -143,7 +132,7 @@ const osThreadAttr_t TaskDiagAppl_attributes = {
   .cb_size = sizeof(TaskDiagApplControlBlock),
   .stack_mem = &TaskDiagApplBuffer[0],
   .stack_size = sizeof(TaskDiagApplBuffer),
-  .priority = (osPriority_t) osPriorityBelowNormal,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for TaskGPUResMan */
 osThreadId_t TaskGPUResManHandle;
@@ -157,6 +146,18 @@ const osThreadAttr_t TaskGPUResMan_attributes = {
   .stack_size = sizeof(TaskGPUResManBuffer),
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
+/* Definitions for TaskHMI */
+osThreadId_t TaskHMIHandle;
+uint32_t TaskHMIBuffer[ 128 ];
+osStaticThreadDef_t TaskHMIControlBlock;
+const osThreadAttr_t TaskHMI_attributes = {
+  .name = "TaskHMI",
+  .cb_mem = &TaskHMIControlBlock,
+  .cb_size = sizeof(TaskHMIControlBlock),
+  .stack_mem = &TaskHMIBuffer[0],
+  .stack_size = sizeof(TaskHMIBuffer),
+  .priority = (osPriority_t) osPriorityHigh,
+};
 /* Definitions for xFIFOSetGPUReq */
 osMessageQueueId_t xFIFOSetGPUReqHandle;
 const osMessageQueueAttr_t xFIFOSetGPUReq_attributes = {
@@ -166,6 +167,11 @@ const osMessageQueueAttr_t xFIFOSetGPUReq_attributes = {
 osMessageQueueId_t xFIFOGetGPUBufHandle;
 const osMessageQueueAttr_t xFIFOGetGPUBuf_attributes = {
   .name = "xFIFOGetGPUBuf"
+};
+/* Definitions for xFIFOButtons */
+osMessageQueueId_t xFIFOButtonsHandle;
+const osMessageQueueAttr_t xFIFOButtons_attributes = {
+  .name = "xFIFOButtons"
 };
 /* Definitions for xSemaphoreCOMReady */
 osSemaphoreId_t xSemaphoreCOMReadyHandle;
@@ -219,6 +225,11 @@ osEventFlagsId_t xEventDTCHandle;
 const osEventFlagsAttr_t xEventDTC_attributes = {
   .name = "xEventDTC"
 };
+/* Definitions for xEventButtonsFIFOEnabled */
+osEventFlagsId_t xEventButtonsFIFOEnabledHandle;
+const osEventFlagsAttr_t xEventButtonsFIFOEnabled_attributes = {
+  .name = "xEventButtonsFIFOEnabled"
+};
 /* USER CODE BEGIN PV */
 osMemoryPoolId_t MemoryPool8;  /*Generic Memory Pool designed for members of 1 Byte size*/
 osMemoryPoolId_t MemoryPool16; /*Generic Memory Pool designed for members of 2 Byte size*/
@@ -238,12 +249,12 @@ static void MX_USART1_UART_Init(void);
 static void MX_TIM11_Init(void);
 void vTaskIdle(void *argument);
 extern void vTaskUI(void *argument);
-void vTaskBlink(void *argument);
 void vTaskLeds(void *argument);
 void vTaskWdgM(void *argument);
 extern void vTaskCOM(void *argument);
 extern void vTaskDiagAppl(void *argument);
 extern void vTaskGPUResMan(void *argument);
+extern void vTaskHMI(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -329,6 +340,9 @@ int main(void)
   /* creation of xFIFOGetGPUBuf */
   xFIFOGetGPUBufHandle = osMessageQueueNew (16, sizeof(void **), &xFIFOGetGPUBuf_attributes);
 
+  /* creation of xFIFOButtons */
+  xFIFOButtonsHandle = osMessageQueueNew (16, sizeof(Buttons), &xFIFOButtons_attributes);
+
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
@@ -339,9 +353,6 @@ int main(void)
 
   /* creation of TaskUI */
   TaskUIHandle = osThreadNew(vTaskUI, NULL, &TaskUI_attributes);
-
-  /* creation of TaskBlink */
-  TaskBlinkHandle = osThreadNew(vTaskBlink, NULL, &TaskBlink_attributes);
 
   /* creation of TaskLeds */
   TaskLedsHandle = osThreadNew(vTaskLeds, NULL, &TaskLeds_attributes);
@@ -358,6 +369,9 @@ int main(void)
   /* creation of TaskGPUResMan */
   TaskGPUResManHandle = osThreadNew(vTaskGPUResMan, NULL, &TaskGPUResMan_attributes);
 
+  /* creation of TaskHMI */
+  TaskHMIHandle = osThreadNew(vTaskHMI, NULL, &TaskHMI_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -371,6 +385,9 @@ int main(void)
 
   /* creation of xEventDTC */
   xEventDTCHandle = osEventFlagsNew(&xEventDTC_attributes);
+
+  /* creation of xEventButtonsFIFOEnabled */
+  xEventButtonsFIFOEnabledHandle = osEventFlagsNew(&xEventButtonsFIFOEnabled_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
 
@@ -723,18 +740,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_GP_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : Down_IT_Pin */
-  GPIO_InitStruct.Pin = Down_IT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(Down_IT_GPIO_Port, &GPIO_InitStruct);
+  /*Configure GPIO pin : BtnDown_Pin */
+  GPIO_InitStruct.Pin = BtnDown_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(BtnDown_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Left_IT_Pin Ok_IT_Pin Right_IT_Pin Up_IT_Pin
-                           EncoderSW_Pin */
-  GPIO_InitStruct.Pin = Left_IT_Pin|Ok_IT_Pin|Right_IT_Pin|Up_IT_Pin
-                          |EncoderSW_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  /*Configure GPIO pins : BtnLeft_Pin BtnOK_Pin BtnRight_Pin BtnUP_Pin
+                           BtnMenu_Pin */
+  GPIO_InitStruct.Pin = BtnLeft_Pin|BtnOK_Pin|BtnRight_Pin|BtnUP_Pin
+                          |BtnMenu_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LCD_DC_Pin LCD_RST_Pin */
@@ -751,6 +768,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : Reset_IT_Pin */
+  GPIO_InitStruct.Pin = Reset_IT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(Reset_IT_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pins : LED_COMM_Pin LED_USB_Pin LED_CONTROL_Pin */
   GPIO_InitStruct.Pin = LED_COMM_Pin|LED_USB_Pin|LED_CONTROL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -758,19 +781,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : EncoderSW_Pin */
+  GPIO_InitStruct.Pin = EncoderSW_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(EncoderSW_GPIO_Port, &GPIO_InitStruct);
+
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI0_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
-
-  HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(EXTI1_IRQn);
-
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(EXTI2_IRQn);
-
-  HAL_NVIC_SetPriority(EXTI3_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(EXTI3_IRQn);
-
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
@@ -792,31 +809,16 @@ static void MX_GPIO_Init(void)
 void vTaskIdle(void *argument)
 {
   /* USER CODE BEGIN 5 */
+	/* Critical init subroutines */
+
+	/* Finish critical init subroutines */
+	osThreadSetPriority(TaskIdleHandle, osPriorityLow);
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
   /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_vTaskBlink */
-/**
-* @brief Function implementing the TaskBlink thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_vTaskBlink */
-void vTaskBlink(void *argument)
-{
-  /* USER CODE BEGIN vTaskBlink */
-
-  for(;;)
-  {
-    HAL_GPIO_TogglePin(LED_GP_GPIO_Port, LED_GP_Pin);
-    osDelay(pdMS_TO_TICKS(250));
-  }
-  /* USER CODE END vTaskBlink */
 }
 
 /* USER CODE BEGIN Header_vTaskLeds */
@@ -832,13 +834,14 @@ void vTaskLeds(void *argument)
   /* Infinite loop */
   for(;;)
   {
+  	/*
     HAL_GPIO_TogglePin(LED_COMM_GPIO_Port, LED_COMM_Pin);
     osDelay(pdMS_TO_TICKS(100));
     HAL_GPIO_TogglePin(LED_USB_GPIO_Port, LED_USB_Pin);
     osDelay(pdMS_TO_TICKS(100));
     HAL_GPIO_TogglePin(LED_CONTROL_GPIO_Port, LED_CONTROL_Pin);
     osDelay(pdMS_TO_TICKS(100));
-
+    */
   }
   /* USER CODE END vTaskLeds */
 }

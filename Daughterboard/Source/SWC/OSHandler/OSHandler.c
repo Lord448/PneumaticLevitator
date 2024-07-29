@@ -61,7 +61,7 @@ uint16_t usCheckHeapUsage(void)
 	size_t UsedHeapSize = TotalHeapSize - xPortGetFreeHeapSize();
 	Percentage = (UsedHeapSize / TotalHeapSize) * 100;
 
-	return UsedHeapSize;
+	return Percentage;
 }
 
 
