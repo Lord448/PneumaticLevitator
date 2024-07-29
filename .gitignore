@@ -6,3 +6,4 @@
 .launch
 **/Debug/*
 DaughterBoardTest/DaughterBoardTest Debug.launch
+.~lock.**

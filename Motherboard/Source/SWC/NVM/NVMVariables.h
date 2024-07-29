@@ -18,6 +18,58 @@
 #ifndef SWC_NVM_NVMVARIABLES_H_
 #define SWC_NVM_NVMVARIABLES_H_
 
+#include "NVM.h"
 
+
+/* TODO: Instrumented code */
+typedef enum ActionMode
+{
+	AutoPID = 0,
+	Slave = 1,
+	Manual = 2
+}ActionMode;
+
+/**
+ * ---------------------------------------------------------
+ * 					      CONFIGURATIONS REGION
+ * ---------------------------------------------------------
+ */
+
+#define FABRIC_CONFIG_BASE_ADDR (uint16_t) 0x0000
+
+#define MODE_CONFIG_BASE_ADDR (uint16_t) 0x0001
+
+
+/**
+ * ---------------------------------------------------------
+ * 					     			 PID REGION
+ * ---------------------------------------------------------
+ */
+
+#define KP_PID_BASE_ADDR (uint16_t) 0x000B
+
+#define KI_PID_BASE_ADDR (uint16_t) 0x000F
+
+#define KD_PID_BASE_ADDR (uint16_t) 0x0013
+
+#define PLIMIT_PID_BASE_ADDR (uint16_t) 0x0017
+
+#define ILIMIT_PID_BASE_ADDR (uint16_t) 0x001B
+
+#define DLIMIT_PID_BASE_ADDR (uint16_t) 0x001F
+
+#define SETPOINT_PID_BASE_ADDR (uint16_t) 0x0023
+
+/**
+ * ---------------------------------------------------------
+ * 		  			 DIAGNOSTICS MOTHERBOARD REGION
+ * ---------------------------------------------------------
+ */
+
+/**
+ * ---------------------------------------------------------
+ * 		  			 DIAGNOSTICS DAUGHTER REGION
+ * ---------------------------------------------------------
+ */
 
 #endif /* SWC_NVM_NVMVARIABLES_H_ */
