@@ -1,7 +1,7 @@
 /**
  * @file      NVM.h
  * @author    Pedro Rojo (pedroeroca@outlook.com)
- *
+ *            Hector Rojo (hectoraroca@outlook.com)
  * @brief     TODO
  *
  * @date      May 30, 2024

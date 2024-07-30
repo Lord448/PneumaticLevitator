@@ -1,6 +1,7 @@
 /**
  * @file      NVMVariables.h
  * @author    Pedro Rojo (pedroeroca@outlook.com)
+ * 						Hector Rojo (hectoraroca@outlook.com)
  *
  * @brief     List of the variables of the NVM
  *            each symbol have with it the respective

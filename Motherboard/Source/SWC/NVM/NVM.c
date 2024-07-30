@@ -1,6 +1,7 @@
 /**
  * @file      NVM.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
+ * 						Hector Rojo (hectoraroca@outlook.com)
  *
  * @brief     TODO
  *
@@ -453,8 +454,29 @@ static result_t SendUSB(char *format, ...) /*TODO: Instrumented code*/
 static void readDefaultValues(void)
 {
 	bool FabricConfig = false;
-	EEPROM_I2C_READ(FABRIC_CONFIG_BASE_ADDR, (uint8_t *)FabricConfig, sizeof(uint8_t), 100);
+	ActionMode mode = Slave;
+	NVMType32 kp = {.dataFloat = 100}, ki = {.dataFloat = 150}, kd = {.dataFloat = 105};
+	NVMType32 Plimit = {.data32 = 1}, Ilimit = {.data32 = 2}, Dlimit = {.data32 = 3};
+	NVMType32 setpoint = {.data32= 255};
+	EEPROM_I2C_READ(FABRIC_CONFIG_BASE_ADDR, (uint8_t *)&FabricConfig, sizeof(uint8_t), 100);
+	EEPROM_I2C_READ(MODE_CONFIG_BASE_ADDR, (uint8_t *)&mode, sizeof(uint8_t), 100);
+	EEPROM_I2C_READ(KP_PID_BASE_ADDR, (uint8_t *)kp.rawData, sizeof(NVMType32), 100);
+	EEPROM_I2C_READ(KI_PID_BASE_ADDR, (uint8_t *)ki.rawData, sizeof(NVMType32), 100);
+	EEPROM_I2C_READ(KD_PID_BASE_ADDR, (uint8_t *)kd.rawData, sizeof(NVMType32), 100);
+	EEPROM_I2C_READ(PLIMIT_PID_BASE_ADDR, (uint8_t *)Plimit.rawData, sizeof(NVMType32), 100);
+	EEPROM_I2C_READ(ILIMIT_PID_BASE_ADDR, (uint8_t *)Ilimit.rawData, sizeof(NVMType32), 100);
+	EEPROM_I2C_READ(DLIMIT_PID_BASE_ADDR, (uint8_t *)Dlimit.rawData, sizeof(NVMType32), 100);
+	EEPROM_I2C_READ(SETPOINT_PID_BASE_ADDR, (uint8_t *)setpoint.rawData, sizeof(NVMType32), 100);
 	SendUSB("FabricConfig: %d", FabricConfig);
+	SendUSB("Mode: %d", mode);
+	SendUSB("Kp = %d", kp.data32);
+	SendUSB("Ki = %d", ki.data32);
+	SendUSB("Kd = %d", kd.data32);
+	SendUSB("Plimit = %d", Plimit.data32);
+	SendUSB("Ilimit = %d", Ilimit.data32);
+	SendUSB("Dlimit = %d", Dlimit.data32);
+	SendUSB("Set point = %d", setpoint.data32);
 }
+
 
 #endif
