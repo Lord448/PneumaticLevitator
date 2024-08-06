@@ -2,7 +2,10 @@
  * @file      LEDS.h
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This software component helps to make animations
+ *            with the LEDs provided by the hardware designed
+ *            the main animation error that shows the code of
+ *            the fatal errors is the ORLed_ToggleAnim
  *
  * @date      5 ago 2024
  *

@@ -93,6 +93,8 @@ void Error_Handler(void);
 #define FATAL_ERROR_SYSTEM (uint32_t) 1U << 0
 #define FATAL_ERROR_EEPROM (uint32_t) 1U << 1
 #define FATAL_ERROR_GPU    (uint32_t) 2U << 2
+
+#define FATAL_ERROR_GPU_TIMES 1
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
