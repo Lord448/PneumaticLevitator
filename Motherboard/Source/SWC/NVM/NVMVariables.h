@@ -20,15 +20,7 @@
 #define SWC_NVM_NVMVARIABLES_H_
 
 #include "NVM.h"
-
-
-/* TODO: Instrumented code */
-typedef enum ActionMode
-{
-	AutoPID = 0,
-	Slave = 1,
-	Manual = 2
-}ActionMode;
+#include "ModeManager.h"
 
 /**
  * ---------------------------------------------------------

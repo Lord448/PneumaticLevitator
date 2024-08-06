@@ -62,7 +62,6 @@ Requirements on timers
 Acknowledge with Daughter Board @ 10ms (Period desired by COM Engineer)
 Fan RPM measure (Input Capture)
 Fan PWM controller @ 24KHz (manufacturer recommended frequency)
-PID Controller (Possible)
 
 TIM_HandleTypeDef htim1; //Pending for application
 TIM_HandleTypeDef htim2; //Pending for application
@@ -145,18 +144,6 @@ const osThreadAttr_t TaskCOM_attributes = {
   .stack_size = sizeof(TaskCOMBuffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for TaskSensorActua */
-osThreadId_t TaskSensorActuaHandle;
-uint32_t TaskSensorActuaBuffer[ 512 ];
-osStaticThreadDef_t TaskSensorActuaControlBlock;
-const osThreadAttr_t TaskSensorActua_attributes = {
-  .name = "TaskSensorActua",
-  .cb_mem = &TaskSensorActuaControlBlock,
-  .cb_size = sizeof(TaskSensorActuaControlBlock),
-  .stack_mem = &TaskSensorActuaBuffer[0],
-  .stack_size = sizeof(TaskSensorActuaBuffer),
-  .priority = (osPriority_t) osPriorityAboveNormal,
-};
 /* Definitions for TaskWdgM */
 osThreadId_t TaskWdgMHandle;
 uint32_t TaskWdgMBuffer[ 128 ];
@@ -191,6 +178,30 @@ const osThreadAttr_t TaskLeds_attributes = {
   .cb_size = sizeof(TaskLedsControlBlock),
   .stack_mem = &TaskLedsBuffer[0],
   .stack_size = sizeof(TaskLedsBuffer),
+  .priority = (osPriority_t) osPriorityAboveNormal,
+};
+/* Definitions for TaskSensor */
+osThreadId_t TaskSensorHandle;
+uint32_t TaskSensorBuffer[ 256 ];
+osStaticThreadDef_t TaskSensorControlBlock;
+const osThreadAttr_t TaskSensor_attributes = {
+  .name = "TaskSensor",
+  .cb_mem = &TaskSensorControlBlock,
+  .cb_size = sizeof(TaskSensorControlBlock),
+  .stack_mem = &TaskSensorBuffer[0],
+  .stack_size = sizeof(TaskSensorBuffer),
+  .priority = (osPriority_t) osPriorityAboveNormal,
+};
+/* Definitions for TaskFAN */
+osThreadId_t TaskFANHandle;
+uint32_t TaskFANBuffer[ 256 ];
+osStaticThreadDef_t TaskFANControlBlock;
+const osThreadAttr_t TaskFAN_attributes = {
+  .name = "TaskFAN",
+  .cb_mem = &TaskFANControlBlock,
+  .cb_size = sizeof(TaskFANControlBlock),
+  .stack_mem = &TaskFANBuffer[0],
+  .stack_size = sizeof(TaskFANBuffer),
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for xFIFO_COM */
@@ -253,6 +264,14 @@ const osEventFlagsAttr_t xEvent_FatalError_attributes = {
   .cb_mem = &xEvent_FatalErrorControlBlock,
   .cb_size = sizeof(xEvent_FatalErrorControlBlock),
 };
+/* Definitions for xEvent_ControlModes */
+osEventFlagsId_t xEvent_ControlModesHandle;
+osStaticEventGroupDef_t xEvent_ControlModesControlBlock;
+const osEventFlagsAttr_t xEvent_ControlModes_attributes = {
+  .name = "xEvent_ControlModes",
+  .cb_mem = &xEvent_ControlModesControlBlock,
+  .cb_size = sizeof(xEvent_ControlModesControlBlock),
+};
 /* USER CODE BEGIN PV */
 osMemoryPoolId_t MemoryPoolNVM;  /* Memory Pool for NVM data allocation*/
 
@@ -278,10 +297,11 @@ void vTaskIdle(void *argument);
 extern void vTaskModeManager(void *argument);
 extern void vTaskPID(void *argument);
 extern void vTaskCOM(void *argument);
-void vTaskSensorActuator(void *argument);
 void vTaskWdgM(void *argument);
 extern void vTaskDiagAppl(void *argument);
 extern void vTaskLeds(void *argument);
+extern void vTaskSensor(void *argument);
+extern void vTaskFAN(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -393,9 +413,6 @@ int main(void)
   /* creation of TaskCOM */
   TaskCOMHandle = osThreadNew(vTaskCOM, NULL, &TaskCOM_attributes);
 
-  /* creation of TaskSensorActua */
-  TaskSensorActuaHandle = osThreadNew(vTaskSensorActuator, NULL, &TaskSensorActua_attributes);
-
   /* creation of TaskWdgM */
   TaskWdgMHandle = osThreadNew(vTaskWdgM, NULL, &TaskWdgM_attributes);
 
@@ -405,6 +422,12 @@ int main(void)
   /* creation of TaskLeds */
   TaskLedsHandle = osThreadNew(vTaskLeds, NULL, &TaskLeds_attributes);
 
+  /* creation of TaskSensor */
+  TaskSensorHandle = osThreadNew(vTaskSensor, NULL, &TaskSensor_attributes);
+
+  /* creation of TaskFAN */
+  TaskFANHandle = osThreadNew(vTaskFAN, NULL, &TaskFAN_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -412,6 +435,9 @@ int main(void)
   /* Create the event(s) */
   /* creation of xEvent_FatalError */
   xEvent_FatalErrorHandle = osEventFlagsNew(&xEvent_FatalError_attributes);
+
+  /* creation of xEvent_ControlModes */
+  xEvent_ControlModesHandle = osEventFlagsNew(&xEvent_ControlModes_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
@@ -723,9 +749,9 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 65535;
+  htim3.Init.Period = 2999;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
   {
     Error_Handler();
@@ -998,43 +1024,12 @@ void vTaskIdle(void *argument)
   /*TODO: Implement strategy for CPU Load measures*/
   NVM_Init();
   osThreadSetPriority(TaskIdleHandle, osPriorityLow);
-
-
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
   /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_vTaskSensorActuator */
-/**
-* @brief Function implementing the TaskSensorActua thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_vTaskSensorActuator */
-void vTaskSensorActuator(void *argument)
-{
-  /* USER CODE BEGIN vTaskSensorActuator */
-	const TickType_t taskResolutionMS = 10;
-	TickType_t tick;
-
-	DistanceSensor_Init();
-	FAN_Init();
-	tick = osKernelGetTickCount();
-  for(;;)
-  {
-  	DistanceSensor_MainRunnable();
-  	FAN_MainRunnable();
-  	osSemaphoreRelease(xSemaphore_PIDHandle);
-
-  	/*Parsed Loop Handling with 10ms resolution*/
-  	tick += pdMS_TO_TICKS(taskResolutionMS);
-  	osDelayUntil(tick);
-  }
-  /* USER CODE END vTaskSensorActuator */
 }
 
 /* USER CODE BEGIN Header_vTaskWdgM */

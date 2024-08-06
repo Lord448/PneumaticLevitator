@@ -1,6 +1,6 @@
 /**
  * @file      DistanceSensor.c
- * @author    TODO
+ * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
  * @brief     TODO
  *
@@ -25,12 +25,16 @@ static VL53L0X_RangingMeasurementData_t RangingData;
 extern osMessageQueueId_t xFIFO_COMHandle;
 extern osMessageQueueId_t xFIFO_DistanceHandle;
 
-void DistanceSensor_Init(void)
+void vTaskSensor(void *argument)
 {
+	const uint32_t MeasureTolerance = 5;
+	const uint32_t Reference = 520;
 	uint32_t refSpadCount;
 	uint8_t isApertureSpads;
 	uint8_t VhvSettings;
 	uint8_t PhaseCal;
+	uint16_t distance, past_measure;
+	PDU_t distance_PDU;
 
 	Dev->I2cHandle = &hi2c1;
 	Dev->I2cDevAddr = VL53L0X_ADDR;
@@ -57,28 +61,22 @@ void DistanceSensor_Init(void)
 	VL53L0X_SetMeasurementTimingBudgetMicroSeconds(Dev, 33000);
 	VL53L0X_SetVcselPulsePeriod(Dev, VL53L0X_VCSEL_PERIOD_PRE_RANGE, 18);
 	VL53L0X_SetVcselPulsePeriod(Dev, VL53L0X_VCSEL_PERIOD_FINAL_RANGE, 14);
-}
-
-void DistanceSensor_MainRunnable(void)
-{
-	const uint32_t MeasureTolerance = 5;
-	const uint32_t Reference = 520;
-	static uint16_t distance, past_measure;
-	PDU_t distance_PDU;
-
-	VL53L0X_PerformSingleRangingMeasurement(Dev, &RangingData);
-	if(RangingData.RangeStatus == 0)
-  {
-		if(RangingData.RangeMilliMeter > past_measure+MeasureTolerance || RangingData.RangeMilliMeter < past_measure-MeasureTolerance)
-		{
-			distance = Reference - RangingData.RangeMilliMeter;
-			//distance_PDU.rawData = distance;
-			//distance_PDU.chunks[4] = 0; /*TODO: Add the message ID*/
-			osMessageQueuePut(xFIFO_DistanceHandle, &distance, 0U, 0U); /*Sending to PID*/
-			osMessageQueuePut(xFIFO_COMHandle, &distance_PDU, 0U, 0U); /*Sending to COM*/
+	for(;;)
+	{
+		VL53L0X_PerformSingleRangingMeasurement(Dev, &RangingData);
+		if(RangingData.RangeStatus == 0)
+	  {
+			if(RangingData.RangeMilliMeter > past_measure+MeasureTolerance || RangingData.RangeMilliMeter < past_measure-MeasureTolerance)
+			{
+				distance = Reference - RangingData.RangeMilliMeter;
+				//distance_PDU.rawData = distance;
+				//distance_PDU.chunks[4] = 0; /*TODO: Add the message ID*/
+				osMessageQueuePut(xFIFO_DistanceHandle, &distance, 0U, 0U); /*Sending to PID*/
+				osMessageQueuePut(xFIFO_COMHandle, &distance_PDU, 0U, 0U); /*Sending to COM*/
+			}
 		}
+		past_measure = RangingData.RangeMilliMeter;
 	}
-	past_measure = RangingData.RangeMilliMeter;
 }
 
 /*TODO (Ignore if sensor has internal filters)*/

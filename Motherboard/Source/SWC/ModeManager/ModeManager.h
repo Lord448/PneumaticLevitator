@@ -1,6 +1,6 @@
 /**
  * @file      ModeManager.h
- * @author    TODO
+ * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
  * @brief     TODO
  *
@@ -16,6 +16,24 @@
 
 #ifndef SWC_MODEMANAGER_MODEMANAGER_H_
 #define SWC_MODEMANAGER_MODEMANAGER_H_
+
+#include "main.h"
+#include "cmsis_os.h"
+
+#define AUTO_PID_FLAG 1U << 0
+#define SLAVE_FLAG    1U << 1
+#define MANUAL_FLAG   1U << 2
+
+#define ALL_CONTROL_MODE_FLAGS AUTO_PID_FLAG | SLAVE_FLAG | MANUAL_FLAG
+
+#define THREAD_FLAG_DISABLE_PID 1U << 0
+#define THREAD_FLAG_ENABLE_PID  1U << 1
+
+typedef enum ControlModes{
+	AutoPID,
+	Slave,
+	Manual
+}ControlModes;
 
 void vTaskModeManager(void *argument);
 

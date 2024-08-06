@@ -20,6 +20,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "NVMVariables.h"
+#include "ModeManager.h"
 
 #define MAKE_HARD_CODED_TEST
 

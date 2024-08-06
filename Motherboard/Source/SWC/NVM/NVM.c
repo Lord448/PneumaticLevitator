@@ -288,7 +288,7 @@ result_t NVM_loadDefaultValues(void)
 	/*TODO:In case of creating a new doc NVMVariables.c move the variables*/
 	/*Configurations region*/
 	const bool FabricConfigDefaultVal = true;
-	const ActionMode ModeDefaultVal = AutoPID;
+	const ControlModes ModeDefaultVal = AutoPID;
 	/*PID region*/
 	const NVMType32 KpDefaultVal = {.dataFloat = 0};
 	const NVMType32 KiDefaultVal = {.dataFloat = 0};
@@ -567,10 +567,11 @@ static result_t SendUSB(char *format, ...) /*TODO: Instrumented code*/
 static void readDefaultValues(void)
 {
 	bool FabricConfig = false;
-	ActionMode mode = Slave;
+	ControlModes mode = Slave;
 	NVMType32 kp = {.dataFloat = 100}, ki = {.dataFloat = 150}, kd = {.dataFloat = 105};
 	NVMType32 Plimit = {.data32 = 1}, Ilimit = {.data32 = 2}, Dlimit = {.data32 = 3};
 	NVMType32 setpoint = {.data32= 255};
+
 	EEPROM_Read(FABRIC_CONFIG_BASE_ADDR, (uint8_t *)&FabricConfig, sizeof(uint8_t), 100);
 	EEPROM_Read(MODE_CONFIG_BASE_ADDR, (uint8_t *)&mode, sizeof(uint8_t), 100);
 	EEPROM_Read(KP_PID_BASE_ADDR, (uint8_t *)kp.rawData, sizeof(NVMType32), 100);
