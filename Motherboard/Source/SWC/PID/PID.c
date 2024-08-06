@@ -16,12 +16,14 @@
 
 #include "PID.h"
 
+extern osThreadId_t TaskPIDHandle;
+
 extern osMessageQueueId_t xFIFO_ControlActionHandle;
 extern osMessageQueueId_t xFIFO_DistanceHandle;
 extern osMessageQueueId_t xFIFO_PIDConfigsHandle;
-extern osMessageQueueId_t xFIFO_COMHandle;
+//extern osMessageQueueId_t xFIFO_COMHandle;
 
-extern osSemaphoreId_t xSemaphore_PIDHandle;
+//extern osSemaphoreId_t xSemaphore_PIDHandle;
 extern osSemaphoreId_t xSemaphore_PID_InitHandle;
 
 static struct PID {
@@ -100,6 +102,7 @@ void vTaskPID(void *argument)
 
         if (!PID.Is_Active) {
             /* If the PID is inactive, skip the current iteration */
+        		osThreadSuspend(TaskPIDHandle);
             continue;
         }
 

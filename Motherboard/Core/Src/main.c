@@ -32,6 +32,9 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticTask_t osStaticThreadDef_t;
+typedef StaticQueue_t osStaticMessageQDef_t;
+typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -110,30 +113,50 @@ const osThreadAttr_t TaskModeManager_attributes = {
 };
 /* Definitions for TaskPID */
 osThreadId_t TaskPIDHandle;
+uint32_t TaskPIDBuffer[ 256 ];
+osStaticThreadDef_t TaskPIDControlBlock;
 const osThreadAttr_t TaskPID_attributes = {
   .name = "TaskPID",
-  .stack_size = 128 * 4,
+  .cb_mem = &TaskPIDControlBlock,
+  .cb_size = sizeof(TaskPIDControlBlock),
+  .stack_mem = &TaskPIDBuffer[0],
+  .stack_size = sizeof(TaskPIDBuffer),
   .priority = (osPriority_t) osPriorityHigh,
 };
 /* Definitions for TaskCOM */
 osThreadId_t TaskCOMHandle;
+uint32_t TaskCOMBuffer[ 256 ];
+osStaticThreadDef_t TaskCOMControlBlock;
 const osThreadAttr_t TaskCOM_attributes = {
   .name = "TaskCOM",
-  .stack_size = 128 * 4,
+  .cb_mem = &TaskCOMControlBlock,
+  .cb_size = sizeof(TaskCOMControlBlock),
+  .stack_mem = &TaskCOMBuffer[0],
+  .stack_size = sizeof(TaskCOMBuffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for TaskSensorActua */
 osThreadId_t TaskSensorActuaHandle;
+uint32_t TaskSensorActuaBuffer[ 128 ];
+osStaticThreadDef_t TaskSensorActuaControlBlock;
 const osThreadAttr_t TaskSensorActua_attributes = {
   .name = "TaskSensorActua",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityHigh,
+  .cb_mem = &TaskSensorActuaControlBlock,
+  .cb_size = sizeof(TaskSensorActuaControlBlock),
+  .stack_mem = &TaskSensorActuaBuffer[0],
+  .stack_size = sizeof(TaskSensorActuaBuffer),
+  .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for TaskWdgM */
 osThreadId_t TaskWdgMHandle;
+uint32_t TaskWdgMBuffer[ 128 ];
+osStaticThreadDef_t TaskWdgMControlBlock;
 const osThreadAttr_t TaskWdgM_attributes = {
   .name = "TaskWdgM",
-  .stack_size = 128 * 4,
+  .cb_mem = &TaskWdgMControlBlock,
+  .cb_size = sizeof(TaskWdgMControlBlock),
+  .stack_mem = &TaskWdgMBuffer[0],
+  .stack_size = sizeof(TaskWdgMBuffer),
   .priority = (osPriority_t) osPriorityRealtime,
 };
 /* Definitions for TaskEcuM */
@@ -150,15 +173,39 @@ const osThreadAttr_t TaskDiagAppl_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for TaskLeds */
+osThreadId_t TaskLedsHandle;
+uint32_t TaskLedsBuffer[ 64 ];
+osStaticThreadDef_t TaskLedsControlBlock;
+const osThreadAttr_t TaskLeds_attributes = {
+  .name = "TaskLeds",
+  .cb_mem = &TaskLedsControlBlock,
+  .cb_size = sizeof(TaskLedsControlBlock),
+  .stack_mem = &TaskLedsBuffer[0],
+  .stack_size = sizeof(TaskLedsBuffer),
+  .priority = (osPriority_t) osPriorityAboveNormal,
+};
 /* Definitions for xFIFO_COM */
 osMessageQueueId_t xFIFO_COMHandle;
+uint8_t xFIFO_COMBuffer[ 16 * sizeof( PDU_t ) ];
+osStaticMessageQDef_t xFIFO_COMControlBlock;
 const osMessageQueueAttr_t xFIFO_COM_attributes = {
-  .name = "xFIFO_COM"
+  .name = "xFIFO_COM",
+  .cb_mem = &xFIFO_COMControlBlock,
+  .cb_size = sizeof(xFIFO_COMControlBlock),
+  .mq_mem = &xFIFO_COMBuffer,
+  .mq_size = sizeof(xFIFO_COMBuffer)
 };
 /* Definitions for xFIFO_Distance */
 osMessageQueueId_t xFIFO_DistanceHandle;
+uint8_t xFIFO_DistanceBuffer[ 4 * sizeof( uint16_t ) ];
+osStaticMessageQDef_t xFIFO_DistanceControlBlock;
 const osMessageQueueAttr_t xFIFO_Distance_attributes = {
-  .name = "xFIFO_Distance"
+  .name = "xFIFO_Distance",
+  .cb_mem = &xFIFO_DistanceControlBlock,
+  .cb_size = sizeof(xFIFO_DistanceControlBlock),
+  .mq_mem = &xFIFO_DistanceBuffer,
+  .mq_size = sizeof(xFIFO_DistanceBuffer)
 };
 /* Definitions for xFIFO_ControlAction */
 osMessageQueueId_t xFIFO_ControlActionHandle;
@@ -190,6 +237,14 @@ osSemaphoreId_t xSemaphore_MemoryPoolUsedHandle;
 const osSemaphoreAttr_t xSemaphore_MemoryPoolUsed_attributes = {
   .name = "xSemaphore_MemoryPoolUsed"
 };
+/* Definitions for xEvent_FatalError */
+osEventFlagsId_t xEvent_FatalErrorHandle;
+osStaticEventGroupDef_t xEvent_FatalErrorControlBlock;
+const osEventFlagsAttr_t xEvent_FatalError_attributes = {
+  .name = "xEvent_FatalError",
+  .cb_mem = &xEvent_FatalErrorControlBlock,
+  .cb_size = sizeof(xEvent_FatalErrorControlBlock),
+};
 /* USER CODE BEGIN PV */
 osMemoryPoolId_t MemoryPoolNVM;  /* Memory Pool for NVM data allocation*/
 
@@ -219,6 +274,7 @@ void vTaskSensorActuator(void *argument);
 void vTaskWdgM(void *argument);
 extern void vTaskEcuM(void *argument);
 extern void vTaskDiagAppl(void *argument);
+extern void vTaskLeds(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -342,9 +398,16 @@ int main(void)
   /* creation of TaskDiagAppl */
   TaskDiagApplHandle = osThreadNew(vTaskDiagAppl, NULL, &TaskDiagAppl_attributes);
 
+  /* creation of TaskLeds */
+  TaskLedsHandle = osThreadNew(vTaskLeds, NULL, &TaskLeds_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
+
+  /* Create the event(s) */
+  /* creation of xEvent_FatalError */
+  xEvent_FatalErrorHandle = osEventFlagsNew(&xEvent_FatalError_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
@@ -876,7 +939,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LED_OR_GPIO_Port, LED_OR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPLed1_Pin|GPLed2_Pin|WP_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, RunningLed_Pin|GPULed_Pin|WP_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, EnableFAN_Pin|TOF_XSHUT_Pin, GPIO_PIN_RESET);
@@ -894,8 +957,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(DevMode_IT_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : GPLed1_Pin GPLed2_Pin WP_Pin */
-  GPIO_InitStruct.Pin = GPLed1_Pin|GPLed2_Pin|WP_Pin;
+  /*Configure GPIO pins : RunningLed_Pin GPULed_Pin WP_Pin */
+  GPIO_InitStruct.Pin = RunningLed_Pin|GPULed_Pin|WP_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

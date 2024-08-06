@@ -2,8 +2,10 @@
 .metadata
 .settings
 [Rr]elease
+
 [Dd]ebug
-.launch
+
+**.launch
+**.cfg
 **/Debug/*
-DaughterBoardTest/DaughterBoardTest Debug.launch
 .~lock.**
