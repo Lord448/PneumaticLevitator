@@ -62,7 +62,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/DiagAppl}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/DistanceSensor}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/FAN}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/EcuM}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/ModeManager}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/NVM}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/PID}&quot;"/>
@@ -93,10 +92,10 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Source"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="USB_DEVICE"/>
 					</sourceEntries>
 				</configuration>
@@ -179,10 +178,10 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Source"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="USB_DEVICE"/>
 					</sourceEntries>
 				</configuration>

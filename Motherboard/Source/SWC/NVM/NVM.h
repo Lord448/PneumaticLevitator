@@ -38,9 +38,6 @@
 #define MEMORY_POOL_USED_FLAG 1
 #define EEPROM_USED_FLAG      2
 
-#define EEPROM_I2C_WRITE(MemAddress, pData, Size, Timeout) HAL_I2C_Mem_Write(&hi2c2, EEPROM_ADDR, MemAddress, sizeof(uint8_t), pData, Size, Timeout)
-#define EEPROM_I2C_READ(MemAddress, pData, Size, Timeout) HAL_I2C_Mem_Read(&hi2c2, EEPROM_ADDR, MemAddress, sizeof(uint8_t), pData, Size, Timeout)
-
 /**
  * @brief Union for the 32 bit data handling
  *        on the NVM and the HAL function

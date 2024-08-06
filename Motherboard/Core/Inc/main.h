@@ -90,9 +90,10 @@ void Error_Handler(void);
 #define TOF_XSHUT_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
+#define ALL_OK						 (uint32_t) 0
 #define FATAL_ERROR_SYSTEM (uint32_t) 1U << 0
 #define FATAL_ERROR_EEPROM (uint32_t) 1U << 1
-#define FATAL_ERROR_GPU    (uint32_t) 2U << 2
+#define FATAL_ERROR_GPU    (uint32_t) 1U << 2
 
 #define FATAL_ERROR_GPU_TIMES 1
 /* USER CODE END Private defines */

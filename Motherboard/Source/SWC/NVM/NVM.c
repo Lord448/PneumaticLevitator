@@ -17,6 +17,7 @@
 #include "NVM.h"
 
 extern I2C_HandleTypeDef hi2c2;
+extern osEventFlagsId_t xEvent_FatalErrorHandle;
 extern osSemaphoreId_t xSemaphore_DMA_TransferCpltHandle;
 extern osSemaphoreId_t xSemaphore_MemoryPoolUsedHandle;
 extern osMemoryPoolId_t MemoryPoolNVM; /* Memory Pool for NVM data allocation*/
@@ -406,13 +407,15 @@ static result_t EEPROM_Write(uint16_t MemAddress, uint8_t *pData, uint16_t Size,
 {
 	result_t retval = OK;
 	TickType_t limitTick;
+	uint32_t flags;
 	/* Calling the save of the function */
 	HAL_StatusTypeDef result = HAL_I2C_Mem_Write(&hi2c2, EEPROM_ADDR, MemAddress, sizeof(uint8_t), pData, Size, timeout);
 
 	switch(result)
 	{
 		case HAL_ERROR:
-			/* TODO: Turn on fatal error flag (Medium level)*/
+			/* Trigger fatal error flag (Medium level)*/
+			osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_EEPROM);
 			retval = Error;
 		break;
 		case HAL_BUSY:
@@ -436,6 +439,15 @@ static result_t EEPROM_Write(uint16_t MemAddress, uint8_t *pData, uint16_t Size,
 		break;
 		case HAL_TIMEOUT:
 			/* Exit from the function */
+			flags = osEventFlagsGet(xEvent_FatalErrorHandle);
+			if(flags & FATAL_ERROR_EEPROM)
+			{
+				osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_EEPROM);
+			}
+			else
+			{
+				/* Do Nothing */
+			}
 			retval = Timeout;
 		break;
 		case HAL_OK:
@@ -450,13 +462,15 @@ static result_t EEPROM_Read(uint16_t MemAddress, uint8_t *pData, uint16_t Size, 
 {
 	result_t retval = OK;
 	TickType_t limitTick;
+	uint32_t flags;
 	/* Calling the save of the function */
 	HAL_StatusTypeDef result = HAL_I2C_Mem_Read(&hi2c2, EEPROM_ADDR, MemAddress, sizeof(uint8_t), pData, Size, timeout);
 
 	switch(result)
 	{
 		case HAL_ERROR:
-			/* TODO: Turn on fatal error flag (Medium level)*/
+			/* Trigger on fatal error flag (Medium level)*/
+			osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_EEPROM);
 			retval = Error;
 		break;
 		case HAL_BUSY:
@@ -483,6 +497,16 @@ static result_t EEPROM_Read(uint16_t MemAddress, uint8_t *pData, uint16_t Size, 
 			retval = Timeout;
 		break;
 		case HAL_OK:
+			flags = osEventFlagsGet(xEvent_FatalErrorHandle);
+			if(flags & FATAL_ERROR_EEPROM)
+			{
+				osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_EEPROM);
+			}
+			else
+			{
+				/* Do Nothing */
+			}
+		break;
 		default:
 			/* Do Nothing */
 		break;
@@ -518,7 +542,7 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef * hi2c)
 static result_t SendUSB(char *format, ...) /*TODO: Instrumented code*/
 {
 	result_t retval = OK;
-	char buffer[1024];
+	char buffer[64];
 	va_list args;
 
 	va_start(args, format);

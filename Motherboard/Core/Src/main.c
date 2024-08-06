@@ -24,11 +24,11 @@
 /* USER CODE BEGIN Includes */
 #include "DistanceSensor.h"
 #include "DiagAppl.h"
-#include "EcuM.h"
 #include "PID.h"
 #include "FAN.h"
 #include "COM.h"
 #include "Signals.h"
+#include "NVM.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -99,16 +99,26 @@ DMA_HandleTypeDef hdma_usart1_tx;
 
 /* Definitions for TaskIdle */
 osThreadId_t TaskIdleHandle;
+uint32_t TaskIdleBuffer[ 256 ];
+osStaticThreadDef_t TaskIdleControlBlock;
 const osThreadAttr_t TaskIdle_attributes = {
   .name = "TaskIdle",
-  .stack_size = 128 * 4,
+  .cb_mem = &TaskIdleControlBlock,
+  .cb_size = sizeof(TaskIdleControlBlock),
+  .stack_mem = &TaskIdleBuffer[0],
+  .stack_size = sizeof(TaskIdleBuffer),
   .priority = (osPriority_t) osPriorityRealtime,
 };
 /* Definitions for TaskModeManager */
 osThreadId_t TaskModeManagerHandle;
+uint32_t TaskModeManagerBuffer[ 128 ];
+osStaticThreadDef_t TaskModeManagerControlBlock;
 const osThreadAttr_t TaskModeManager_attributes = {
   .name = "TaskModeManager",
-  .stack_size = 128 * 4,
+  .cb_mem = &TaskModeManagerControlBlock,
+  .cb_size = sizeof(TaskModeManagerControlBlock),
+  .stack_mem = &TaskModeManagerBuffer[0],
+  .stack_size = sizeof(TaskModeManagerBuffer),
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for TaskPID */
@@ -137,7 +147,7 @@ const osThreadAttr_t TaskCOM_attributes = {
 };
 /* Definitions for TaskSensorActua */
 osThreadId_t TaskSensorActuaHandle;
-uint32_t TaskSensorActuaBuffer[ 128 ];
+uint32_t TaskSensorActuaBuffer[ 512 ];
 osStaticThreadDef_t TaskSensorActuaControlBlock;
 const osThreadAttr_t TaskSensorActua_attributes = {
   .name = "TaskSensorActua",
@@ -159,18 +169,16 @@ const osThreadAttr_t TaskWdgM_attributes = {
   .stack_size = sizeof(TaskWdgMBuffer),
   .priority = (osPriority_t) osPriorityRealtime,
 };
-/* Definitions for TaskEcuM */
-osThreadId_t TaskEcuMHandle;
-const osThreadAttr_t TaskEcuM_attributes = {
-  .name = "TaskEcuM",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
-};
 /* Definitions for TaskDiagAppl */
 osThreadId_t TaskDiagApplHandle;
+uint32_t TaskDiagApplBuffer[ 128 ];
+osStaticThreadDef_t TaskDiagApplControlBlock;
 const osThreadAttr_t TaskDiagAppl_attributes = {
   .name = "TaskDiagAppl",
-  .stack_size = 128 * 4,
+  .cb_mem = &TaskDiagApplControlBlock,
+  .cb_size = sizeof(TaskDiagApplControlBlock),
+  .stack_mem = &TaskDiagApplBuffer[0],
+  .stack_size = sizeof(TaskDiagApplBuffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for TaskLeds */
@@ -272,7 +280,6 @@ extern void vTaskPID(void *argument);
 extern void vTaskCOM(void *argument);
 void vTaskSensorActuator(void *argument);
 void vTaskWdgM(void *argument);
-extern void vTaskEcuM(void *argument);
 extern void vTaskDiagAppl(void *argument);
 extern void vTaskLeds(void *argument);
 
@@ -391,9 +398,6 @@ int main(void)
 
   /* creation of TaskWdgM */
   TaskWdgMHandle = osThreadNew(vTaskWdgM, NULL, &TaskWdgM_attributes);
-
-  /* creation of TaskEcuM */
-  TaskEcuMHandle = osThreadNew(vTaskEcuM, NULL, &TaskEcuM_attributes);
 
   /* creation of TaskDiagAppl */
   TaskDiagApplHandle = osThreadNew(vTaskDiagAppl, NULL, &TaskDiagAppl_attributes);
@@ -994,6 +998,8 @@ void vTaskIdle(void *argument)
   /*TODO: Implement strategy for CPU Load measures*/
   NVM_Init();
   osThreadSetPriority(TaskIdleHandle, osPriorityLow);
+
+
   /* Infinite loop */
   for(;;)
   {
@@ -1045,8 +1051,6 @@ void vTaskWdgM(void *argument)
   /* USER CODE BEGIN vTaskWdgM */
 	const TickType_t ticksForResetWDG = pdMS_TO_TICKS(500); //WDG @ 500ms
 	TickType_t ticks;
-	/* Init functions for services components */
-	NVM_Init();
 	HAL_IWDG_Init(&hiwdg);
 	ticks = osKernelGetTickCount();
   /* Infinite loop */
