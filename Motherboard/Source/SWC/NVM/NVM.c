@@ -28,6 +28,8 @@ extern osMemoryPoolId_t MemoryPoolNVM; /* Memory Pool for NVM data allocation*/
  */
 
 static result_t transferEEPROMData(uint16_t startAddr, uint16_t endAddr, uint8_t *memoryPool, uint32_t timeout);
+static result_t EEPROM_Write(uint16_t MemAddress, uint8_t *pData, uint16_t Size, uint32_t timeout);
+static result_t EEPROM_Read(uint16_t MemAddress, uint8_t *pData, uint16_t Size, uint32_t timeout);
 
 #ifdef MAKE_HARD_CODED_TEST
 /* Instrumented code prototypes */
@@ -298,16 +300,16 @@ result_t NVM_loadDefaultValues(void)
 
 
 	/*Configurations variables*/
-	EEPROM_I2C_WRITE(FABRIC_CONFIG_BASE_ADDR, (uint8_t *)&FabricConfigDefaultVal, sizeof(uint8_t), 100);
-	EEPROM_I2C_WRITE(MODE_CONFIG_BASE_ADDR, (uint8_t *)&ModeDefaultVal, sizeof(uint8_t), 100);
+	EEPROM_Write(FABRIC_CONFIG_BASE_ADDR, (uint8_t *)&FabricConfigDefaultVal, sizeof(uint8_t), 100);
+	EEPROM_Write(MODE_CONFIG_BASE_ADDR, (uint8_t *)&ModeDefaultVal, sizeof(uint8_t), 100);
 	/*PID variables*/
-	EEPROM_I2C_WRITE(KP_PID_BASE_ADDR, (uint8_t *)KpDefaultVal.rawData, sizeof(NVMType32), 100);
-	EEPROM_I2C_WRITE(KI_PID_BASE_ADDR, (uint8_t *)KiDefaultVal.rawData, sizeof(NVMType32), 100);
-	EEPROM_I2C_WRITE(KD_PID_BASE_ADDR, (uint8_t *)KdDefaultVal.rawData, sizeof(NVMType32), 100);
-	EEPROM_I2C_WRITE(PLIMIT_PID_BASE_ADDR, (uint8_t *)PlimitDefaultVal.rawData, sizeof(NVMType32), 100);
-	EEPROM_I2C_WRITE(ILIMIT_PID_BASE_ADDR, (uint8_t *)IlimitDefaultVal.rawData, sizeof(NVMType32), 100);
-	EEPROM_I2C_WRITE(DLIMIT_PID_BASE_ADDR, (uint8_t *)DlimitDefaultVal.rawData, sizeof(NVMType32), 100);
-	EEPROM_I2C_WRITE(SETPOINT_PID_BASE_ADDR, (uint8_t *)SetpointDefaultVal.rawData, sizeof(NVMType32), 100);
+	EEPROM_Write(KP_PID_BASE_ADDR, (uint8_t *)KpDefaultVal.rawData, sizeof(NVMType32), 100);
+	EEPROM_Write(KI_PID_BASE_ADDR, (uint8_t *)KiDefaultVal.rawData, sizeof(NVMType32), 100);
+	EEPROM_Write(KD_PID_BASE_ADDR, (uint8_t *)KdDefaultVal.rawData, sizeof(NVMType32), 100);
+	EEPROM_Write(PLIMIT_PID_BASE_ADDR, (uint8_t *)PlimitDefaultVal.rawData, sizeof(NVMType32), 100);
+	EEPROM_Write(ILIMIT_PID_BASE_ADDR, (uint8_t *)IlimitDefaultVal.rawData, sizeof(NVMType32), 100);
+	EEPROM_Write(DLIMIT_PID_BASE_ADDR, (uint8_t *)DlimitDefaultVal.rawData, sizeof(NVMType32), 100);
+	EEPROM_Write(SETPOINT_PID_BASE_ADDR, (uint8_t *)SetpointDefaultVal.rawData, sizeof(NVMType32), 100);
 	/*Diagnostics Mother*/
 	/*Diagnostics Daughter*/
 	return OK; /*TODO: Stubbed code*/
@@ -400,6 +402,93 @@ static result_t transferEEPROMData(uint16_t startAddr, uint16_t endAddr, uint8_t
 	return result;
 }
 
+static result_t EEPROM_Write(uint16_t MemAddress, uint8_t *pData, uint16_t Size, uint32_t timeout)
+{
+	result_t retval = OK;
+	TickType_t limitTick;
+	/* Calling the save of the function */
+	HAL_StatusTypeDef result = HAL_I2C_Mem_Write(&hi2c2, EEPROM_ADDR, MemAddress, sizeof(uint8_t), pData, Size, timeout);
+
+	switch(result)
+	{
+		case HAL_ERROR:
+			/* TODO: Turn on fatal error flag (Medium level)*/
+			retval = Error;
+		break;
+		case HAL_BUSY:
+			/* Wait for the bus to be unlocked */
+			limitTick = osKernelGetTickCount() + timeout;
+			do {
+				osDelay(10); /* Wait 10 ticks to check */
+				if(osKernelGetTickCount() == limitTick)
+				{
+					/* Timeout reached exit the function */
+					return Timeout;
+				}
+				else
+				{
+					/* Do Nothing */
+				}
+			}while(HAL_LOCKED == hi2c2.Lock);
+
+			/* Making second attempt */
+			return EEPROM_Write(MemAddress, pData, Size, timeout);
+		break;
+		case HAL_TIMEOUT:
+			/* Exit from the function */
+			retval = Timeout;
+		break;
+		case HAL_OK:
+		default:
+			/* Do Nothing */
+		break;
+	}
+	return retval;
+}
+
+static result_t EEPROM_Read(uint16_t MemAddress, uint8_t *pData, uint16_t Size, uint32_t timeout)
+{
+	result_t retval = OK;
+	TickType_t limitTick;
+	/* Calling the save of the function */
+	HAL_StatusTypeDef result = HAL_I2C_Mem_Read(&hi2c2, EEPROM_ADDR, MemAddress, sizeof(uint8_t), pData, Size, timeout);
+
+	switch(result)
+	{
+		case HAL_ERROR:
+			/* TODO: Turn on fatal error flag (Medium level)*/
+			retval = Error;
+		break;
+		case HAL_BUSY:
+			/* Wait for the bus to be unlocked */
+			limitTick = osKernelGetTickCount() + timeout;
+			do {
+				osDelay(10); /* Wait 10 ticks to check */
+				if(osKernelGetTickCount() == limitTick)
+				{
+					/* Timeout reached exit the function */
+					return Timeout;
+				}
+				else
+				{
+					/* Do Nothing */
+				}
+			}while(HAL_LOCKED == hi2c2.Lock);
+
+			/* Making second attempt */
+			return EEPROM_Read(MemAddress, pData, Size, timeout);
+		break;
+		case HAL_TIMEOUT:
+			/* Exit from the function */
+			retval = Timeout;
+		break;
+		case HAL_OK:
+		default:
+			/* Do Nothing */
+		break;
+	}
+	return retval;
+}
 
 /**
  * ---------------------------------------------------------
@@ -458,15 +547,15 @@ static void readDefaultValues(void)
 	NVMType32 kp = {.dataFloat = 100}, ki = {.dataFloat = 150}, kd = {.dataFloat = 105};
 	NVMType32 Plimit = {.data32 = 1}, Ilimit = {.data32 = 2}, Dlimit = {.data32 = 3};
 	NVMType32 setpoint = {.data32= 255};
-	EEPROM_I2C_READ(FABRIC_CONFIG_BASE_ADDR, (uint8_t *)&FabricConfig, sizeof(uint8_t), 100);
-	EEPROM_I2C_READ(MODE_CONFIG_BASE_ADDR, (uint8_t *)&mode, sizeof(uint8_t), 100);
-	EEPROM_I2C_READ(KP_PID_BASE_ADDR, (uint8_t *)kp.rawData, sizeof(NVMType32), 100);
-	EEPROM_I2C_READ(KI_PID_BASE_ADDR, (uint8_t *)ki.rawData, sizeof(NVMType32), 100);
-	EEPROM_I2C_READ(KD_PID_BASE_ADDR, (uint8_t *)kd.rawData, sizeof(NVMType32), 100);
-	EEPROM_I2C_READ(PLIMIT_PID_BASE_ADDR, (uint8_t *)Plimit.rawData, sizeof(NVMType32), 100);
-	EEPROM_I2C_READ(ILIMIT_PID_BASE_ADDR, (uint8_t *)Ilimit.rawData, sizeof(NVMType32), 100);
-	EEPROM_I2C_READ(DLIMIT_PID_BASE_ADDR, (uint8_t *)Dlimit.rawData, sizeof(NVMType32), 100);
-	EEPROM_I2C_READ(SETPOINT_PID_BASE_ADDR, (uint8_t *)setpoint.rawData, sizeof(NVMType32), 100);
+	EEPROM_Read(FABRIC_CONFIG_BASE_ADDR, (uint8_t *)&FabricConfig, sizeof(uint8_t), 100);
+	EEPROM_Read(MODE_CONFIG_BASE_ADDR, (uint8_t *)&mode, sizeof(uint8_t), 100);
+	EEPROM_Read(KP_PID_BASE_ADDR, (uint8_t *)kp.rawData, sizeof(NVMType32), 100);
+	EEPROM_Read(KI_PID_BASE_ADDR, (uint8_t *)ki.rawData, sizeof(NVMType32), 100);
+	EEPROM_Read(KD_PID_BASE_ADDR, (uint8_t *)kd.rawData, sizeof(NVMType32), 100);
+	EEPROM_Read(PLIMIT_PID_BASE_ADDR, (uint8_t *)Plimit.rawData, sizeof(NVMType32), 100);
+	EEPROM_Read(ILIMIT_PID_BASE_ADDR, (uint8_t *)Ilimit.rawData, sizeof(NVMType32), 100);
+	EEPROM_Read(DLIMIT_PID_BASE_ADDR, (uint8_t *)Dlimit.rawData, sizeof(NVMType32), 100);
+	EEPROM_Read(SETPOINT_PID_BASE_ADDR, (uint8_t *)setpoint.rawData, sizeof(NVMType32), 100);
 	SendUSB("FabricConfig: %d", FabricConfig);
 	SendUSB("Mode: %d", mode);
 	SendUSB("Kp = %d", kp.data32);
