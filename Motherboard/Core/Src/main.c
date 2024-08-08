@@ -236,6 +236,16 @@ osMessageQueueId_t xFIFO_PIDConfigsHandle;
 const osMessageQueueAttr_t xFIFO_PIDConfigs_attributes = {
   .name = "xFIFO_PIDConfigs"
 };
+/* Definitions for xFIFO_DiagsLong */
+osMessageQueueId_t xFIFO_DiagsLongHandle;
+const osMessageQueueAttr_t xFIFO_DiagsLong_attributes = {
+  .name = "xFIFO_DiagsLong"
+};
+/* Definitions for xFIFO_DiagShort */
+osMessageQueueId_t xFIFO_DiagShortHandle;
+const osMessageQueueAttr_t xFIFO_DiagShort_attributes = {
+  .name = "xFIFO_DiagShort"
+};
 /* Definitions for xSemaphore_PID */
 osSemaphoreId_t xSemaphore_PIDHandle;
 const osSemaphoreAttr_t xSemaphore_PID_attributes = {
@@ -271,6 +281,14 @@ const osEventFlagsAttr_t xEvent_ControlModes_attributes = {
   .name = "xEvent_ControlModes",
   .cb_mem = &xEvent_ControlModesControlBlock,
   .cb_size = sizeof(xEvent_ControlModesControlBlock),
+};
+/* Definitions for xEvent_Diagnostics */
+osEventFlagsId_t xEvent_DiagnosticsHandle;
+osStaticEventGroupDef_t xEvent_DiagnosticsControlBlock;
+const osEventFlagsAttr_t xEvent_Diagnostics_attributes = {
+  .name = "xEvent_Diagnostics",
+  .cb_mem = &xEvent_DiagnosticsControlBlock,
+  .cb_size = sizeof(xEvent_DiagnosticsControlBlock),
 };
 /* USER CODE BEGIN PV */
 osMemoryPoolId_t MemoryPoolNVM;  /* Memory Pool for NVM data allocation*/
@@ -396,6 +414,12 @@ int main(void)
   /* creation of xFIFO_PIDConfigs */
   xFIFO_PIDConfigsHandle = osMessageQueueNew (16, sizeof(PIDConfigs), &xFIFO_PIDConfigs_attributes);
 
+  /* creation of xFIFO_DiagsLong */
+  xFIFO_DiagsLongHandle = osMessageQueueNew (16, sizeof(DiagPDU_t), &xFIFO_DiagsLong_attributes);
+
+  /* creation of xFIFO_DiagShort */
+  xFIFO_DiagShortHandle = osMessageQueueNew (16, sizeof(PDU_t), &xFIFO_DiagShort_attributes);
+
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
@@ -438,6 +462,9 @@ int main(void)
 
   /* creation of xEvent_ControlModes */
   xEvent_ControlModesHandle = osEventFlagsNew(&xEvent_ControlModes_attributes);
+
+  /* creation of xEvent_Diagnostics */
+  xEvent_DiagnosticsHandle = osEventFlagsNew(&xEvent_Diagnostics_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */

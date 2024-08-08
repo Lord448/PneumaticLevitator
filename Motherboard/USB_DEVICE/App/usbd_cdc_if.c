@@ -22,7 +22,9 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
-
+#include "cmsis_os.h"
+#include "DiagAppl/DiagAppl.h"
+#include "COM/COM.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,6 +64,8 @@
   */
 
 /* USER CODE BEGIN PRIVATE_DEFINES */
+#define RTOS
+#define PDU_CONTROL_SIZE 2 /* In bytes */
 /* USER CODE END PRIVATE_DEFINES */
 
 /**
@@ -111,6 +115,9 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 /* USER CODE BEGIN EXPORTED_VARIABLES */
 extern char ResBuffer[64];
 extern uint8_t ReceiveFlag;
+extern osMessageQueueId_t xFIFO_DiagShortHandle;
+extern osMessageQueueId_t xFIFO_DiagsLongHandle;
+extern osEventFlagsId_t xEvent_DiagnosticsHandle;
 /* USER CODE END EXPORTED_VARIABLES */
 
 /**
@@ -129,7 +136,9 @@ static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len);
 static int8_t CDC_TransmitCplt_FS(uint8_t *pbuf, uint32_t *Len, uint8_t epnum);
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
-
+static int8_t CDC_SendPDU32Bit(uint8_t *Buf, uint32_t payloadSize);
+static int8_t CDC_SendPDU64Bit(uint8_t *Buf, uint32_t payloadSize);
+static int8_t CDC_SendPDU64BitCompound(uint8_t *Buf, uint32_t payloadSize);
 /* USER CODE END PRIVATE_FUNCTIONS_DECLARATION */
 
 /**
@@ -262,15 +271,53 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
+	int8_t result = USBD_OK;
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
-  memset(ResBuffer, '\0', 64); //Clear the buffer
+#ifndef RTOS
+  memset(ResBuffer, '\0', 64); /* Clear the buffer */
   uint8_t len = (uint8_t)*Len;
-  memcpy(ResBuffer, Buf, len); //Copy the data to buffer
-  memset(Buf, '\0', len); //Clear Buf
+  memcpy(ResBuffer, Buf, len); /* Copy the data to buffer */
+  memset(Buf, '\0', len); /* Clear Buf */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
   ReceiveFlag = 1;
-  return (USBD_OK);
+#else
+  /*TODO: Instrumented code (handle all on COM)*/
+  if(DIAGNOSTICS_PCI == Buf[0])
+  {
+  	vTaskSuspendAll();
+  	/* It's a diagnostics frame */
+  	uint32_t payloadSize = strlen((char *)Buf)-PDU_CONTROL_SIZE;
+
+  	if(payloadSize > sizeof(uint32_t))
+  	{
+  		/* It's more than 32bits */
+  		if(payloadSize > sizeof(uint64_t))
+  		{
+  			/* It's more than 64bits, need a compound PDU */
+  			result = CDC_SendPDU64BitCompound(Buf, payloadSize);
+  		}
+  		else /* if(payloadSize < 8) bytes*/
+  		{
+  			/* Fits on a 64 bits PDU */
+  			result = CDC_SendPDU64Bit(Buf, payloadSize);
+  		}
+  	}
+  	else /* if(payload < 4) bytes */
+  	{
+  		/* Fits in a regular PDU */
+  		result = CDC_SendPDU32Bit(Buf, payloadSize);
+
+  	}
+  }
+  else
+  {
+  	/*TODO Implement regular logic*/
+  }
+
+#endif
+
+  return result;
   /* USER CODE END 6 */
 }
 
@@ -323,6 +370,11 @@ static int8_t CDC_TransmitCplt_FS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
+/**
+ * @brief  Gives the status of the USB port
+ * @param  none
+ * @retval returns the status of the USB port
+ */
 uint8_t CDC_getReady(void)
 {
 	USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *) hUsbDeviceFS.pClassData;
@@ -334,6 +386,110 @@ uint8_t CDC_getReady(void)
 	{
 		return USBD_OK;
 	}
+}
+
+/**
+ * @brief  Builds and send a FIFO with a 32bit PDU
+ * @param  *Buf: Buffer with the data that will contain the PDU
+ * @param  payloadSize: Size of the payload to transmit
+ * @retval result: result of the operation
+ */
+static int8_t CDC_SendPDU32Bit(uint8_t *Buf, uint32_t payloadSize)
+{
+	int8_t result = USBD_OK;
+	uint32_t payloadBuf = 0;
+
+	/* Setting the flag for PDU processing */
+	osEventFlagsSet(xEvent_DiagnosticsHandle, PCI_SINGLE_STREAM_32BIT);
+	/* Fill the payload buffer*/
+	for(uint16_t index = 2, shift = 0; index < payloadSize; index++, shift+=8)
+		payloadBuf |= Buf[index]<<shift; /* Data will be analyzed with memory pointer transposition */
+	/* Build the PDU */
+	PDU_t diagPDU = {
+			.rawData[0] = PCI_SINGLE_STREAM_32BIT, /* Message ID */
+			.rawData[1] = Buf[1],									 /* Type&Prior -> SID */
+			.fields.payload = payloadBuf					 /* Payload */
+	};
+	/*Sending the PDU to DiagAppl*/
+	result = osOK == osMessageQueuePut(xFIFO_DiagShortHandle, &diagPDU, 0U, 0U) ?
+			USBD_OK : USBD_FAIL;
+	return result;
+}
+
+/**
+ * @brief  Builds and transmit a FIFO with a 64Bit PDU
+ * @param  *Buf: Buffer with the information
+ * @param  payloadSize: Size of the payload to transmit
+ * @retval result: result of the operation
+ */
+static int8_t CDC_SendPDU64Bit(uint8_t *Buf, uint32_t payloadSize)
+{
+	int8_t result = USBD_OK;
+	uint64_t payloadBuf = 0;
+
+	/* Setting the flag for PDU processing */
+	osEventFlagsSet(xEvent_DiagnosticsHandle, PCI_SINGLE_STREAM_64BIT);
+	/* Fill the payload buffer*/
+	for(uint16_t index = 2, shift = 0; index < payloadSize; index++, shift+=8)
+		payloadBuf |= Buf[index]<<shift; /* Data will be analyzed with memory pointer transposition */
+	/*Build the PDU*/
+	DiagPDU_t diagPDU = {
+			.fields.PDU_ID = PCI_SINGLE_STREAM_64BIT,
+			.fields.SID = Buf[1],
+			.fields.payload = payloadBuf
+	};
+	/*Sending the PDU to DiagAppl*/
+	result = osOK == osMessageQueuePut(xFIFO_DiagsLongHandle, &diagPDU, 0U, 0U) ?
+			USBD_OK : USBD_FAIL;
+	return result;
+}
+
+/**
+ * @brief  Builds and transmit through many FIFO members
+ *         a PDU with more than 64bits of size
+ * @param  *Buf: Buffer with the information
+ * @param  payloadSize: Size of the payload to transmit
+ * @retval result: result of the operation
+ */
+static int8_t CDC_SendPDU64BitCompound(uint8_t *Buf, uint32_t payloadSize)
+{
+	int8_t result = USBD_OK;
+	uint16_t index = 2; /*Saving the value before first for*/
+	uint64_t payloadBuf = 0;
+
+	/* Fill the payload buffer*/
+	for(uint16_t shift = 0; index < sizeof(uint64_t)+2; index++, shift+=8)
+		payloadBuf |= Buf[index]<<shift; /* Data will be analyzed with memory pointer transposition */
+	/*Build PDU*/
+	DiagPDU_t diagPDU = {
+			.fields.PDU_ID = PCI_COMPOUND_STREAM_64BIT,
+			.fields.SID = Buf[1],
+			.fields.payload = payloadBuf
+	};
+	/*Sending the PDU to DiagAppl*/
+	result = osOK == osMessageQueuePut(xFIFO_DiagsLongHandle, &diagPDU, 0U, 0U) ?
+			USBD_OK : USBD_FAIL;
+	/* Setting the flag for PDU processing */
+	osEventFlagsSet(xEvent_DiagnosticsHandle, PCI_COMPOUND_STREAM_64BIT);
+	/*Transmit the rest of the payload*/
+	while(index < payloadSize && USBD_OK == result)
+	{
+		payloadBuf = 0;
+		/* Fill the payload buffer*/
+		for(uint16_t shift = 0; index < sizeof(uint64_t); index++, shift+=8)
+			payloadBuf |= Buf[index]<<shift; /* Data will be analyzed with memory pointer transposition */
+		/* Build PDU */
+		DiagPDU_t diagPDULoop = {
+				.fields.PDU_ID = NULL_SERVICE,
+				.fields.SID = NULL_SERVICE,
+				.fields.payload = payloadBuf
+		};
+		/* Send to the FIFO */
+		result = osOK == osMessageQueuePut(xFIFO_DiagsLongHandle, &diagPDULoop, 0U, 0U) ?
+				USBD_OK : USBD_FAIL;
+	}
+	osEventFlagsSet(xEvent_DiagnosticsHandle, PCI_COMPOUND_END_STREAM);
+	return result;
 }
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
