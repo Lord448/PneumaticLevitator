@@ -19,6 +19,14 @@
 
 #include "main.h"
 #include "cmsis_os2.h"
+#include "usbd_cdc_if.h"
+#include <stdio.h>
+#include <string.h>
+
+/* TODO TEMPORAL INCLUDES */
+#include "FreeRTOS.h"
+#include "task.h"
+/* TODO TEMPORAL INCLUDES */
 
 #define MAX_QUEUE_MESSAGES	16
 
@@ -62,8 +70,6 @@ typedef union DiagPDU{
 
 	uint8_t rawData[10]; /* Access as byte array */
 } DiagPDU_t;
-
-void COM_Init(void);
 
 void vTaskCOM(void *argument);
 uint8_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);

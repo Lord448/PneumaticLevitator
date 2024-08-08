@@ -34,6 +34,7 @@
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
 typedef StaticQueue_t osStaticMessageQDef_t;
+typedef StaticSemaphore_t osStaticSemaphoreDef_t;
 typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* USER CODE BEGIN PTD */
 
@@ -134,7 +135,7 @@ const osThreadAttr_t TaskPID_attributes = {
 };
 /* Definitions for TaskCOM */
 osThreadId_t TaskCOMHandle;
-uint32_t TaskCOMBuffer[ 256 ];
+uint32_t TaskCOMBuffer[ 512 ];
 osStaticThreadDef_t TaskCOMControlBlock;
 const osThreadAttr_t TaskCOM_attributes = {
   .name = "TaskCOM",
@@ -248,23 +249,51 @@ const osMessageQueueAttr_t xFIFO_DiagShort_attributes = {
 };
 /* Definitions for xSemaphore_PID */
 osSemaphoreId_t xSemaphore_PIDHandle;
+osStaticSemaphoreDef_t xSemaphore_PIDControlBlock;
 const osSemaphoreAttr_t xSemaphore_PID_attributes = {
-  .name = "xSemaphore_PID"
+  .name = "xSemaphore_PID",
+  .cb_mem = &xSemaphore_PIDControlBlock,
+  .cb_size = sizeof(xSemaphore_PIDControlBlock),
 };
 /* Definitions for xSemaphore_PID_Init */
 osSemaphoreId_t xSemaphore_PID_InitHandle;
+osStaticSemaphoreDef_t xSemaphore_PID_InitControlBlock;
 const osSemaphoreAttr_t xSemaphore_PID_Init_attributes = {
-  .name = "xSemaphore_PID_Init"
+  .name = "xSemaphore_PID_Init",
+  .cb_mem = &xSemaphore_PID_InitControlBlock,
+  .cb_size = sizeof(xSemaphore_PID_InitControlBlock),
 };
 /* Definitions for xSemaphore_DMA_TransferCplt */
 osSemaphoreId_t xSemaphore_DMA_TransferCpltHandle;
+osStaticSemaphoreDef_t xSemaphore_DMA_TransferCpltControlBlock;
 const osSemaphoreAttr_t xSemaphore_DMA_TransferCplt_attributes = {
-  .name = "xSemaphore_DMA_TransferCplt"
+  .name = "xSemaphore_DMA_TransferCplt",
+  .cb_mem = &xSemaphore_DMA_TransferCpltControlBlock,
+  .cb_size = sizeof(xSemaphore_DMA_TransferCpltControlBlock),
 };
 /* Definitions for xSemaphore_MemoryPoolUsed */
 osSemaphoreId_t xSemaphore_MemoryPoolUsedHandle;
+osStaticSemaphoreDef_t xSemaphore_MemoryPoolUsedControlBlock;
 const osSemaphoreAttr_t xSemaphore_MemoryPoolUsed_attributes = {
-  .name = "xSemaphore_MemoryPoolUsed"
+  .name = "xSemaphore_MemoryPoolUsed",
+  .cb_mem = &xSemaphore_MemoryPoolUsedControlBlock,
+  .cb_size = sizeof(xSemaphore_MemoryPoolUsedControlBlock),
+};
+/* Definitions for xSemaphore_SensorTxCplt */
+osSemaphoreId_t xSemaphore_SensorTxCpltHandle;
+osStaticSemaphoreDef_t xSemaphore_SensorTxCpltControlBlock;
+const osSemaphoreAttr_t xSemaphore_SensorTxCplt_attributes = {
+  .name = "xSemaphore_SensorTxCplt",
+  .cb_mem = &xSemaphore_SensorTxCpltControlBlock,
+  .cb_size = sizeof(xSemaphore_SensorTxCpltControlBlock),
+};
+/* Definitions for xSemaphore_SensorRxCplt */
+osSemaphoreId_t xSemaphore_SensorRxCpltHandle;
+osStaticSemaphoreDef_t xSemaphore_SensorRxCpltControlBlock;
+const osSemaphoreAttr_t xSemaphore_SensorRxCplt_attributes = {
+  .name = "xSemaphore_SensorRxCplt",
+  .cb_mem = &xSemaphore_SensorRxCpltControlBlock,
+  .cb_size = sizeof(xSemaphore_SensorRxCpltControlBlock),
 };
 /* Definitions for xEvent_FatalError */
 osEventFlagsId_t xEvent_FatalErrorHandle;
@@ -289,6 +318,14 @@ const osEventFlagsAttr_t xEvent_Diagnostics_attributes = {
   .name = "xEvent_Diagnostics",
   .cb_mem = &xEvent_DiagnosticsControlBlock,
   .cb_size = sizeof(xEvent_DiagnosticsControlBlock),
+};
+/* Definitions for xEvent_USB */
+osEventFlagsId_t xEvent_USBHandle;
+osStaticEventGroupDef_t xEvent_USBControlBlock;
+const osEventFlagsAttr_t xEvent_USB_attributes = {
+  .name = "xEvent_USB",
+  .cb_mem = &xEvent_USBControlBlock,
+  .cb_size = sizeof(xEvent_USBControlBlock),
 };
 /* USER CODE BEGIN PV */
 osMemoryPoolId_t MemoryPoolNVM;  /* Memory Pool for NVM data allocation*/
@@ -393,6 +430,12 @@ int main(void)
   /* creation of xSemaphore_MemoryPoolUsed */
   xSemaphore_MemoryPoolUsedHandle = osSemaphoreNew(1, 1, &xSemaphore_MemoryPoolUsed_attributes);
 
+  /* creation of xSemaphore_SensorTxCplt */
+  xSemaphore_SensorTxCpltHandle = osSemaphoreNew(1, 1, &xSemaphore_SensorTxCplt_attributes);
+
+  /* creation of xSemaphore_SensorRxCplt */
+  xSemaphore_SensorRxCpltHandle = osSemaphoreNew(1, 1, &xSemaphore_SensorRxCplt_attributes);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -465,6 +508,9 @@ int main(void)
 
   /* creation of xEvent_Diagnostics */
   xEvent_DiagnosticsHandle = osEventFlagsNew(&xEvent_Diagnostics_attributes);
+
+  /* creation of xEvent_USB */
+  xEvent_USBHandle = osEventFlagsNew(&xEvent_USB_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
@@ -1073,7 +1119,8 @@ void vTaskWdgM(void *argument)
   /* USER CODE BEGIN vTaskWdgM */
 	const TickType_t ticksForResetWDG = pdMS_TO_TICKS(500); //WDG @ 500ms
 	TickType_t ticks;
-	HAL_IWDG_Init(&hiwdg);
+
+	HAL_IWDG_Refresh(&hiwdg);
 	ticks = osKernelGetTickCount();
   /* Infinite loop */
   for(;;)

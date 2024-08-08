@@ -52,7 +52,9 @@ void vTaskDiagAppl(void *argument)
 	for(;;)
 	{
 		/* Wait for a FIFO diagnostic request */
-		DiagFlags = osEventFlagsWait(xEvent_DiagnosticsHandle, osFlagsWaitAny, 0U, osWaitForever);
+		DiagFlags = osEventFlagsWait(xEvent_DiagnosticsHandle,
+				PCI_SINGLE_STREAM_32BIT | PCI_SINGLE_STREAM_64BIT | PCI_COMPOUND_STREAM_64BIT,
+				osFlagsWaitAny, osWaitForever);
 		/*Processing Flags*/
 		while(0 != DiagFlags)
 		{

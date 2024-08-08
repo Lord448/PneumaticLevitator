@@ -51,7 +51,10 @@
 #define APP_RX_DATA_SIZE  2048
 #define APP_TX_DATA_SIZE  2048
 /* USER CODE BEGIN EXPORTED_DEFINES */
+//#define LF_CF_COMPAT /* Compatibility with CR or LF strings*/
+//#define LFCF_COMPAT  /* Compatibility with CR/LF strings   */
 
+#define CDC_FLAG_MESSAGE_RX 1U << 0
 /* USER CODE END EXPORTED_DEFINES */
 
 /**

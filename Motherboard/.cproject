@@ -66,6 +66,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/NVM}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/PID}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/LEDS}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Motherboard/Source/SWC/OSHandler}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1762603191" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>

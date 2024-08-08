@@ -118,6 +118,7 @@ extern uint8_t ReceiveFlag;
 extern osMessageQueueId_t xFIFO_DiagShortHandle;
 extern osMessageQueueId_t xFIFO_DiagsLongHandle;
 extern osEventFlagsId_t xEvent_DiagnosticsHandle;
+extern osEventFlagsId_t xEvent_USBHandle;
 /* USER CODE END EXPORTED_VARIABLES */
 
 /**
@@ -285,7 +286,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   /*TODO: Instrumented code (handle all on COM)*/
   if(DIAGNOSTICS_PCI == Buf[0])
   {
-  	vTaskSuspendAll();
+  	vTaskSuspendAll(); /* Entering a critical zone */
   	/* It's a diagnostics frame */
   	uint32_t payloadSize = strlen((char *)Buf)-PDU_CONTROL_SIZE;
 
@@ -309,10 +310,22 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   		result = CDC_SendPDU32Bit(Buf, payloadSize);
 
   	}
+  	xTaskResumeAll();
   }
   else
   {
-  	/*TODO Implement regular logic*/
+  	/* Regular message that need to be processed by COM */
+    memset(ResBuffer, '\0', 64); /* Clear the buffer */
+    uint8_t len = (uint8_t)*Len;
+#ifdef LF_CF_COMPAT
+    memcpy(ResBuffer, Buf, len-1); /* Copy the data to buffer */
+#elif defined(LFCF_COMPAT)
+    memcpy(ResBuffer, Buf, len-2); /* Copy the data to buffer */
+#else
+    memcpy(ResBuffer, Buf, len); /* Copy the data to buffer */
+#endif
+    memset(Buf, '\0', len); /* Clear Buf */
+    osEventFlagsSet(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX);
   }
 
 #endif

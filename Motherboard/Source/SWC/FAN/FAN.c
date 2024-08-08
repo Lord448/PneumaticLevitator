@@ -33,6 +33,6 @@ void vTaskFAN(void *argument)
 	HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
 	for(;;)
 	{
-
+		osDelay(1);
 	}
 }

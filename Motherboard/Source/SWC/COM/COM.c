@@ -18,17 +18,40 @@
 
 extern osMessageQueueId_t xFIFO_COMHandle;
 
-void COM_Init(void)
-{
+extern osSemaphoreId_t xSemaphore_DMA_TransferCpltHandle;
+extern osSemaphoreId_t xSemaphore_SensorTxCpltHandle;
+extern osSemaphoreId_t xSemaphore_SensorRxCpltHandle;
 
-}
+extern osEventFlagsId_t xEvent_USBHandle;
+
+extern char ResBuffer[64];
 
 void vTaskCOM(void *argument)
 {
-	COM_Init();
+	uint32_t usbFlags = 0;
+	char statsBuffer[512] = {0};
+
 	for(;;)
 	{
+		/* Process USB info */
+		usbFlags = osEventFlagsWait(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX, osFlagsWaitAny, osWaitForever);
 
+		if(usbFlags&CDC_FLAG_MESSAGE_RX)
+		{
+			/* An USB message arrived */
+			if(strcmp(ResBuffer, "CPU") == 0) /* TODO: Instrumented code */
+			{
+				/* TODO: When COM finished, implement this code on DiagAppl */
+				memset(statsBuffer, '\0', strlen(statsBuffer));
+				vTaskGetRunTimeStats(statsBuffer);
+				if(USBD_OK == CDC_getReady())
+				{
+					/* The USB it's not busy */
+					CDC_Transmit_FS((uint8_t *)statsBuffer, strlen(statsBuffer));
+				}
+			}
+		}
+		/* Process UART info */
 	}
 }
 
@@ -75,3 +98,33 @@ int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType prior
 	return 0;	
 }
 
+/**
+ * ---------------------------------------------------------
+ * 					    SOFTWARE COMPONENT CALLBACKS
+ * ---------------------------------------------------------
+ */
+
+/**
+  * @brief  Master Rx Transfer completed callback.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
+  *                the configuration information for the specified I2C.
+  * @retval None
+  */
+void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef * hi2c)
+{
+	if(I2C1 == hi2c->Instance)
+		osSemaphoreRelease(xSemaphore_SensorRxCpltHandle); /* VL53L0X Read action completed */
+	else if(I2C2 == hi2c->Instance)
+		osSemaphoreRelease(xSemaphore_DMA_TransferCpltHandle); /* EEPROM DMA Transfer completed */
+}
+
+/** @brief  Slave Tx Transfer completed callback.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
+  *                the configuration information for the specified I2C.
+  * @retval None
+  */
+void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+	if(I2C1 == hi2c->Instance)
+		osSemaphoreRelease(xSemaphore_SensorRxCpltHandle); /* VL53L0X Write action completed */
+}

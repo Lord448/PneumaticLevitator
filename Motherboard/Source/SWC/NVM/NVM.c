@@ -514,23 +514,6 @@ static result_t EEPROM_Read(uint16_t MemAddress, uint8_t *pData, uint16_t Size, 
 	return retval;
 }
 
-/**
- * ---------------------------------------------------------
- * 					    SOFTWARE COMPONENT CALLBACKS
- * ---------------------------------------------------------
- */
-
-/**
-  * @brief  Master Rx Transfer completed callback.
-  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
-  *                the configuration information for the specified I2C.
-  * @retval None
-  */
-void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef * hi2c)
-{
-	osSemaphoreRelease(xSemaphore_DMA_TransferCpltHandle);
-}
-
 #ifdef MAKE_HARD_CODED_TEST
 
 /**
@@ -549,8 +532,8 @@ static result_t SendUSB(char *format, ...) /*TODO: Instrumented code*/
 	/*Filling buffer with zeroes*/
 	memset(buffer, 0, sizeof(buffer));
 	/*Filling the buffer with variadic args*/
-	retval = vsprintf(buffer, format, args);
-	if(USBD_OK == CDC_getReady() && OK == retval)
+	vsprintf(buffer, format, args);
+	if(USBD_OK == CDC_getReady())
 	{
 		/*The USB is ready to transmit and the buffer is filled*/
 		CDC_Transmit_FS((uint8_t *)buffer, strlen(buffer));
