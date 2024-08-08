@@ -44,6 +44,7 @@ void vTaskCOM(void *argument)
 				/* TODO: When COM finished, implement this code on DiagAppl */
 				memset(statsBuffer, '\0', strlen(statsBuffer));
 				vTaskGetRunTimeStats(statsBuffer);
+				strcat(statsBuffer, "\nend\n"); /* Data specific for CPULoad script */
 				if(USBD_OK == CDC_getReady())
 				{
 					/* The USB it's not busy */

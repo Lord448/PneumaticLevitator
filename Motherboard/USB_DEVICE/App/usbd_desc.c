@@ -64,7 +64,7 @@
 
 #define USBD_VID     1155
 #define USBD_LANGID_STRING     1033
-#define USBD_MANUFACTURER_STRING     "STMicroelectronics"
+#define USBD_MANUFACTURER_STRING     "Instituto Tecnologico de Morelia"
 #define USBD_PID_FS     22336
 #define USBD_PRODUCT_STRING_FS     "Pneumatic Levitator ITM"
 #define USBD_CONFIGURATION_STRING_FS     "CDC Config"
