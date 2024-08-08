@@ -64,9 +64,9 @@ Fan RPM measure (Input Capture)
 Fan PWM controller @ 24KHz (manufacturer recommended frequency)
 
 TIM_HandleTypeDef htim1; //Pending for application
-TIM_HandleTypeDef htim2; //Pending for application
-TIM_HandleTypeDef htim3; //Pending for application 
-TIM_HandleTypeDef htim4; //Pending for application
+TIM_HandleTypeDef htim2; //CPU Load measure for the OS
+TIM_HandleTypeDef htim3; //Fan PWM controller @ 24KHz (manufacturer recommended frequency)
+TIM_HandleTypeDef htim4; //Fan RPM measure (Input Capture) @
 TIM_HandleTypeDef htim5; //Pending for application
 
 UART_HandleTypeDef huart1; //Daughter board connection
@@ -728,11 +728,11 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
+  htim2.Init.Prescaler = 96-1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 4294967295;
+  htim2.Init.Period = 0xffffffff;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
@@ -776,7 +776,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 2999;
+  htim3.Init.Period = 3999;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)

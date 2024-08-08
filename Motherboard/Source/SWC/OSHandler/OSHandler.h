@@ -23,6 +23,7 @@
 
 void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName);
 uint16_t usCheckHeapUsage(void);
-uint16_t usCheckStackUsage(xTaskHandle xTask);
+uint16_t usCheckStackUsage(xTaskHandle xTask, uint32_t *pwStackBuffer);
+result_t xResetTask(xTaskHandle xTask);
 
 #endif /* SWC_OSHANDLER_OSHANDLER_H_ */

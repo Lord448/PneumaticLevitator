@@ -16,6 +16,8 @@
 
 #include "OSHandler.h"
 
+extern TIM_HandleTypeDef htim2;
+extern osThreadId_t TaskLedsHandle;
 
 /*
  * -------------------------------------------------------------
@@ -24,6 +26,7 @@
  *
  * -------------------------------------------------------------
  */
+
 /**
  * @brief  This function it's called when a stack
  *         overflow is detected by the OS
@@ -38,8 +41,47 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName)
    called if a stack overflow is detected. */
 
 	/*TODO Trigger DTC Stack Overflow*/
-	uint16_t dummy;
-	dummy++;
+
+	/* Mark animation with leds */
+	osThreadSuspend(TaskLedsHandle); /* Cancel other led animations */
+	HAL_GPIO_WritePin(LED_OR_GPIO_Port, LED_OR_Pin, 0);
+	HAL_GPIO_WritePin(GPULed_GPIO_Port, GPULed_Pin, 0);
+	for(uint16_t i = 0; i < 10; i++)
+	{
+		HAL_GPIO_TogglePin(RunningLed_GPIO_Port, RunningLed_Pin);
+		HAL_Delay(50);
+	}
+	HAL_GPIO_WritePin(RunningLed_GPIO_Port, RunningLed_Pin, 0);
+	HAL_Delay(100);
+	/* TODO: Send to USB if possible */
+
+	/* Reset the system */
+	HAL_NVIC_SystemReset();
+}
+
+/**
+ * @brief  Function defined by the freeRTOS API to
+ *         configure the timer for the CPU load stats
+ * @note   This function it's used for CPU load measure
+ * @param  none
+ * @revtal none
+ */
+void configureTimerForRunTimeStats(void)
+{
+	/* 32 bit timer with preescaler configured @ 1MHz */
+	HAL_TIM_Base_Start(&htim2);
+}
+
+/**
+ * @brief  Function defined by the freeRTOS API
+ *         to get the current counts of the timer
+ * @note   This function it's used for CPU load measure
+ * @param  none
+ * @retval The counts of the timer
+ */
+unsigned long getRunTimeCounterValue(void)
+{
+	return __HAL_TIM_GET_COUNTER(&htim2);
 }
 
 /*
@@ -72,7 +114,17 @@ uint16_t usCheckHeapUsage(void)
  * @param  xTask: Task handle of the task that will be analyzed
  * @retval percentage of the stack usage
  */
-uint16_t usCheckStackUsage(xTaskHandle xTask)
+uint16_t usCheckStackUsage(xTaskHandle xTask, uint32_t *pwStackBuffer)
 {
 	return 0;
+}
+
+/**
+ * @brief
+ * @param
+ * @retval
+ */
+result_t xResetTask(xTaskHandle xTask)
+{
+	return OK; //TODO: Stubbed code
 }
