@@ -1,21 +1,24 @@
 /**
  * @file      PID.h
- * @author    TODO
+ * @author    David Ramirez (dardito23@gmail.com)
  *
  * @brief     TODO
  *
  * @date      May 29, 2024
  *
  * @license   This Source Code Form is subject to the terms of
- *            the Mozilla Public License, v. 2.0. If a copy of
- *            the MPL was not distributed with this file, You
- *            can obtain one at https://mozilla.org/MPL/2.0/.
+ * 			  the Mozilla Public License, v. 2.0. If a copy of
+ * 		 	  the MPL was not distributed with this file, You
+ * 			  can obtain one at https://mozilla.org/MPL/2.0/.
  *
  * @copyright Copyright (c) 2024
  */
 
 #ifndef SWC_PID_PID_H_
 #define SWC_PID_PID_H_
+
+#define NO_LIMIT 0
+#define EEPROM_OK 0
 
 #include "main.h"
 #include "cmsis_os2.h"
@@ -49,6 +52,7 @@ typedef struct PIDControl{
 typedef struct PIDConfigs{
 	PIDGains Gains;
 	PIDLimits Limits;
+	uint8_t Is_Active;
 }PIDConfigs;
 
 void PID_Init(void);

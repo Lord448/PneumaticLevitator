@@ -29,7 +29,7 @@
 
 extern osMessageQueueId_t xFIFO_DiagsLongHandle;
 extern osMessageQueueId_t xFIFO_DiagShortHandle;
-extern osEventFlagsId_t xEventDiagnosticsHandle;
+extern osEventFlagsId_t xEvent_DiagnosticsHandle;
 
 static result_t sendNegativeResponse(void);
 
@@ -52,7 +52,7 @@ void vTaskDiagAppl(void *argument)
 	for(;;)
 	{
 		/* Wait for a FIFO diagnostic request */
-		DiagFlags = osEventFlagsWait(xEventDiagnosticsHandle, osFlagsWaitAny, 0U, osWaitForever);
+		DiagFlags = osEventFlagsWait(xEvent_DiagnosticsHandle, osFlagsWaitAny, 0U, osWaitForever);
 		/*Processing Flags*/
 		while(0 != DiagFlags)
 		{
@@ -66,7 +66,7 @@ void vTaskDiagAppl(void *argument)
 				if(0 == osMessageQueueGetCount(xFIFO_DiagShortHandle))
 				{
 					/*Clearing flags*/
-					osEventFlagsClear(xEventDiagnosticsHandle, DiagFlags);
+					osEventFlagsClear(xEvent_DiagnosticsHandle, DiagFlags);
 				}
 				else
 				{
@@ -83,7 +83,7 @@ void vTaskDiagAppl(void *argument)
 				if(0 == osMessageQueueGetCount(xFIFO_DiagsLongHandle))
 				{
 					/*Clearing flags*/
-					osEventFlagsClear(xEventDiagnosticsHandle, DiagFlags);
+					osEventFlagsClear(xEvent_DiagnosticsHandle, DiagFlags);
 				}
 				else
 				{
@@ -97,7 +97,7 @@ void vTaskDiagAppl(void *argument)
 				uint32_t Flag;
 
 				/*Waiting for the end flag*/
-				Flag = osEventFlagsWait(xEventDiagnosticsHandle, PCI_COMPOUND_END_STREAM, 0U, osWaitForever);
+				Flag = osEventFlagsWait(xEvent_DiagnosticsHandle, PCI_COMPOUND_END_STREAM, 0U, osWaitForever);
 				/*Allocate memory pool with the data*/
 				/*Send to pointer of the buffer to the process function*/
 				ProcessDIDCompound(0, NULL);
@@ -105,7 +105,7 @@ void vTaskDiagAppl(void *argument)
 				if(Flag&PCI_COMPOUND_END_STREAM)
 				{
 					/*It's the selected flag*/
-					osEventFlagsClear(xEventDiagnosticsHandle, DiagFlags&PCI_COMPOUND_STREAM_64BIT);
+					osEventFlagsClear(xEvent_DiagnosticsHandle, DiagFlags&PCI_COMPOUND_STREAM_64BIT);
 				}
 				else
 				{

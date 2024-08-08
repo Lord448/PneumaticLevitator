@@ -4,11 +4,11 @@
  *
  * @brief     TODO
  *
- * @date      Jul 9, 2024
+ * @date      Aug 5, 2024
  *
- * @license   This Source Code Form is subject to the terms of
- *            the Mozilla Public License, v. 2.0. If a copy of
- *            the MPL was not distributed with this file, You
+ * @license   This Source Code Form is subject to the terms of 
+ *            the Mozilla Public License, v. 2.0. If a copy of 
+ *            the MPL was not distributed with this file, You 
  *            can obtain one at https://mozilla.org/MPL/2.0/.
  *
  * @copyright Copyright (c) 2024
@@ -38,6 +38,8 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName)
    called if a stack overflow is detected. */
 
 	/*TODO Trigger DTC Stack Overflow*/
+	uint16_t dummy;
+	dummy++;
 }
 
 /*
@@ -74,4 +76,3 @@ uint16_t usCheckStackUsage(xTaskHandle xTask)
 {
 	return 0;
 }
-

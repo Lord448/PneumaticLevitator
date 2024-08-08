@@ -62,6 +62,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Daughterboard/Source/SWC/DiagAppl}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Daughterboard/Source/SWC/GPUResMan}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Daughterboard/Source/SWC/OSHandler}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Daughterboard/Source/SWC/UI/Menus}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Daughterboard/Source/SWC/UI/Menus/MainMenu}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Daughterboard/Source/SWC/HMI}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.893277119" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -89,7 +92,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="__uGUI|UGUI/ugui_sim.c|UGUI/ugui_sim_x11.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Drivers"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Source"/>
+						<entry excluding="**/ImageOrigins/" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Source"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
 					</sourceEntries>

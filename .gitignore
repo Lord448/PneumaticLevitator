@@ -2,6 +2,11 @@
 .metadata
 .settings
 [Rr]elease
+
 [Dd]ebug
-.launch
+
+**.launch
+**.cfg
 **/Debug/*
+.~lock.**
+**.orig

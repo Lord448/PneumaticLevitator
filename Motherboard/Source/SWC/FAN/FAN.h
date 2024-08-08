@@ -1,6 +1,6 @@
 /**
  * @file      FAN.h
- * @author    TODO
+ * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
  * @brief     TODO
  *
@@ -17,7 +17,13 @@
 #ifndef SWC_FAN_FAN_H_
 #define SWC_FAN_FAN_H_
 
-void FAN_Init(void);
-void FAN_MainRunnable(void);
+#include "main.h"
+
+#define setPWM_FAN(x) TIM3->CCR1 = ((x*htim3.Init.Period)/100) /* Set the duty cycle of the PWM in percentage */
+#define setPWM_FAN_Counts(x) TIM3->CCR1 = x /* Set the duty cycle of the PWM in counts (cannot be more than "MaxCCR")*/
+
+#define EnableFAN(_) HAL_GPIO_WritePin(EnableFAN_GPIO_Port, EnableFAN_Pin, _) /* Enables or disables the AND gate for the FAN control */
+
+void vTaskFAN(void *argument);
 
 #endif /* SWC_FAN_FAN_H_ */

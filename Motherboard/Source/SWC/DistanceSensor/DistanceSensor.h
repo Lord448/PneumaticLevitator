@@ -1,6 +1,6 @@
 /**
  * @file      DistanceSensor.h
- * @author    TODO
+ * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
  * @brief     TODO
  *
@@ -29,7 +29,6 @@
 
 #define VL53L0X_ADDR 0x52
 
-void DistanceSensor_Init(void);
-void DistanceSensor_MainRunnable(void);
+void vTaskSensor(void *argument);
 
 #endif /* SWC_DISTANCESENSOR_DISTANCESENSOR_H_ */

@@ -1,6 +1,6 @@
 /**
  * @file      ModeManager.c
- * @author    TODO
+ * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
  * @brief     TODO
  *
@@ -16,11 +16,55 @@
 
 #include "ModeManager.h"
 
+extern osThreadId_t TaskModeManagerHandle;
+extern osThreadId_t TaskPIDHandle;
+
+extern osEventFlagsId_t xEvent_ControlModesHandle;
+
+static void suspendPIDTask(void);
+static void resumePIDTask(void);
+
+/**
+ * @brief
+ * @param
+ * @retval
+ */
 void vTaskModeManager(void *argument)
 {
+	ControlModes currentMode = AutoPID;
+	uint32_t eventFlags = 0;
 
 	for(;;)
 	{
-
+		/* Search for new request modes */
+		eventFlags = osEventFlagsWait(xEvent_ControlModesHandle, ALL_CONTROL_MODE_FLAGS, osFlagsWaitAny, osWaitForever);
+		/* A new change of mode is requested */
+		switch(currentMode)
+		{
+			case AutoPID:
+				resumePIDTask();
+			break;
+			case Slave:
+				suspendPIDTask();
+			break;
+			case Manual:
+				suspendPIDTask();
+			break;
+			default:
+			break;
+		}
+		/* Clear the flags */
+		osEventFlagsClear(xEvent_ControlModesHandle, eventFlags);
 	}
+}
+
+static void suspendPIDTask(void)
+{
+	osThreadSuspend(TaskPIDHandle);
+	//TODO Think about the reset of the PID of the EEPROM variables access, it's more efficient to read the variables once
+}
+
+static void resumePIDTask(void)
+{
+	osThreadResume(TaskPIDHandle);
 }

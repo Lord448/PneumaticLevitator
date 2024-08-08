@@ -1,6 +1,6 @@
 /**
  * @file      FAN.c
- * @author    TODO
+ * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
  * @brief     TODO
  *
@@ -14,12 +14,25 @@
  * @copyright Copyright (c) 2024
  */
 
-void FAN_Init(void)
-{
-	/*Init the timers*/
-}
+#include "FAN.h"
 
-void FAN_MainRunnable(void)
-{
+extern TIM_HandleTypeDef htim3; /* Fan PWM controller @ 24KHz (manufacturer recommended frequency) */
+extern TIM_HandleTypeDef htim4; /* Fan RPM measure (Input Capture) @ */
 
+/**
+* @brief Function implementing the TaskFAN thread.
+* @param argument: Not used
+* @retval None
+*/
+void vTaskFAN(void *argument)
+{
+	//uint16_t MaxCCR = htim3.Init.Period;
+	EnableFAN(0);
+	setPWM_FAN(0);
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+	HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
+	for(;;)
+	{
+
+	}
 }

@@ -43,8 +43,9 @@ typedef enum bool{
 }bool;
 
 typedef enum result {
-	OK = osOK,        /* 0*/
-	Error = osError,  /*-1*/
+	OK = osOK,                /* 0*/
+	Error = osError,          /*-1*/
+	Timeout = osErrorTimeout, /*-2*/
 	Warning = 1
 }result_t;
 /* USER CODE END ET */
@@ -73,10 +74,10 @@ void Error_Handler(void);
 #define LED_OR_GPIO_Port GPIOC
 #define DevMode_IT_Pin GPIO_PIN_0
 #define DevMode_IT_GPIO_Port GPIOA
-#define GPLed1_Pin GPIO_PIN_3
-#define GPLed1_GPIO_Port GPIOA
-#define GPLed2_Pin GPIO_PIN_4
-#define GPLed2_GPIO_Port GPIOA
+#define RunningLed_Pin GPIO_PIN_3
+#define RunningLed_GPIO_Port GPIOA
+#define GPULed_Pin GPIO_PIN_4
+#define GPULed_GPIO_Port GPIOA
 #define WP_Pin GPIO_PIN_7
 #define WP_GPIO_Port GPIOA
 #define PWM_FAN_Pin GPIO_PIN_4
@@ -89,7 +90,12 @@ void Error_Handler(void);
 #define TOF_XSHUT_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
+#define ALL_OK						 (uint32_t) 0
+#define FATAL_ERROR_SYSTEM (uint32_t) 1U << 0
+#define FATAL_ERROR_EEPROM (uint32_t) 1U << 1
+#define FATAL_ERROR_GPU    (uint32_t) 1U << 2
 
+#define FATAL_ERROR_GPU_TIMES 1
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
