@@ -146,7 +146,8 @@ result_t NVM_read16Bit(uint16_t NVMVariable, NVMType16 *data)
  */
 result_t NVM_read32Bit(uint16_t NVMVariable, NVMType32 *data)
 {
-	return OK; /*TODO: Stubbed code*/
+	data -> data32 = ~0;
+	return OK;/*TODO: Stubbed code*/
 }
 
 /**

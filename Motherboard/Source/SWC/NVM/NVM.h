@@ -62,12 +62,12 @@ typedef union NVMType16
 
 /**
  * ---------------------------------------------------------
- * 					 FUNCTION OVERLOADING FOR "nvmSave"
+ * 					 FUNCTION OVERLOADING FOR "NVM_Save"
  * ---------------------------------------------------------
  */
 
 /*nvmSave overload interface*/
-#define NVM_save(variable, value) _Generic((value),					\
+#define NVM_Save(variable, value) _Generic((value),					 \
 																	uint8_t   : NVM_save8Bit,  \
 																	NVMType16 : NVM_save16Bit, \
 																	NVMType32 : NVM_save32Bit, \
@@ -80,16 +80,16 @@ result_t NVM_saveFloat(uint16_t NVMVariable, float value);
 
 /**
  * ---------------------------------------------------------
- * 					 FUNCTION OVERLOADING FOR "nvmRead"
+ * 					 FUNCTION OVERLOADING FOR "NVM_Read"
  * ---------------------------------------------------------
  */
 
 /*nvmRead overload interface*/
-#define NVM_read(variable, value) _Generic((value),					 \
-																	uint8_t   *: NVM_read8Bit   \
-																	NVMType16 *: NVM_read16Bit  \
-																	NVMType32 *: NVM_read32Bit  \
-																	float	  *: NVM_readFloat)(variable, value)
+#define NVM_Read(variable, data) _Generic((data),					     \
+																	uint8_t*: NVM_read8Bit,   \
+																	NVMType16*: NVM_read16Bit,  \
+																	NVMType32*: NVM_read32Bit,  \
+																	float*: NVM_readFloat)(variable, data)
 
 result_t NVM_read8Bit(uint16_t NVMVariable, uint8_t *data);
 result_t NVM_read16Bit(uint16_t NVMVariable, NVMType16 *data);

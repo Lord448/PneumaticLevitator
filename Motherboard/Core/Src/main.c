@@ -34,6 +34,7 @@
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
 typedef StaticQueue_t osStaticMessageQDef_t;
+typedef StaticTimer_t osStaticTimerDef_t;
 typedef StaticSemaphore_t osStaticSemaphoreDef_t;
 typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* USER CODE BEGIN PTD */
@@ -94,19 +95,18 @@ TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim5;
 
 UART_HandleTypeDef huart1;
-DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart1_tx;
 
-/* Definitions for TaskIdle */
-osThreadId_t TaskIdleHandle;
-uint32_t TaskIdleBuffer[ 256 ];
-osStaticThreadDef_t TaskIdleControlBlock;
-const osThreadAttr_t TaskIdle_attributes = {
-  .name = "TaskIdle",
-  .cb_mem = &TaskIdleControlBlock,
-  .cb_size = sizeof(TaskIdleControlBlock),
-  .stack_mem = &TaskIdleBuffer[0],
-  .stack_size = sizeof(TaskIdleBuffer),
+/* Definitions for TaskWdgM */
+osThreadId_t TaskWdgMHandle;
+uint32_t TaskWdgMBuffer[ 256 ];
+osStaticThreadDef_t TaskWdgMControlBlock;
+const osThreadAttr_t TaskWdgM_attributes = {
+  .name = "TaskWdgM",
+  .cb_mem = &TaskWdgMControlBlock,
+  .cb_size = sizeof(TaskWdgMControlBlock),
+  .stack_mem = &TaskWdgMBuffer[0],
+  .stack_size = sizeof(TaskWdgMBuffer),
   .priority = (osPriority_t) osPriorityRealtime,
 };
 /* Definitions for TaskModeManager */
@@ -144,18 +144,6 @@ const osThreadAttr_t TaskCOM_attributes = {
   .stack_mem = &TaskCOMBuffer[0],
   .stack_size = sizeof(TaskCOMBuffer),
   .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for TaskWdgM */
-osThreadId_t TaskWdgMHandle;
-uint32_t TaskWdgMBuffer[ 128 ];
-osStaticThreadDef_t TaskWdgMControlBlock;
-const osThreadAttr_t TaskWdgM_attributes = {
-  .name = "TaskWdgM",
-  .cb_mem = &TaskWdgMControlBlock,
-  .cb_size = sizeof(TaskWdgMControlBlock),
-  .stack_mem = &TaskWdgMBuffer[0],
-  .stack_size = sizeof(TaskWdgMBuffer),
-  .priority = (osPriority_t) osPriorityRealtime,
 };
 /* Definitions for TaskDiagAppl */
 osThreadId_t TaskDiagApplHandle;
@@ -247,6 +235,44 @@ osMessageQueueId_t xFIFO_DiagShortHandle;
 const osMessageQueueAttr_t xFIFO_DiagShort_attributes = {
   .name = "xFIFO_DiagShort"
 };
+/* Definitions for xFIFO_COMDistance */
+osMessageQueueId_t xFIFO_COMDistanceHandle;
+uint8_t xFIFO_COMDistanceBuffer[ 16 * sizeof( int16_t ) ];
+osStaticMessageQDef_t xFIFO_COMDistanceControlBlock;
+const osMessageQueueAttr_t xFIFO_COMDistance_attributes = {
+  .name = "xFIFO_COMDistance",
+  .cb_mem = &xFIFO_COMDistanceControlBlock,
+  .cb_size = sizeof(xFIFO_COMDistanceControlBlock),
+  .mq_mem = &xFIFO_COMDistanceBuffer,
+  .mq_size = sizeof(xFIFO_COMDistanceBuffer)
+};
+/* Definitions for xFIFO_COMRPM */
+osMessageQueueId_t xFIFO_COMRPMHandle;
+uint8_t xFIFO_COMRPMBuffer[ 16 * sizeof( int16_t ) ];
+osStaticMessageQDef_t xFIFO_COMRPMControlBlock;
+const osMessageQueueAttr_t xFIFO_COMRPM_attributes = {
+  .name = "xFIFO_COMRPM",
+  .cb_mem = &xFIFO_COMRPMControlBlock,
+  .cb_size = sizeof(xFIFO_COMRPMControlBlock),
+  .mq_mem = &xFIFO_COMRPMBuffer,
+  .mq_size = sizeof(xFIFO_COMRPMBuffer)
+};
+/* Definitions for xTimer_UARTSend */
+osTimerId_t xTimer_UARTSendHandle;
+osStaticTimerDef_t xTimer_ControlBlock;
+const osTimerAttr_t xTimer_UARTSend_attributes = {
+  .name = "xTimer_UARTSend",
+  .cb_mem = &xTimer_ControlBlock,
+  .cb_size = sizeof(xTimer_ControlBlock),
+};
+/* Definitions for xTimer_Ack */
+osTimerId_t xTimer_AckHandle;
+osStaticTimerDef_t xTimer_AckControlBlock;
+const osTimerAttr_t xTimer_Ack_attributes = {
+  .name = "xTimer_Ack",
+  .cb_mem = &xTimer_AckControlBlock,
+  .cb_size = sizeof(xTimer_AckControlBlock),
+};
 /* Definitions for xSemaphore_PID */
 osSemaphoreId_t xSemaphore_PIDHandle;
 osStaticSemaphoreDef_t xSemaphore_PIDControlBlock;
@@ -294,6 +320,19 @@ const osSemaphoreAttr_t xSemaphore_SensorRxCplt_attributes = {
   .name = "xSemaphore_SensorRxCplt",
   .cb_mem = &xSemaphore_SensorRxCpltControlBlock,
   .cb_size = sizeof(xSemaphore_SensorRxCpltControlBlock),
+};
+/* Definitions for xSemaphore_Ack */
+osSemaphoreId_t xSemaphore_AckHandle;
+osStaticSemaphoreDef_t xSemaphore_AckControlBlock;
+const osSemaphoreAttr_t xSemaphore_Ack_attributes = {
+  .name = "xSemaphore_Ack",
+  .cb_mem = &xSemaphore_AckControlBlock,
+  .cb_size = sizeof(xSemaphore_AckControlBlock),
+};
+/* Definitions for xSemaphore_InitDaughter */
+osSemaphoreId_t xSemaphore_InitDaughterHandle;
+const osSemaphoreAttr_t xSemaphore_InitDaughter_attributes = {
+  .name = "xSemaphore_InitDaughter"
 };
 /* Definitions for xEvent_FatalError */
 osEventFlagsId_t xEvent_FatalErrorHandle;
@@ -348,15 +387,16 @@ static void MX_TIM4_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM5_Init(void);
-void vTaskIdle(void *argument);
+void vTaskWdgM(void *argument);
 extern void vTaskModeManager(void *argument);
 extern void vTaskPID(void *argument);
 extern void vTaskCOM(void *argument);
-void vTaskWdgM(void *argument);
 extern void vTaskDiagAppl(void *argument);
 extern void vTaskLeds(void *argument);
 extern void vTaskSensor(void *argument);
 extern void vTaskFAN(void *argument);
+extern void vTimer_UARTSendCallback(void *argument);
+extern void vTimer_Ack_Callback(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -436,9 +476,22 @@ int main(void)
   /* creation of xSemaphore_SensorRxCplt */
   xSemaphore_SensorRxCpltHandle = osSemaphoreNew(1, 1, &xSemaphore_SensorRxCplt_attributes);
 
+  /* creation of xSemaphore_Ack */
+  xSemaphore_AckHandle = osSemaphoreNew(1, 1, &xSemaphore_Ack_attributes);
+
+  /* creation of xSemaphore_InitDaughter */
+  xSemaphore_InitDaughterHandle = osSemaphoreNew(1, 1, &xSemaphore_InitDaughter_attributes);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
+
+  /* Create the timer(s) */
+  /* creation of xTimer_UARTSend */
+  xTimer_UARTSendHandle = osTimerNew(vTimer_UARTSendCallback, osTimerPeriodic, NULL, &xTimer_UARTSend_attributes);
+
+  /* creation of xTimer_Ack */
+  xTimer_AckHandle = osTimerNew(vTimer_Ack_Callback, osTimerOnce, NULL, &xTimer_Ack_attributes);
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
@@ -463,13 +516,19 @@ int main(void)
   /* creation of xFIFO_DiagShort */
   xFIFO_DiagShortHandle = osMessageQueueNew (16, sizeof(PDU_t), &xFIFO_DiagShort_attributes);
 
+  /* creation of xFIFO_COMDistance */
+  xFIFO_COMDistanceHandle = osMessageQueueNew (16, sizeof(int16_t), &xFIFO_COMDistance_attributes);
+
+  /* creation of xFIFO_COMRPM */
+  xFIFO_COMRPMHandle = osMessageQueueNew (16, sizeof(int16_t), &xFIFO_COMRPM_attributes);
+
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* creation of TaskIdle */
-  TaskIdleHandle = osThreadNew(vTaskIdle, NULL, &TaskIdle_attributes);
+  /* creation of TaskWdgM */
+  TaskWdgMHandle = osThreadNew(vTaskWdgM, NULL, &TaskWdgM_attributes);
 
   /* creation of TaskModeManager */
   TaskModeManagerHandle = osThreadNew(vTaskModeManager, NULL, &TaskModeManager_attributes);
@@ -479,9 +538,6 @@ int main(void)
 
   /* creation of TaskCOM */
   TaskCOMHandle = osThreadNew(vTaskCOM, NULL, &TaskCOM_attributes);
-
-  /* creation of TaskWdgM */
-  TaskWdgMHandle = osThreadNew(vTaskWdgM, NULL, &TaskWdgM_attributes);
 
   /* creation of TaskDiagAppl */
   TaskDiagApplHandle = osThreadNew(vTaskDiagAppl, NULL, &TaskDiagAppl_attributes);
@@ -1012,9 +1068,6 @@ static void MX_DMA_Init(void)
   /* DMA1_Stream7_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream7_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream7_IRQn);
-  /* DMA2_Stream2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
   /* DMA2_Stream7_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
@@ -1082,29 +1135,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_vTaskIdle */
-/**
-  * @brief  Function implementing the TaskIdle thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_vTaskIdle */
-void vTaskIdle(void *argument)
-{
-  /* init code for USB_DEVICE */
-  MX_USB_DEVICE_Init();
-  /* USER CODE BEGIN 5 */
-  /*TODO: Implement strategy for CPU Load measures*/
-  NVM_Init();
-  osThreadSetPriority(TaskIdleHandle, osPriorityLow);
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END 5 */
-}
-
 /* USER CODE BEGIN Header_vTaskWdgM */
 /**
 * @brief Function implementing the TaskWdgM thread.
@@ -1116,9 +1146,13 @@ void vTaskIdle(void *argument)
 /* USER CODE END Header_vTaskWdgM */
 void vTaskWdgM(void *argument)
 {
-  /* USER CODE BEGIN vTaskWdgM */
+  /* init code for USB_DEVICE */
+  MX_USB_DEVICE_Init();
+  /* USER CODE BEGIN 5 */
 	const TickType_t ticksForResetWDG = pdMS_TO_TICKS(500); //WDG @ 500ms
 	TickType_t ticks;
+
+  NVM_Init();
 
 	HAL_IWDG_Refresh(&hiwdg);
 	ticks = osKernelGetTickCount();
@@ -1129,7 +1163,7 @@ void vTaskWdgM(void *argument)
     ticks += ticksForResetWDG;
     osDelayUntil(ticks);
   }
-  /* USER CODE END vTaskWdgM */
+  /* USER CODE END 5 */
 }
 
 /**

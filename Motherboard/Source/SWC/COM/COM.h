@@ -20,6 +20,8 @@
 #include "main.h"
 #include "cmsis_os2.h"
 #include "usbd_cdc_if.h"
+#include "NVM.h"
+#include "NVMVariables.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -28,7 +30,19 @@
 #include "task.h"
 /* TODO TEMPORAL INCLUDES */
 
+#define osNoTimeout 0U
+
 #define MAX_QUEUE_MESSAGES	16
+
+#define UART_INIT_NUMBER_FRAMES     14
+#define UART_PERIODIC_NUMBER_FRAMES 5
+#define UART_INIT_FRAME_VALUE 0xA5
+
+#define MSG_ERROR_CODE -1
+#define FIFO_EMPTY_COUNTS_FOR_ERROR 10
+#define NOT_ACK_COUNTS_FOR_ERROR 10
+
+#define SECONDS_TO_WAIT_DAUGHTER_INIT 5
 
 /* Definition of message types and priority (ensuring 4 bits) */
 
@@ -74,5 +88,6 @@ typedef union DiagPDU{
 void vTaskCOM(void *argument);
 uint8_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
+void vTimer_UARTSendCallback(void *argument);
 
 #endif /* SWC_COM_COM_H_ */
