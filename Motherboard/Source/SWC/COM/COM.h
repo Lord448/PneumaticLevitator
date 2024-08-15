@@ -44,6 +44,9 @@
 
 #define SECONDS_TO_WAIT_DAUGHTER_INIT 5
 
+#define ERROR_COUNTS_TO_CANCEL_VL53L0X_TX 20
+#define TIME_TO_RESET_SENSOR_TASK 1000 /*MS*/
+
 /* Definition of message types and priority (ensuring 4 bits) */
 
 typedef enum {
@@ -89,5 +92,7 @@ void vTaskCOM(void *argument);
 uint8_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 void vTimer_UARTSendCallback(void *argument);
+void vTimer_WdgUARTCallback(void *argument);
+void vTimer_RestartSensorTaskCallback(void *argument);
 
 #endif /* SWC_COM_COM_H_ */

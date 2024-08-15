@@ -32,7 +32,7 @@ def writeSerial():
     
     while True:
         ser.write(str.encode("CPU"))
-        time.sleep(0.5)
+        time.sleep(1)
     
 def printHeader(end="\n"):
     print("Task                            Ticks             Percetage")

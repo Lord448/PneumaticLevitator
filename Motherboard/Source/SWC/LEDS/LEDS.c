@@ -47,6 +47,10 @@ static void Leds_Init(void)
 	ORLed_SetColor(White);
 	GPULed_Turn(OFF);
 	RunningLed_Turn(ON);
+	/*TODO: Set the OR led to high impedance to quit animations*/
+#ifdef POLL_LEDS_TASK
+	while(1);
+#endif
 }
 
 /**
@@ -59,10 +63,10 @@ void vTaskLeds(void *argument)
 	const TickType_t taskResolutionMS = 10;
 	TickType_t tick = 0;
 	uint32_t eventFlags = 0;
+	AnimStates statEEPROM = Finished, statSensor = Finished;
 
 	Leds_Init();
 	tick = osKernelGetTickCount();
-
   for(;;)
   {
   	/* Check for fatal error events */
@@ -80,9 +84,26 @@ void vTaskLeds(void *argument)
   	if(eventFlags & FATAL_ERROR_EEPROM)
   	{
   		/* FATAL_ERROR_EEPROM flag turned on */
-  		ORLed_ToggleAnim(&RunningLed_BlinkAnim, FATAL_ERROR_GPU_TIMES);
+  		if(statSensor != Running)
+  		{
+#ifdef DUPLICATE_FREQ_ANIM
+  			ORLed_ToggleAnim(&RunningLed_BlinkAnim, FATAL_ERROR_GPU_TIMES);
+#endif
+  			statEEPROM = ORLed_ToggleAnim(&RunningLed_BlinkAnim, FATAL_ERROR_GPU_TIMES); /* Duplicating frequency */
+  		}
   	}
+  	if(eventFlags & FATAL_ERROR_SENSOR)
+  	{
+  		/* FATAL_ERROR_SENSOR flag turned on */
+  		if(statEEPROM != Running)
+  		{
+#ifdef DUPLICATE_FREQ_ANIM
+  			ORLed_ToggleAnim(&RunningLed_BlinkAnim, FATAL_ERROR_SENSOR_TIMES);
+#endif
+  			statSensor = ORLed_ToggleAnim(&RunningLed_BlinkAnim, FATAL_ERROR_SENSOR_TIMES);
+  		}
 
+  	}
   	/* Parsed loop with 10 ms of resolution*/
   	tick += pdMS_TO_TICKS(taskResolutionMS);
     osDelayUntil(tick);
@@ -102,7 +123,7 @@ static AnimStates ORLed_ToggleAnim(AnimFuncPtr func, uint16_t times)
 		sFinalToggle
 	}static stateHandler = sInitialToggle;
 
-	const uint16_t makeToggleCountMS = 25;
+	const uint16_t makeToggleCountMS = 15;
 	const uint16_t numberOfToggles = 5;
 	static uint16_t tickCounter = 0;
 	static uint16_t toggleCounter = 0;
@@ -169,7 +190,7 @@ static AnimStates ORLed_ToggleAnim(AnimFuncPtr func, uint16_t times)
 
 static AnimStates RunningLed_BlinkAnim(uint16_t times)
 {
-	const uint16_t blinkPeriodMS = 100;
+	const uint16_t blinkPeriodMS = 40;
 	static uint16_t blinkCounter = 0;
 	static uint16_t timesCounter = 0;
 	AnimStates retval = Running;

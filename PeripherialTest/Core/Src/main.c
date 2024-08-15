@@ -83,7 +83,7 @@ uint8_t VhvSettings;
 uint8_t PhaseCal;
 
 //Extern variables (CDC)
-char ResBuffer[64];
+char CDC_ResBuffer[64];
 uint8_t ReceiveFlag;
 
 //Globals

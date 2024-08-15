@@ -22,6 +22,50 @@ extern osThreadId_t TaskLedsHandle;
 /*
  * -------------------------------------------------------------
  *
+ * 										O S   H A N D L I N G
+ *
+ * -------------------------------------------------------------
+ */
+result_t OS_ResetThread(osThreadId_t *thread_id, osThreadFunc_t func, const osThreadAttr_t *attr)
+{
+	result_t result = OK;
+	if(NULL != *thread_id)
+	{
+		/* Terminating the task */
+		if(osOK == osThreadTerminate(*thread_id))
+		{
+			/* Restarting the thread */
+			*thread_id = osThreadNew(func, NULL, attr);
+			if(NULL == *thread_id)
+			{
+				/* Could not create the thread */
+				/* TODO: Trigger DTC OS Fatal error: Could not create the thread*/
+				result = Error;
+			}
+			else
+			{
+				/* All Ok */
+				result = OK;
+			}
+		}
+		else
+		{
+			/* Fatal error */
+			/* TODO: Trigger DTC OS Fatal error: finished thread not restarted*/
+		}
+	}
+	else
+	{
+		/* The task has been deleted once or doesn't exist */
+		/* TODO: Trigger DTC OS Fatal error: missing thread */
+		result = Error;
+	}
+	return result;
+}
+
+/*
+ * -------------------------------------------------------------
+ *
  * 												O S   H O O K S
  *
  * -------------------------------------------------------------

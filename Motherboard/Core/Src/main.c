@@ -265,13 +265,21 @@ const osTimerAttr_t xTimer_UARTSend_attributes = {
   .cb_mem = &xTimer_ControlBlock,
   .cb_size = sizeof(xTimer_ControlBlock),
 };
-/* Definitions for xTimer_Ack */
-osTimerId_t xTimer_AckHandle;
-osStaticTimerDef_t xTimer_AckControlBlock;
-const osTimerAttr_t xTimer_Ack_attributes = {
-  .name = "xTimer_Ack",
-  .cb_mem = &xTimer_AckControlBlock,
-  .cb_size = sizeof(xTimer_AckControlBlock),
+/* Definitions for xTimer_WdgUART */
+osTimerId_t xTimer_WdgUARTHandle;
+osStaticTimerDef_t xTimer_WdgUARTControlBlock;
+const osTimerAttr_t xTimer_WdgUART_attributes = {
+  .name = "xTimer_WdgUART",
+  .cb_mem = &xTimer_WdgUARTControlBlock,
+  .cb_size = sizeof(xTimer_WdgUARTControlBlock),
+};
+/* Definitions for xTimer_RestartSensorTask */
+osTimerId_t xTimer_RestartSensorTaskHandle;
+osStaticTimerDef_t xTimer_RestartSensorTaskControlBlock;
+const osTimerAttr_t xTimer_RestartSensorTask_attributes = {
+  .name = "xTimer_RestartSensorTask",
+  .cb_mem = &xTimer_RestartSensorTaskControlBlock,
+  .cb_size = sizeof(xTimer_RestartSensorTaskControlBlock),
 };
 /* Definitions for xSemaphore_PID */
 osSemaphoreId_t xSemaphore_PIDHandle;
@@ -321,18 +329,18 @@ const osSemaphoreAttr_t xSemaphore_SensorRxCplt_attributes = {
   .cb_mem = &xSemaphore_SensorRxCpltControlBlock,
   .cb_size = sizeof(xSemaphore_SensorRxCpltControlBlock),
 };
-/* Definitions for xSemaphore_Ack */
-osSemaphoreId_t xSemaphore_AckHandle;
-osStaticSemaphoreDef_t xSemaphore_AckControlBlock;
-const osSemaphoreAttr_t xSemaphore_Ack_attributes = {
-  .name = "xSemaphore_Ack",
-  .cb_mem = &xSemaphore_AckControlBlock,
-  .cb_size = sizeof(xSemaphore_AckControlBlock),
-};
 /* Definitions for xSemaphore_InitDaughter */
 osSemaphoreId_t xSemaphore_InitDaughterHandle;
 const osSemaphoreAttr_t xSemaphore_InitDaughter_attributes = {
   .name = "xSemaphore_InitDaughter"
+};
+/* Definitions for xSemaphore_SensorError */
+osSemaphoreId_t xSemaphore_SensorErrorHandle;
+osStaticSemaphoreDef_t xSemaphore_SensorErrorControlBlock;
+const osSemaphoreAttr_t xSemaphore_SensorError_attributes = {
+  .name = "xSemaphore_SensorError",
+  .cb_mem = &xSemaphore_SensorErrorControlBlock,
+  .cb_size = sizeof(xSemaphore_SensorErrorControlBlock),
 };
 /* Definitions for xEvent_FatalError */
 osEventFlagsId_t xEvent_FatalErrorHandle;
@@ -369,8 +377,7 @@ const osEventFlagsAttr_t xEvent_USB_attributes = {
 /* USER CODE BEGIN PV */
 osMemoryPoolId_t MemoryPoolNVM;  /* Memory Pool for NVM data allocation*/
 
-char ResBuffer[64];
-uint8_t ReceiveFlag;
+char CDC_ResBuffer[64];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -396,7 +403,8 @@ extern void vTaskLeds(void *argument);
 extern void vTaskSensor(void *argument);
 extern void vTaskFAN(void *argument);
 extern void vTimer_UARTSendCallback(void *argument);
-extern void vTimer_Ack_Callback(void *argument);
+extern void vTimer_WdgUARTCallback(void *argument);
+extern void vTimer_RestartSensorTaskCallback(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -476,11 +484,11 @@ int main(void)
   /* creation of xSemaphore_SensorRxCplt */
   xSemaphore_SensorRxCpltHandle = osSemaphoreNew(1, 1, &xSemaphore_SensorRxCplt_attributes);
 
-  /* creation of xSemaphore_Ack */
-  xSemaphore_AckHandle = osSemaphoreNew(1, 1, &xSemaphore_Ack_attributes);
-
   /* creation of xSemaphore_InitDaughter */
-  xSemaphore_InitDaughterHandle = osSemaphoreNew(1, 1, &xSemaphore_InitDaughter_attributes);
+  xSemaphore_InitDaughterHandle = osSemaphoreNew(1, 0, &xSemaphore_InitDaughter_attributes);
+
+  /* creation of xSemaphore_SensorError */
+  xSemaphore_SensorErrorHandle = osSemaphoreNew(1, 1, &xSemaphore_SensorError_attributes);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -490,8 +498,11 @@ int main(void)
   /* creation of xTimer_UARTSend */
   xTimer_UARTSendHandle = osTimerNew(vTimer_UARTSendCallback, osTimerPeriodic, NULL, &xTimer_UARTSend_attributes);
 
-  /* creation of xTimer_Ack */
-  xTimer_AckHandle = osTimerNew(vTimer_Ack_Callback, osTimerOnce, NULL, &xTimer_Ack_attributes);
+  /* creation of xTimer_WdgUART */
+  xTimer_WdgUARTHandle = osTimerNew(vTimer_WdgUARTCallback, osTimerOnce, NULL, &xTimer_WdgUART_attributes);
+
+  /* creation of xTimer_RestartSensorTask */
+  xTimer_RestartSensorTaskHandle = osTimerNew(vTimer_RestartSensorTaskCallback, osTimerOnce, NULL, &xTimer_RestartSensorTask_attributes);
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */

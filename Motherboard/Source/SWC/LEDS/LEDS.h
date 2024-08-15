@@ -30,6 +30,12 @@
 
 #define Leds_Toggle(Led) HAL_GPIO_TogglePin(Led##_GPIO_Port, Led##_Pin)
 
+#define FATAL_ERROR_GPU_TIMES    1
+#define FATAL_ERROR_SENSOR_TIMES 2
+
+//#define DUPLICATE_FREQ_ANIM
+//#define POLL_LEDS_TASK
+
 typedef enum ORLed_Colors {
 	Red,
 	White,

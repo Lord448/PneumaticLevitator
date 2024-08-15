@@ -109,7 +109,7 @@ uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
-extern char ResBuffer[64];
+extern char CDC_ResBuffer[64];
 extern uint8_t ReceiveFlag;
 /* USER CODE END EXPORTED_VARIABLES */
 
@@ -264,9 +264,9 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   /* USER CODE BEGIN 6 */
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
-  memset(ResBuffer, '\0', 64); //Clear the buffer
+  memset(CDC_ResBuffer, '\0', 64); //Clear the buffer
   uint8_t len = (uint8_t)*Len;
-  memcpy(ResBuffer, Buf, len); //Copy the data to buffer
+  memcpy(CDC_ResBuffer, Buf, len); //Copy the data to buffer
   memset(Buf, '\0', len); //Clear Buf
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
   ReceiveFlag = 1;

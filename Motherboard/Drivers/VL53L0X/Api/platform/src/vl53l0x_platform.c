@@ -12,6 +12,8 @@
 extern osSemaphoreId_t xSemaphore_SensorTxCpltHandle;
 extern osSemaphoreId_t xSemaphore_SensorRxCpltHandle;
 
+extern osEventFlagsId_t xEvent_FatalErrorHandle;
+
 #ifndef HAL_I2C_MODULE_ENABLED
 #warning "HAL I2C module must be enable "
 #endif
@@ -38,6 +40,23 @@ extern osSemaphoreId_t xSemaphore_SensorRxCpltHandle;
 
 uint8_t _I2CBuffer[64];
 
+static void I2C_ErrorHandling(VL53L0X_DEV Dev, uint8_t *pdata, uint32_t count, uint32_t timeout)
+{
+	/* Notify LEDS SWC */
+	bool allOk = false;
+	osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_SENSOR);
+	do {
+		/* Giving some time for the next transmission */
+		osDelay(timeout);
+		/* Transmission  to the sensor */
+		HAL_I2C_Master_Transmit_IT(Dev->I2cHandle, Dev->I2cDevAddr, pdata, count);
+		/* Looking for a good result of the transmission */
+		allOk =
+				osOK == osSemaphoreAcquire(xSemaphore_SensorRxCpltHandle, 0U) ? true : false ||
+				osOK == osSemaphoreAcquire(xSemaphore_SensorTxCpltHandle, 0U) ? true : false;
+	}while(!allOk);
+}
+
 int _I2CWrite(VL53L0X_DEV Dev, uint8_t *pdata, uint32_t count) {
     int status;
     int i2c_time_out = I2C_TIME_OUT_BASE+ count* I2C_TIME_OUT_BYTE;
@@ -46,8 +65,10 @@ int _I2CWrite(VL53L0X_DEV Dev, uint8_t *pdata, uint32_t count) {
     HAL_I2C_Master_Transmit_IT(Dev->I2cHandle, Dev->I2cDevAddr, pdata, count);
     status = osOK == osSemaphoreAcquire(xSemaphore_SensorTxCpltHandle, pdMS_TO_TICKS(i2c_time_out)*2) ? HAL_OK : HAL_ERROR;
     if (status) {
-        //VL6180x_ErrLog("I2C error 0x%x %d len", dev->I2cAddr, len);
-        //XNUCLEO6180XA1_I2C1_Init(&hi2c1);
+    	/*Timeout error*/
+    	I2C_ErrorHandling(Dev, pdata, count, pdMS_TO_TICKS(i2c_time_out)*2);
+			//VL6180x_ErrLog("I2C error 0x%x %d len", dev->I2cAddr, len);
+			//XNUCLEO6180XA1_I2C1_Init(&hi2c1);
     }
     return status;
 }
@@ -60,8 +81,9 @@ int _I2CRead(VL53L0X_DEV Dev, uint8_t *pdata, uint32_t count) {
     HAL_I2C_Master_Receive_IT(Dev->I2cHandle, Dev->I2cDevAddr|1, pdata, count);
     status = osOK == osSemaphoreAcquire(xSemaphore_SensorRxCpltHandle, pdMS_TO_TICKS(i2c_time_out)*2) ? HAL_OK : HAL_ERROR;
     if (status) {
-        //VL6180x_ErrLog("I2C error 0x%x %d len", dev->I2cAddr, len);
-        //XNUCLEO6180XA1_I2C1_Init(&hi2c1);
+    	I2C_ErrorHandling(Dev, pdata, count, pdMS_TO_TICKS(i2c_time_out)*2);
+			//VL6180x_ErrLog("I2C error 0x%x %d len", dev->I2cAddr, len);
+			//XNUCLEO6180XA1_I2C1_Init(&hi2c1);
     }
     return status;
 }

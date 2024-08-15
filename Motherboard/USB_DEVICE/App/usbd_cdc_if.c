@@ -113,8 +113,7 @@ uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
-extern char ResBuffer[64];
-extern uint8_t ReceiveFlag;
+extern char CDC_ResBuffer[64];
 extern osMessageQueueId_t xFIFO_DiagShortHandle;
 extern osMessageQueueId_t xFIFO_DiagsLongHandle;
 extern osEventFlagsId_t xEvent_DiagnosticsHandle;
@@ -276,9 +275,9 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
 #ifndef RTOS
-  memset(ResBuffer, '\0', 64); /* Clear the buffer */
+  memset(CDC_ResBuffer, '\0', 64); /* Clear the buffer */
   uint8_t len = (uint8_t)*Len;
-  memcpy(ResBuffer, Buf, len); /* Copy the data to buffer */
+  memcpy(CDC_ResBuffer, Buf, len); /* Copy the data to buffer */
   memset(Buf, '\0', len); /* Clear Buf */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
   ReceiveFlag = 1;
@@ -315,14 +314,14 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   else
   {
   	/* Regular message that need to be processed by COM */
-    memset(ResBuffer, '\0', 64); /* Clear the buffer */
+    memset(CDC_ResBuffer, '\0', 64); /* Clear the buffer */
     uint8_t len = (uint8_t)*Len;
 #ifdef LF_CF_COMPAT
-    memcpy(ResBuffer, Buf, len-1); /* Copy the data to buffer */
+    memcpy(CDC_ResBuffer, Buf, len-1); /* Copy the data to buffer */
 #elif defined(LFCF_COMPAT)
-    memcpy(ResBuffer, Buf, len-2); /* Copy the data to buffer */
+    memcpy(CDC_ResBuffer, Buf, len-2); /* Copy the data to buffer */
 #else
-    memcpy(ResBuffer, Buf, len); /* Copy the data to buffer */
+    memcpy(CDC_ResBuffer, Buf, len); /* Copy the data to buffer */
 #endif
     memset(Buf, '\0', len); /* Clear Buf */
     osEventFlagsSet(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX);
