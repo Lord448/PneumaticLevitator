@@ -25,6 +25,7 @@ void vTaskHMI(void *argument)
 
 	for(;;)
 	{
+		osDelay(osWaitForever);
 		/* Debouncing the buttons */
 
 		if(FIFOEnabled)

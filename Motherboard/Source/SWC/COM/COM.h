@@ -1,6 +1,6 @@
 /**
  * @file      COM.h
- * @author    TODO
+ * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
  * @brief     TODO
  *
@@ -20,32 +20,40 @@
 #include "main.h"
 #include "cmsis_os2.h"
 #include "usbd_cdc_if.h"
+#include "Signals.h"
 #include "NVM.h"
 #include "NVMVariables.h"
 #include <stdio.h>
 #include <string.h>
-
-/* TODO TEMPORAL INCLUDES */
 #include "FreeRTOS.h"
 #include "task.h"
-/* TODO TEMPORAL INCLUDES */
 
 #define osNoTimeout 0U
 
-#define MAX_QUEUE_MESSAGES	16
+/* Used for the send message logic */
+#define COM_MAX_QUEUE_MESSAGES 16
 
-#define UART_INIT_NUMBER_FRAMES     14
-#define UART_PERIODIC_NUMBER_FRAMES 5
-#define UART_INIT_FRAME_VALUE 0xA5
+/* Number of frames of the initial messages (for transmission)*/
+#define COM_UART_INIT_NUMBER_FRAMES     14
+/* Number of frames of the periodic messages (for transmission)*/
+#define COM_UART_PERIODIC_NUMBER_FRAMES 5
+/* Number that the MCU will send to identify the initial frame */
+#define COM_UART_INIT_FRAME_VALUE       0xA5
+/* Time of the send of the periodical frames */
+#define COM_UART_PERIOD_FOR_DATA_TX     10 /*MS*/
 
-#define MSG_ERROR_CODE -1
-#define FIFO_EMPTY_COUNTS_FOR_ERROR 10
-#define NOT_ACK_COUNTS_FOR_ERROR 10
+/* Error code for the RPM & distance Frames (could not get the value)*/
+#define COM_MSG_ERROR_CODE -1
+/* Number of counts to assume errors on the FIFO get for distance & RPM */
+#define COM_FIFO_EMPTY_COUNTS_FOR_ERROR 10
 
-#define SECONDS_TO_WAIT_DAUGHTER_INIT 5
+/* Seconds to wait for mark the GPU Comm as an error */
+#define COM_SECONDS_TO_WAIT_DAUGHTER_INIT 1
 
-#define ERROR_COUNTS_TO_CANCEL_VL53L0X_TX 20
-#define TIME_TO_RESET_SENSOR_TASK 1000 /*MS*/
+/* Count of sequenced errors to cancel the comm with VL53L0X */
+#define COM_ERROR_COUNTS_TO_CANCEL_VL53L0X_TX 20
+/* Time to wait to reset the sensor task */
+#define COM_TIME_TO_RESET_SENSOR_TASK 1000 /*MS*/
 
 /* Definition of message types and priority (ensuring 4 bits) */
 
@@ -68,7 +76,7 @@ typedef enum {
 /* 48-bit PDU union */
 typedef union {
     struct {
-        uint8_t messageID;          /* 8 bits for message ID */
+        uint8_t messageID;          /* 8 bits for message ID */ /* Limit to 7 bits */
         uint8_t messageType : 4;    /* 4 bits for message type */
         uint8_t priority : 4;       /* 4 bits for priority */
         uint32_t payload;           /* 32 bits for the message content */

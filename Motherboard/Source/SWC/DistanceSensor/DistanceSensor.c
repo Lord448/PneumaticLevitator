@@ -24,6 +24,7 @@ static VL53L0X_RangingMeasurementData_t RangingData;
 
 extern osMessageQueueId_t xFIFO_COMHandle;
 extern osMessageQueueId_t xFIFO_DistanceHandle;
+extern osMessageQueueId_t xFIFO_COMDistanceHandle;
 
 void vTaskSensor(void *argument)
 {
@@ -71,8 +72,8 @@ void vTaskSensor(void *argument)
 				distance = Reference - RangingData.RangeMilliMeter;
 				//distance_PDU.rawData = distance;
 				//distance_PDU.chunks[4] = 0; /*TODO: Add the message ID*/
-				osMessageQueuePut(xFIFO_DistanceHandle, &distance, 0U, 0U); /*Sending to PID*/
-				osMessageQueuePut(xFIFO_COMHandle, &distance_PDU, 0U, 0U); /*Sending to COM*/
+				osMessageQueuePut(xFIFO_COMDistanceHandle, &distance, 0U, 0U); /*Sending to PID*/
+				//osMessageQueuePut(xFIFO_COMHandle, &distance_PDU, 0U, 0U); /*Sending to COM*/
 			}
 		}
 		past_measure = RangingData.RangeMilliMeter;

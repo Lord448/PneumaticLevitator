@@ -1,6 +1,6 @@
 /**
  * @file      COM.c
- * @author    TODO
+ * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
  * @brief     TODO
  *
@@ -35,6 +35,7 @@ extern osSemaphoreId_t xSemaphore_SensorTxCpltHandle;
 extern osSemaphoreId_t xSemaphore_SensorRxCpltHandle;
 extern osSemaphoreId_t xSemaphore_InitDaughterHandle;
 extern osSemaphoreId_t xSemaphore_SensorErrorHandle;
+extern osSemaphoreId_t xSemaphore_UARTRxCpltHandle;
 
 extern osEventFlagsId_t xEvent_USBHandle;
 extern osEventFlagsId_t xEvent_FatalErrorHandle;
@@ -42,6 +43,8 @@ extern osEventFlagsId_t xEvent_FatalErrorHandle;
 extern char CDC_ResBuffer[64];
 
 extern void vTaskSensor(void *argument);
+
+uint8_t UART_RxBuffer[COM_UART_PERIODIC_NUMBER_FRAMES] = {0};
 
 /**
  * ---------------------------------------------------------
@@ -65,53 +68,71 @@ void vTaskCOM(void *argument)
 {
 	uint8_t buffer[6] = {0};
 	uint8_t ack = 0; /*Dummy memory region since the data it's handled on the ISR*/
+	osStatus_t status;
+	uint8_t errorCounter = 0;
 
-	/* Send initial buffer */
-	sendInitBuffer();
+	osThreadId_t SubTaskUSB;
+	uint32_t SubTaskUSBStackBuffer[128];
+	osThreadId_t SubTaskUART;
+
+
 	HAL_UART_Receive_IT(&huart1, &ack, sizeof(uint8_t));
-	/* Wait for the UART to receive the init message of Daughter */
-	osStatus_t status = osSemaphoreAcquire(xSemaphore_InitDaughterHandle, pdMS_TO_TICKS(SECONDS_TO_WAIT_DAUGHTER_INIT*1000)); /* Wait for daughter to init*/
-	/*
-	 * @note If the Daughterboard fails, during SECONDS_TO_WAIT_DAUGHTER_INIT
-	 * seconds the system wont be able to communicate via USB since the
-	 * task is polled here (USB Data can be received, but the system
-	 * wont response after that time)
-	 *
-	 */
-	if(osOK == status)
-	{
-		/* All Ok to go */
-		/* Set the RX UART bit (wait for IDLE bus state to process the ISR)*/
-		HAL_UARTEx_ReceiveToIdle_IT(&huart1, buffer, sizeof(buffer));
-		/* Free the memory reserved by the UART Semaphore */
-		osSemaphoreDelete(xSemaphore_InitDaughterHandle);
-		/* Start soft-timer for UART send */
-		osTimerStart(xTimer_UARTSendHandle, pdMS_TO_TICKS(10)); /* 10 Millisecond period */
-	}
-	else
-	{
-		/* Timeout, asumming errors on the Daughterboard init */
-		/* Reporting to LEDS SWC */
-		osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
-		/* TODO: Trigger DTC Not GPU Comm */
-	}
+	do {
+		/*
+		 * @note If the Daughterboard fails, during SECONDS_TO_WAIT_DAUGHTER_INIT*10
+		 * seconds the system wont be able to communicate via USB since the
+		 * task is polled here (USB Data can be received, but the system
+		 * wont response after that time)
+		 *
+		 */
+		/* Send initial buffer */
+		sendInitBuffer();
+		/* Wait for the UART to receive the init message of Daughter */
+		status = osSemaphoreAcquire(xSemaphore_InitDaughterHandle, pdMS_TO_TICKS(COM_SECONDS_TO_WAIT_DAUGHTER_INIT*1000)); /* Wait for daughter to init*/
+		if(osOK == status)
+		{
+			/* All Ok to go */
+			/* Set the RX UART bit (wait for IDLE bus state to process the ISR)*/
+			HAL_UARTEx_ReceiveToIdle_IT(&huart1, buffer, sizeof(buffer));
+			/* Free the memory reserved by the UART Semaphore */
+			osSemaphoreDelete(xSemaphore_InitDaughterHandle);
+			/* Start soft-timer for UART send */
+			osTimerStart(xTimer_UARTSendHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
+		}
+		else
+		{
+			/* Timeout, asumming errors on the Daughterboard init */
+			/* Reporting to LEDS SWC */
+			osSemaphoreRelease(xSemaphore_InitDaughterHandle);
+			osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
+			//osDelay(pdMS_TO_TICKS(500));
+			errorCounter++;
+			/* TODO: Trigger DTC Not GPU Comm */
+		}
+	}while(osOK != status && errorCounter < 10);
 
 	for(;;)
 	{
+		/* TODO: Check possible creation of subthreads for USB and UART communication */
 		/* Process USB info */
 		processUSBData();
 		/* Process UART info */
 		processUARTData(buffer);
-		/* Searching if there are errors on the sensor VL53L0X */
+		/* Searching if there are errors on the sensor VL53L0X TODO: Move this to ModeManager*/
 		if(osOK == osSemaphoreAcquire(xSemaphore_SensorErrorHandle, 0U))
 		{
 			/* Errors on the VL53L0X communication */
 			osThreadTerminate(TaskSensorHandle);
-			osTimerStart(xTimer_RestartSensorTaskHandle, pdMS_TO_TICKS(TIME_TO_RESET_SENSOR_TASK));
+			osTimerStart(xTimer_RestartSensorTaskHandle, pdMS_TO_TICKS(COM_TIME_TO_RESET_SENSOR_TASK));
 		}
 	}
 }
 
+/**
+ * ---------------------------------------------------------
+ * 					 SOFTWARE COMPONENT GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 /* PDU Constructor */
 /*
  * @brief 		Set values to a blank PDU
@@ -143,7 +164,7 @@ int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType prior
 	if (0 == COM_CreatePDU(&pdu, messageID, type, priority, payload)) { /* Check sucessful set */
 		uint16_t currentMessages = osMessageQueueGetCount(xFIFO_COMHandle);
 		/* Checking if the queue is not full */	
-		if (MAX_QUEUE_MESSAGES > currentMessages) { 
+		if (COM_MAX_QUEUE_MESSAGES > currentMessages) { 
 			/* Putting the message in the queue and returning queue current messages */
 			osMessageQueuePut(xFIFO_COMHandle, &pdu, 0U, 0U);
 			return currentMessages; 
@@ -172,7 +193,7 @@ static void processUSBData(void)
 	char statsBuffer[512] = {0};
 	uint32_t usbFlags = 0;
 
-	usbFlags = osEventFlagsWait(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX, osFlagsWaitAny, pdMS_TO_TICKS(100));
+	usbFlags = osEventFlagsWait(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX, osFlagsWaitAny, pdMS_TO_TICKS(5));
 
 	if(usbFlags&CDC_FLAG_MESSAGE_RX)
 	{
@@ -199,12 +220,8 @@ static void processUSBData(void)
  */
 static void processUARTData(uint8_t *buffer)
 {
-	if(buffer[0] != 0)
-	{
-		/* An UART message has been received */
-
-		buffer[0] = 0;
-	}
+	osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, pdMS_TO_TICKS(5));
+	/* TODO: Handle here the communication */
 }
 
 /**
@@ -223,7 +240,7 @@ static void sendInitBuffer(void)
 	NVM_Read(KD_PID_BASE_ADDR, &Kd);
 
 	/* Building the buffer transmit */
-	buffer[0] = UART_INIT_FRAME_VALUE;
+	buffer[0] = COM_UART_INIT_FRAME_VALUE;
 	/* Filling Kp */
 	for(uint32_t j = 0; j < sizeof(NVMType32); i++, j++)
 	{
@@ -286,10 +303,10 @@ void vTimer_UARTSendCallback(void *argument)
 	}
 
 	/* Send Distance data */
-	if(FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterDist)
+	if(COM_FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterDist)
 	{
 		/* Send error code */
-		buffer[1] = MSG_ERROR_CODE;
+		buffer[1] = COM_MSG_ERROR_CODE;
 		/* TODO Trigger DTC Not Receiving Distance FIFO */
 	}
 	else
@@ -314,10 +331,10 @@ void vTimer_UARTSendCallback(void *argument)
 		emptyFIFOCounterRPM = 0;
 	}
 	/* Send RPM data */
-	if(FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterRPM)
+	if(COM_FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterRPM)
 	{
 		/* Send error code */
-		buffer[3] = MSG_ERROR_CODE;
+		buffer[3] = COM_MSG_ERROR_CODE;
 		/* TODO Trigger DTC Not Receiving Distance FIFO */
 	}
 	else
@@ -329,7 +346,7 @@ void vTimer_UARTSendCallback(void *argument)
 		bytePointer++;
 		buffer[4] = *bytePointer;
 	}
-	HAL_UART_Transmit_DMA(&huart1, buffer, UART_PERIODIC_NUMBER_FRAMES);
+	HAL_UART_Transmit_DMA(&huart1, buffer, COM_UART_PERIODIC_NUMBER_FRAMES);
 }
 
 /**
@@ -359,7 +376,7 @@ void vTimer_RestartSensorTaskCallback(void *argument)
 
 /**
  * ---------------------------------------------------------
- * 					    SOFTWARE COMPONENT CALLBACKS
+ * 					      ISR COMPONENT CALLBACKS
  * ---------------------------------------------------------
  */
 
@@ -402,10 +419,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 	osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
 	/* Reseting the Watch dog timer for UART */
-	osTimerStart(xTimer_WdgUARTHandle, pdMS_TO_TICKS(10));
-	if(firstFrame == UART_INIT_FRAME_VALUE)
+	osTimerStart(xTimer_WdgUARTHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
+
+	if(firstFrame == COM_UART_INIT_FRAME_VALUE)
 	{
-		/* Receiving an init frame */
+		/* It's an init frame */
 		if(firstInit)
 		{
 			/* The system were waiting for this init */
@@ -417,6 +435,20 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			/* Watchdog timer were triggered on daughterboard */
 			/* TODO: Handle here */
 		}
+	}
+	else
+	{
+		/* It's a periodic frame */
+		if(NO_MSG_ID != firstFrame)
+		{
+			/* Indicating that the component has to process the data */
+			osSemaphoreRelease(xSemaphore_UARTRxCpltHandle);
+		}
+		else
+		{
+			/* Do Nothing, It's just the acknowledge */
+		}
+		HAL_UARTEx_ReceiveToIdle_IT(huart, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES);
 	}
 }
 
@@ -465,7 +497,7 @@ void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
 	{
 		/* Error transmission for the VL53L0X */
 		errorCounterI2C1++;
-		if(ERROR_COUNTS_TO_CANCEL_VL53L0X_TX < errorCounterI2C1)
+		if(COM_ERROR_COUNTS_TO_CANCEL_VL53L0X_TX < errorCounterI2C1)
 		{
 			/* Too many errors, canceling the transmission to the sensor */
 			/* Requesting task reset when timer */

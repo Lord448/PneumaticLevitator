@@ -31,7 +31,7 @@ extern osMemoryPoolId_t MemoryPool32; /*Memory Pool designed for members of 4 By
 extern osMemoryPoolId_t MemoryPool16_UI_PixelsValue; /*Component Specific Memory Pool*/
 extern osMemoryPoolId_t MemoryPool16_UI_PixelsIndex; /*Component Specific Memory Pool*/
 
-extern DMA_HandleTypeDef hdma_memtomem_dma2_stream3; /*DMA Stream for 1 Byte data*/
+extern DMA_HandleTypeDef hdma_memtomem_dma2_stream1; /*DMA Stream for 1 Byte data*/
 extern DMA_HandleTypeDef hdma_memtomem_dma2_stream4; /*DMA Stream for 2 Byte data*/
 extern DMA_HandleTypeDef hdma_memtomem_dma2_stream5; /*DMA Stream for 4 Byte data*/
 extern DMA_HandleTypeDef hdma_memtomem_dma2_stream0; /*DMA Stream for Empty fill (designed for 16 bit data)*/
@@ -250,7 +250,7 @@ void vTaskGPUResMan(void *argument)
 
 	/*Register all the DMA ISRs*/
 	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream0, HAL_DMA_XFER_CPLT_CB_ID, DMATransferCpltCallback);
-	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream3, HAL_DMA_XFER_CPLT_CB_ID, DMATransferCpltCallback);
+	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream1, HAL_DMA_XFER_CPLT_CB_ID, DMATransferCpltCallback);
 	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream4, HAL_DMA_XFER_CPLT_CB_ID, DMATransferCpltCallback);
 	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream5, HAL_DMA_XFER_CPLT_CB_ID, DMATransferCpltCallback);
 	for(;;)
@@ -407,7 +407,7 @@ static result_t copyBufferData(osMemoryPoolId_t *MemPoolID, const void *src, voi
 	/*Asking what stream is needed*/
 	if(MemoryPool8 == MemPoolID)
 	{
-		DMAHandle = hdma_memtomem_dma2_stream3;
+		DMAHandle = hdma_memtomem_dma2_stream1;
 		semaphore_id = xSemaphoreDMACplt3Handle;
 	}
 	else if(MemoryPool16 == MemPoolID)

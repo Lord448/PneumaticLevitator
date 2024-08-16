@@ -135,7 +135,7 @@ const osThreadAttr_t TaskPID_attributes = {
 };
 /* Definitions for TaskCOM */
 osThreadId_t TaskCOMHandle;
-uint32_t TaskCOMBuffer[ 512 ];
+uint32_t TaskCOMBuffer[ 2048 ];
 osStaticThreadDef_t TaskCOMControlBlock;
 const osThreadAttr_t TaskCOM_attributes = {
   .name = "TaskCOM",
@@ -342,6 +342,14 @@ const osSemaphoreAttr_t xSemaphore_SensorError_attributes = {
   .cb_mem = &xSemaphore_SensorErrorControlBlock,
   .cb_size = sizeof(xSemaphore_SensorErrorControlBlock),
 };
+/* Definitions for xSemaphore_UARTRxCplt */
+osSemaphoreId_t xSemaphore_UARTRxCpltHandle;
+osStaticSemaphoreDef_t xSemaphore_UARTRxCpltControlBlock;
+const osSemaphoreAttr_t xSemaphore_UARTRxCplt_attributes = {
+  .name = "xSemaphore_UARTRxCplt",
+  .cb_mem = &xSemaphore_UARTRxCpltControlBlock,
+  .cb_size = sizeof(xSemaphore_UARTRxCpltControlBlock),
+};
 /* Definitions for xEvent_FatalError */
 osEventFlagsId_t xEvent_FatalErrorHandle;
 osStaticEventGroupDef_t xEvent_FatalErrorControlBlock;
@@ -485,13 +493,17 @@ int main(void)
   xSemaphore_SensorRxCpltHandle = osSemaphoreNew(1, 1, &xSemaphore_SensorRxCplt_attributes);
 
   /* creation of xSemaphore_InitDaughter */
-  xSemaphore_InitDaughterHandle = osSemaphoreNew(1, 0, &xSemaphore_InitDaughter_attributes);
+  xSemaphore_InitDaughterHandle = osSemaphoreNew(1, 1, &xSemaphore_InitDaughter_attributes);
 
   /* creation of xSemaphore_SensorError */
   xSemaphore_SensorErrorHandle = osSemaphoreNew(1, 1, &xSemaphore_SensorError_attributes);
 
+  /* creation of xSemaphore_UARTRxCplt */
+  xSemaphore_UARTRxCpltHandle = osSemaphoreNew(1, 1, &xSemaphore_UARTRxCplt_attributes);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
+  osSemaphoreAcquire(xSemaphore_InitDaughterHandle, osNoTimeout);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* Create the timer(s) */

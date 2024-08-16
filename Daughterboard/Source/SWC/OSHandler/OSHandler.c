@@ -16,6 +16,7 @@
 
 #include "OSHandler.h"
 
+extern TIM_HandleTypeDef htim2;
 
 /*
  * -------------------------------------------------------------
@@ -38,6 +39,31 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName)
    called if a stack overflow is detected. */
 
 	/*TODO Trigger DTC Stack Overflow*/
+}
+
+/**
+ * @brief  Function defined by the freeRTOS API to
+ *         configure the timer for the CPU load stats
+ * @note   This function it's used for CPU load measure
+ * @param  none
+ * @revtal none
+ */
+void configureTimerForRunTimeStats(void)
+{
+	/* 32 bit timer with preescaler configured @ 1MHz */
+	HAL_TIM_Base_Start(&htim2);
+}
+
+/**
+ * @brief  Function defined by the freeRTOS API
+ *         to get the current counts of the timer
+ * @note   This function it's used for CPU load measure
+ * @param  none
+ * @retval The counts of the timer
+ */
+unsigned long getRunTimeCounterValue(void)
+{
+	return __HAL_TIM_GET_COUNTER(&htim2);
 }
 
 /*

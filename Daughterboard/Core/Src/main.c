@@ -33,7 +33,9 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
+typedef StaticQueue_t osStaticMessageQDef_t;
 typedef StaticSemaphore_t osStaticSemaphoreDef_t;
+typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -45,6 +47,15 @@ typedef StaticSemaphore_t osStaticSemaphoreDef_t;
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+/*
+ * Documentation of timer usage
+ *
+ * htim1  Timer used for the encoder decodification
+ * htim2  Timer used for the CPU Load measures on the OSHandler
+ * htim3  Timer used for the UART periodical info send
+ * htim4  Timer used as a UART Watchdog timer
+ * htim11 TODO Fill here the documentation for this timer
+ * */
 
 /* USER CODE END PM */
 
@@ -53,14 +64,18 @@ SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_tx;
 
 TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim11;
 
 UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_tx;
+DMA_HandleTypeDef hdma_usart1_rx;
 
-DMA_HandleTypeDef hdma_memtomem_dma2_stream3;
-DMA_HandleTypeDef hdma_memtomem_dma2_stream4;
 DMA_HandleTypeDef hdma_memtomem_dma2_stream5;
+DMA_HandleTypeDef hdma_memtomem_dma2_stream4;
+DMA_HandleTypeDef hdma_memtomem_dma2_stream1;
 DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
 /* Definitions for TaskIdle */
 osThreadId_t TaskIdleHandle;
@@ -112,7 +127,7 @@ const osThreadAttr_t TaskWdgM_attributes = {
 };
 /* Definitions for TaskCOM */
 osThreadId_t TaskCOMHandle;
-uint32_t TaskCOMBuffer[ 128 ];
+uint32_t TaskCOMBuffer[ 256 ];
 osStaticThreadDef_t TaskCOMControlBlock;
 const osThreadAttr_t TaskCOM_attributes = {
   .name = "TaskCOM",
@@ -173,10 +188,16 @@ osMessageQueueId_t xFIFOButtonsHandle;
 const osMessageQueueAttr_t xFIFOButtons_attributes = {
   .name = "xFIFOButtons"
 };
-/* Definitions for xSemaphoreCOMReady */
-osSemaphoreId_t xSemaphoreCOMReadyHandle;
-const osSemaphoreAttr_t xSemaphoreCOMReady_attributes = {
-  .name = "xSemaphoreCOMReady"
+/* Definitions for xFIFO_UARTDataTX */
+osMessageQueueId_t xFIFO_UARTDataTXHandle;
+uint8_t xFIFO_DataTXBuffer[ 16 * sizeof( PDU_t ) ];
+osStaticMessageQDef_t xFIFO_DataTXControlBlock;
+const osMessageQueueAttr_t xFIFO_UARTDataTX_attributes = {
+  .name = "xFIFO_UARTDataTX",
+  .cb_mem = &xFIFO_DataTXControlBlock,
+  .cb_size = sizeof(xFIFO_DataTXControlBlock),
+  .mq_mem = &xFIFO_DataTXBuffer,
+  .mq_size = sizeof(xFIFO_DataTXBuffer)
 };
 /* Definitions for xSemaphoreDMACplt3 */
 osSemaphoreId_t xSemaphoreDMACplt3Handle;
@@ -210,6 +231,19 @@ const osSemaphoreAttr_t xSemaphoreDMACplt0_attributes = {
   .cb_mem = &xSemaphoreDMACplt0ControlBlock,
   .cb_size = sizeof(xSemaphoreDMACplt0ControlBlock),
 };
+/* Definitions for xSemaphore_InitMother */
+osSemaphoreId_t xSemaphore_InitMotherHandle;
+const osSemaphoreAttr_t xSemaphore_InitMother_attributes = {
+  .name = "xSemaphore_InitMother"
+};
+/* Definitions for xSemaphore_UARTRxCplt */
+osSemaphoreId_t xSemaphore_UARTRxCpltHandle;
+osStaticSemaphoreDef_t xSemaphore_UARTRxCpltControlBlock;
+const osSemaphoreAttr_t xSemaphore_UARTRxCplt_attributes = {
+  .name = "xSemaphore_UARTRxCplt",
+  .cb_mem = &xSemaphore_UARTRxCpltControlBlock,
+  .cb_size = sizeof(xSemaphore_UARTRxCpltControlBlock),
+};
 /* Definitions for xEventFinishedInit */
 osEventFlagsId_t xEventFinishedInitHandle;
 const osEventFlagsAttr_t xEventFinishedInit_attributes = {
@@ -230,6 +264,22 @@ osEventFlagsId_t xEventButtonsFIFOEnabledHandle;
 const osEventFlagsAttr_t xEventButtonsFIFOEnabled_attributes = {
   .name = "xEventButtonsFIFOEnabled"
 };
+/* Definitions for xEvent_FatalError */
+osEventFlagsId_t xEvent_FatalErrorHandle;
+osStaticEventGroupDef_t xEvent_FatalErrorControlBlock;
+const osEventFlagsAttr_t xEvent_FatalError_attributes = {
+  .name = "xEvent_FatalError",
+  .cb_mem = &xEvent_FatalErrorControlBlock,
+  .cb_size = sizeof(xEvent_FatalErrorControlBlock),
+};
+/* Definitions for xEvent_UARTSendType */
+osEventFlagsId_t xEvent_UARTSendTypeHandle;
+osStaticEventGroupDef_t xEvent_UARTSendTypeControlBlock;
+const osEventFlagsAttr_t xEvent_UARTSendType_attributes = {
+  .name = "xEvent_UARTSendType",
+  .cb_mem = &xEvent_UARTSendTypeControlBlock,
+  .cb_size = sizeof(xEvent_UARTSendTypeControlBlock),
+};
 /* USER CODE BEGIN PV */
 osMemoryPoolId_t MemoryPool8;  /*Generic Memory Pool designed for members of 1 Byte size*/
 osMemoryPoolId_t MemoryPool16; /*Generic Memory Pool designed for members of 2 Byte size*/
@@ -247,6 +297,9 @@ static void MX_SPI1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM11_Init(void);
+static void MX_TIM2_Init(void);
+static void MX_TIM3_Init(void);
+static void MX_TIM4_Init(void);
 void vTaskIdle(void *argument);
 extern void vTaskUI(void *argument);
 void vTaskLeds(void *argument);
@@ -298,6 +351,9 @@ int main(void)
   MX_TIM1_Init();
   MX_USART1_UART_Init();
   MX_TIM11_Init();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   memoryPoolInit();
   /* USER CODE END 2 */
@@ -310,9 +366,6 @@ int main(void)
   /* USER CODE END RTOS_MUTEX */
 
   /* Create the semaphores(s) */
-  /* creation of xSemaphoreCOMReady */
-  xSemaphoreCOMReadyHandle = osSemaphoreNew(1, 1, &xSemaphoreCOMReady_attributes);
-
   /* creation of xSemaphoreDMACplt3 */
   xSemaphoreDMACplt3Handle = osSemaphoreNew(1, 1, &xSemaphoreDMACplt3_attributes);
 
@@ -324,6 +377,12 @@ int main(void)
 
   /* creation of xSemaphoreDMACplt0 */
   xSemaphoreDMACplt0Handle = osSemaphoreNew(1, 1, &xSemaphoreDMACplt0_attributes);
+
+  /* creation of xSemaphore_InitMother */
+  xSemaphore_InitMotherHandle = osSemaphoreNew(1, 1, &xSemaphore_InitMother_attributes);
+
+  /* creation of xSemaphore_UARTRxCplt */
+  xSemaphore_UARTRxCpltHandle = osSemaphoreNew(1, 1, &xSemaphore_UARTRxCplt_attributes);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -342,6 +401,9 @@ int main(void)
 
   /* creation of xFIFOButtons */
   xFIFOButtonsHandle = osMessageQueueNew (16, sizeof(Buttons), &xFIFOButtons_attributes);
+
+  /* creation of xFIFO_UARTDataTX */
+  xFIFO_UARTDataTXHandle = osMessageQueueNew (16, sizeof(PDU_t), &xFIFO_UARTDataTX_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -388,6 +450,12 @@ int main(void)
 
   /* creation of xEventButtonsFIFOEnabled */
   xEventButtonsFIFOEnabledHandle = osEventFlagsNew(&xEventButtonsFIFOEnabled_attributes);
+
+  /* creation of xEvent_FatalError */
+  xEvent_FatalErrorHandle = osEventFlagsNew(&xEvent_FatalError_attributes);
+
+  /* creation of xEvent_UARTSendType */
+  xEvent_UARTSendTypeHandle = osEventFlagsNew(&xEvent_UARTSendType_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
 
@@ -541,6 +609,141 @@ static void MX_TIM1_Init(void)
 }
 
 /**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 100-1;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 4294967295;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+
+}
+
+/**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 15;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 62499;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
+
+}
+
+/**
+  * @brief TIM4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM4_Init(void)
+{
+
+  /* USER CODE BEGIN TIM4_Init 0 */
+
+  /* USER CODE END TIM4_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM4_Init 1 */
+
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 15;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_DOWN;
+  htim4.Init.Period = 62499;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
+
+  /* USER CODE END TIM4_Init 2 */
+
+}
+
+/**
   * @brief TIM11 Initialization Function
   * @param None
   * @retval None
@@ -607,9 +810,9 @@ static void MX_USART1_UART_Init(void)
 /**
   * Enable DMA controller clock
   * Configure DMA for memory to memory transfers
-  *   hdma_memtomem_dma2_stream3
-  *   hdma_memtomem_dma2_stream4
   *   hdma_memtomem_dma2_stream5
+  *   hdma_memtomem_dma2_stream4
+  *   hdma_memtomem_dma2_stream1
   *   hdma_memtomem_dma2_stream0
   */
 static void MX_DMA_Init(void)
@@ -618,21 +821,21 @@ static void MX_DMA_Init(void)
   /* DMA controller clock enable */
   __HAL_RCC_DMA2_CLK_ENABLE();
 
-  /* Configure DMA request hdma_memtomem_dma2_stream3 on DMA2_Stream3 */
-  hdma_memtomem_dma2_stream3.Instance = DMA2_Stream3;
-  hdma_memtomem_dma2_stream3.Init.Channel = DMA_CHANNEL_0;
-  hdma_memtomem_dma2_stream3.Init.Direction = DMA_MEMORY_TO_MEMORY;
-  hdma_memtomem_dma2_stream3.Init.PeriphInc = DMA_PINC_ENABLE;
-  hdma_memtomem_dma2_stream3.Init.MemInc = DMA_MINC_ENABLE;
-  hdma_memtomem_dma2_stream3.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-  hdma_memtomem_dma2_stream3.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-  hdma_memtomem_dma2_stream3.Init.Mode = DMA_NORMAL;
-  hdma_memtomem_dma2_stream3.Init.Priority = DMA_PRIORITY_MEDIUM;
-  hdma_memtomem_dma2_stream3.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
-  hdma_memtomem_dma2_stream3.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
-  hdma_memtomem_dma2_stream3.Init.MemBurst = DMA_MBURST_SINGLE;
-  hdma_memtomem_dma2_stream3.Init.PeriphBurst = DMA_PBURST_SINGLE;
-  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream3) != HAL_OK)
+  /* Configure DMA request hdma_memtomem_dma2_stream5 on DMA2_Stream5 */
+  hdma_memtomem_dma2_stream5.Instance = DMA2_Stream5;
+  hdma_memtomem_dma2_stream5.Init.Channel = DMA_CHANNEL_0;
+  hdma_memtomem_dma2_stream5.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma2_stream5.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma2_stream5.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma2_stream5.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+  hdma_memtomem_dma2_stream5.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+  hdma_memtomem_dma2_stream5.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma2_stream5.Init.Priority = DMA_PRIORITY_MEDIUM;
+  hdma_memtomem_dma2_stream5.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  hdma_memtomem_dma2_stream5.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+  hdma_memtomem_dma2_stream5.Init.MemBurst = DMA_MBURST_SINGLE;
+  hdma_memtomem_dma2_stream5.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream5) != HAL_OK)
   {
     Error_Handler( );
   }
@@ -656,21 +859,21 @@ static void MX_DMA_Init(void)
     Error_Handler( );
   }
 
-  /* Configure DMA request hdma_memtomem_dma2_stream5 on DMA2_Stream5 */
-  hdma_memtomem_dma2_stream5.Instance = DMA2_Stream5;
-  hdma_memtomem_dma2_stream5.Init.Channel = DMA_CHANNEL_0;
-  hdma_memtomem_dma2_stream5.Init.Direction = DMA_MEMORY_TO_MEMORY;
-  hdma_memtomem_dma2_stream5.Init.PeriphInc = DMA_PINC_ENABLE;
-  hdma_memtomem_dma2_stream5.Init.MemInc = DMA_MINC_ENABLE;
-  hdma_memtomem_dma2_stream5.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-  hdma_memtomem_dma2_stream5.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
-  hdma_memtomem_dma2_stream5.Init.Mode = DMA_NORMAL;
-  hdma_memtomem_dma2_stream5.Init.Priority = DMA_PRIORITY_MEDIUM;
-  hdma_memtomem_dma2_stream5.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
-  hdma_memtomem_dma2_stream5.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
-  hdma_memtomem_dma2_stream5.Init.MemBurst = DMA_MBURST_SINGLE;
-  hdma_memtomem_dma2_stream5.Init.PeriphBurst = DMA_PBURST_SINGLE;
-  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream5) != HAL_OK)
+  /* Configure DMA request hdma_memtomem_dma2_stream1 on DMA2_Stream1 */
+  hdma_memtomem_dma2_stream1.Instance = DMA2_Stream1;
+  hdma_memtomem_dma2_stream1.Init.Channel = DMA_CHANNEL_0;
+  hdma_memtomem_dma2_stream1.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma2_stream1.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma2_stream1.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma2_stream1.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+  hdma_memtomem_dma2_stream1.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+  hdma_memtomem_dma2_stream1.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma2_stream1.Init.Priority = DMA_PRIORITY_MEDIUM;
+  hdma_memtomem_dma2_stream1.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  hdma_memtomem_dma2_stream1.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+  hdma_memtomem_dma2_stream1.Init.MemBurst = DMA_MBURST_SINGLE;
+  hdma_memtomem_dma2_stream1.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream1) != HAL_OK)
   {
     Error_Handler( );
   }
@@ -698,6 +901,9 @@ static void MX_DMA_Init(void)
   /* DMA2_Stream2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+  /* DMA2_Stream3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
   /* DMA2_Stream7_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
@@ -831,9 +1037,17 @@ void vTaskIdle(void *argument)
 void vTaskLeds(void *argument)
 {
   /* USER CODE BEGIN vTaskLeds */
+	uint32_t flags = 0;
   /* Infinite loop */
   for(;;)
   {
+  	flags = osEventFlagsWait(xEvent_FatalErrorHandle, FATAL_ERROR_MOTHER_COMM, osFlagsWaitAny, osWaitForever);
+
+  	if(flags&FATAL_ERROR_MOTHER_COMM)
+  	{
+  		/* Error comm with Motherboard */
+  		HAL_GPIO_WritePin(LED_COMM_GPIO_Port, LED_COMM_Pin, 1);
+  	}
   	/*
     HAL_GPIO_TogglePin(LED_COMM_GPIO_Port, LED_COMM_Pin);
     osDelay(pdMS_TO_TICKS(100));

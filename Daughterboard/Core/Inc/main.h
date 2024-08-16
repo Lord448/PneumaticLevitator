@@ -111,6 +111,9 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN Private defines */
 #define FINISH_INIT_ID 0x1U
+
+#define ALL_OK                             0U
+#define FATAL_ERROR_MOTHER_COMM (uint32_t) 1U << 0
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
