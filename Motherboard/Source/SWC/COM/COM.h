@@ -34,7 +34,7 @@
 #define COM_MAX_QUEUE_MESSAGES 16
 
 /* Number of frames of the initial messages (for transmission)*/
-#define COM_UART_INIT_NUMBER_FRAMES     14
+#define COM_UART_INIT_NUMBER_FRAMES     13
 /* Number of frames of the periodic messages (for transmission)*/
 #define COM_UART_PERIODIC_NUMBER_FRAMES 5
 /* Number that the MCU will send to identify the initial frame */
@@ -97,8 +97,12 @@ typedef union DiagPDU{
 } DiagPDU_t;
 
 void vTaskCOM(void *argument);
+void vSubTaskUSB(void *argument);
+void vSubTaskUART(void *argument);
+
 uint8_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
+
 void vTimer_UARTSendCallback(void *argument);
 void vTimer_WdgUARTCallback(void *argument);
 void vTimer_RestartSensorTaskCallback(void *argument);

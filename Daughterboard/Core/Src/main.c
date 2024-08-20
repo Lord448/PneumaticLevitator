@@ -127,7 +127,7 @@ const osThreadAttr_t TaskWdgM_attributes = {
 };
 /* Definitions for TaskCOM */
 osThreadId_t TaskCOMHandle;
-uint32_t TaskCOMBuffer[ 256 ];
+uint32_t TaskCOMBuffer[ 1024 ];
 osStaticThreadDef_t TaskCOMControlBlock;
 const osThreadAttr_t TaskCOM_attributes = {
   .name = "TaskCOM",
@@ -243,6 +243,14 @@ const osSemaphoreAttr_t xSemaphore_UARTRxCplt_attributes = {
   .name = "xSemaphore_UARTRxCplt",
   .cb_mem = &xSemaphore_UARTRxCpltControlBlock,
   .cb_size = sizeof(xSemaphore_UARTRxCpltControlBlock),
+};
+/* Definitions for xSemaphore_UARTTxCplt */
+osSemaphoreId_t xSemaphore_UARTTxCpltHandle;
+osStaticSemaphoreDef_t xSemaphore_UARTTxCpltControlBlock;
+const osSemaphoreAttr_t xSemaphore_UARTTxCplt_attributes = {
+  .name = "xSemaphore_UARTTxCplt",
+  .cb_mem = &xSemaphore_UARTTxCpltControlBlock,
+  .cb_size = sizeof(xSemaphore_UARTTxCpltControlBlock),
 };
 /* Definitions for xEventFinishedInit */
 osEventFlagsId_t xEventFinishedInitHandle;
@@ -384,8 +392,14 @@ int main(void)
   /* creation of xSemaphore_UARTRxCplt */
   xSemaphore_UARTRxCpltHandle = osSemaphoreNew(1, 1, &xSemaphore_UARTRxCplt_attributes);
 
+  /* creation of xSemaphore_UARTTxCplt */
+  xSemaphore_UARTTxCpltHandle = osSemaphoreNew(1, 1, &xSemaphore_UARTTxCplt_attributes);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
+  osSemaphoreAcquire(xSemaphore_InitMotherHandle, 0U);
+  osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, 0U);
+  osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, 0U);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */

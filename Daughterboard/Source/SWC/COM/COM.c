@@ -26,6 +26,7 @@ extern osTimerId_t xTimer_WdgUARTHandle;
 extern osMessageQueueId_t xFIFO_UARTDataTXHandle;
 
 extern osSemaphoreId_t xSemaphore_InitMotherHandle;
+extern osSemaphoreId_t xSemaphore_UARTTxCpltHandle;
 extern osSemaphoreId_t xSemaphore_UARTRxCpltHandle;
 
 extern osEventFlagsId_t xEventFinishedInitHandle;
@@ -34,11 +35,15 @@ extern osEventFlagsId_t xEvent_UARTSendTypeHandle;
 
 uint8_t COM_UARTRxBuffer[COM_UART_INIT_NUMBER_FRAMES] = {0};
 
+#define firstFrame COM_UARTRxBuffer[0]
+
 /**
  * ---------------------------------------------------------
  * 					 SOFTWARE COMPONENT LOCAL PROTOYPES
  * ---------------------------------------------------------
  */
+static void reSyncCom(bool *syncComInProcess);
+static void sendCPULoad(char *statsBuffer);
 /**
  * ---------------------------------------------------------
  * 					  SOFTWARE COMPONENT MAIN THREAD
@@ -52,22 +57,21 @@ uint8_t COM_UARTRxBuffer[COM_UART_INIT_NUMBER_FRAMES] = {0};
 void vTaskCOM(void *argument)
 {
 	osStatus_t status;
-	char statsBuffer[512] = {0};
-
-	/* Waiting to receive the init frame of Motherboard */
-	HAL_UARTEx_ReceiveToIdle_DMA(&huart1, COM_UARTRxBuffer, COM_UART_INIT_NUMBER_FRAMES);
+	char statsBuffer[1024] = {0};
+	bool syncComInProcess = false;
 	do {
+		/* Waiting to receive the init frame of Motherboard */
+		HAL_UARTEx_ReceiveToIdle_DMA(&huart1, COM_UARTRxBuffer, COM_UART_INIT_NUMBER_FRAMES);
 		status = osSemaphoreAcquire(xSemaphore_InitMotherHandle, pdMS_TO_TICKS(COM_SECONDS_TO_WAIT_MOTHER_INIT*1000)); /* Wait for Mother to init*/
 		if(osOK == status)
 		{
 			/* All Ok to go */
 			uint8_t initFrame = COM_UART_INIT_FRAME_VALUE;
 			/* Send the init frame */
+			osEventFlagsSet(xEvent_UARTSendTypeHandle, INIT_FRAME_MESSAGE_TYPE);
 			HAL_UART_Transmit_DMA(&huart1, &initFrame, sizeof(uint8_t));
 			/* Set the RX UART bit (wait for IDLE bus state to process the ISR)*/
-			HAL_UARTEx_ReceiveToIdle_IT(&huart1, COM_UARTRxBuffer, sizeof(COM_UARTRxBuffer));
-			/* Free the memory reserved by the UART Semaphore */
-			osSemaphoreDelete(xSemaphore_InitMotherHandle);
+			osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, osWaitForever);
 			/* Start hard-timer for UART send */
 			HAL_TIM_Base_Start_IT(&htim3);
 			/* Start hard-watchdog timer for UART receive */
@@ -87,24 +91,30 @@ void vTaskCOM(void *argument)
 	for(;;)
 	{
 		osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, osWaitForever);
-		if(CPU_LOAD_DAUGHTER == COM_UARTRxBuffer[0])
+		/* An UART message has been received */
+		switch(firstFrame)
 		{
-			/* Enter on diagnostics session */
-			HAL_TIM_Base_Stop_IT(&htim3);
-			/* The Motherboard has requested a CPU load measure */
-			memset(statsBuffer, '\0', strlen(statsBuffer));
-			vTaskGetRunTimeStats(statsBuffer);
-			strcat(statsBuffer, "\nend\n"); /* Data specific for CPULoad script */
-			/* Send all the data */
-			HAL_UART_Transmit_DMA(&huart1, (uint8_t *)statsBuffer, strlen(statsBuffer));
-			/* Wait to end transmission */
-			osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, osWaitForever);
-			/* End diagnostics session */
-			HAL_TIM_Base_Start_IT(&htim3);
-		}
-		else
-		{
-			/* Unknown message, Do Nothing */
+			case COM_UART_INIT_FRAME_VALUE:
+				/* An initial frame has been received when it's not supposed to */
+				syncComInProcess = true;
+				osSemaphoreRelease(xSemaphore_UARTRxCpltHandle);
+				while(syncComInProcess)
+					reSyncCom(&syncComInProcess);
+			break;
+			case CPU_LOAD_DAUGHTER:
+				/* Motherboard requesting single CPU Load measure */
+				sendCPULoad(statsBuffer);
+			break;
+			case ENTER_DIAGS_ID:
+				/* Enter on diagnostics session */
+			break;
+			case PERIODIC_ID:
+				/* Normal perdiocal frame */
+				/* TODO handle here the distance and RPM */
+			break;
+			default:
+				/* Unknown message, Do Nothing */
+			break;
 		}
 	}
 }
@@ -118,6 +128,59 @@ void vTaskCOM(void *argument)
  * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
  * ---------------------------------------------------------
  */
+static void reSyncCom(bool *syncComInProcess)
+{
+	enum ReSyncStates {
+		StopTimer,
+		SendInitFrame,
+		RestoreTimer
+	}static stateHandler = StopTimer;
+	const uint8_t initFrame = COM_UART_INIT_FRAME_VALUE;
+
+	switch(stateHandler)
+	{
+		case StopTimer:
+			/* First state of the machine */
+			HAL_TIM_Base_Stop_IT(&htim3);
+			stateHandler = SendInitFrame;
+		break;
+		case SendInitFrame:
+			/* Send init frame until the Motherboard gets the info*/
+			osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, osWaitForever);
+			if(COM_UART_INIT_FRAME_VALUE != firstFrame)
+			{
+				/* The Motherboard started to send another type of frames */
+				stateHandler = RestoreTimer;
+			}
+			else
+			{
+				/* The Motherboard still sends init frames */
+				HAL_UART_Transmit_DMA(&huart1, &initFrame, sizeof(uint8_t));
+			}
+		break;
+		case RestoreTimer:
+			*syncComInProcess = false; /* Break the upper while */
+			osSemaphoreRelease(xSemaphore_UARTRxCpltHandle);
+			HAL_TIM_Base_Start_IT(&htim3);
+		break;
+	}
+}
+
+static void sendCPULoad(char *statsBuffer)
+{
+	/* Enter on small diagnostics session */
+	HAL_TIM_Base_Stop_IT(&htim3);
+	/* The Motherboard has requested a CPU load measure */
+	memset(statsBuffer, '\0', strlen(statsBuffer));
+	vTaskGetRunTimeStats(statsBuffer);
+	strcat(statsBuffer, "\nend\n"); /* Data specific for CPULoad script */
+	/* Send all the data */
+	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)statsBuffer, strlen(statsBuffer));
+	/* Wait to end transmission */
+	osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, osWaitForever);
+	/* End small diagnostics session */
+	HAL_TIM_Base_Start_IT(&htim3);
+}
 /**
  * ---------------------------------------------------------
  * 					        HARD-TIMERS CALLBACKS
@@ -195,7 +258,14 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	if(flags&CPU_LOAD_MESSAGE_TYPE)
 	{
 		/* A CPU load measure has been sent */
-		osSemaphoreRelease(xSemaphore_UARTRxCpltHandle);
+		osEventFlagsClear(xEvent_UARTSendTypeHandle, CPU_LOAD_MESSAGE_TYPE);
+		osSemaphoreRelease(xSemaphore_UARTTxCpltHandle);
+	}
+	else if(flags&INIT_FRAME_MESSAGE_TYPE)
+	{
+		/* A first frame has been sent */
+		osEventFlagsClear(xEvent_UARTSendTypeHandle, INIT_FRAME_MESSAGE_TYPE);
+		osSemaphoreRelease(xSemaphore_UARTTxCpltHandle);
 	}
 	else
 	{
@@ -209,43 +279,71 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
   *                the configuration information for the specified UART module.
   * @retval None
   */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
-	static bool firstInit = true;
-	uint8_t firstFrame = huart->pRxBuffPtr[0];
-
+	static bool firstBoot = true;
+	/* Always do when reception */
 	osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_MOTHER_COMM);
 	/* Reseting the Watch dog timer for UART */
 	TIM3 -> CNT = htim4.Init.Period;
-
-	if(firstFrame == COM_UART_INIT_FRAME_VALUE)
+	if(firstBoot)
 	{
-		/* It's an init frame */
-		if(firstInit)
-		{
-			/* The system were waiting for this init */
-			osSemaphoreRelease(xSemaphore_InitMotherHandle);
-			firstInit = false;
-		}
-		else
-		{
-			/* Watchdog timer were triggered on Motherboard */
-			/* TODO: Handle here */
-		}
+		/* It's the first frame received */
+		osSemaphoreRelease(xSemaphore_InitMotherHandle);
+		firstBoot = false;
 	}
 	else
 	{
-		/* It's a periodic frame */
-		if(NO_MSG_ID != firstFrame)
-		{
-			/* Indicating that the component has to process the data */
-			osSemaphoreRelease(xSemaphore_UARTRxCpltHandle);
-		}
-		else
-		{
-			/* Do Nothing, It's just the acknowledge */
-		}
+		/* Needs to be handled on COM */
+		osSemaphoreRelease(xSemaphore_UARTRxCpltHandle);
 	}
-	HAL_UARTEx_ReceiveToIdle_IT(huart, COM_UARTRxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES);
+	/* Continue expecting receiveing signals */
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart1, COM_UARTRxBuffer, COM_UART_INIT_NUMBER_FRAMES);
+}
+
+/**
+  * @brief  UART error callbacks.
+  * @param  huart  Pointer to a UART_HandleTypeDef structure that contains
+  *                the configuration information for the specified UART module.
+  * @retval None
+  */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+	static uint32_t FrameErrorCounts = 0, OverrunErrorsCounts = 0;
+	uint32_t uartError = HAL_UART_GetError(huart);
+	uint32_t dummy = 0; /* Dummy variable to avoid compiler optimization*/
+
+	switch (uartError)
+	{
+		case HAL_UART_ERROR_NONE:
+			/* No errors */
+			dummy++;
+		break;
+		case HAL_UART_ERROR_PE:
+			/* Parity Error */
+			dummy++;
+		break;
+		case HAL_UART_ERROR_NE:
+			/* Noise Error */
+			dummy++;
+		break;
+		case HAL_UART_ERROR_FE:
+			/* Frame Error */
+			FrameErrorCounts++;
+		break;
+		case HAL_UART_ERROR_ORE:
+			/* Overrun error */
+			OverrunErrorsCounts++;
+		break;
+		case HAL_UART_ERROR_DMA:
+			/* DMA Transfer Error */
+			dummy++;
+		break;
+		default:
+			/* Unknown error */
+		break;
+	}
+	/* Continue with the transmission and try to report the number of this errors */
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart1, COM_UARTRxBuffer, COM_UART_INIT_NUMBER_FRAMES);
 }
 

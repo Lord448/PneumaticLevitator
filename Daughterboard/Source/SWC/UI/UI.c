@@ -62,9 +62,9 @@ void vTaskUI(void *argument)
 	osDelay(pdMS_TO_TICKS(5000));
   for(;;)
   {
+  	osDelay(1);
   	/*TODO: Possible implementation of parsed loop scheme*/
   	//LCD_Test(); /*TODO Remove the test from here*/
-
   }
 }
 

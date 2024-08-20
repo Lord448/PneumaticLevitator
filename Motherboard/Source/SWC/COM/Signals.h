@@ -26,6 +26,9 @@
 
 /*Declare here all the signals*/
 #define NO_MSG_ID         SIGNAL(0x00)
-#define CPU_LOAD_DAUGHTER SIGNAL(0x7F)
+#define PERIODIC_ID       SIGNAL(0x01)
+#define ENTER_DIAGS_ID    SIGNAL(0x02)
+
+#define CPU_LOAD_DAUGHTER SIGNAL(0x7F) /* 7 bit limit */
 
 #endif /* SWC_COM_SIGNALS_H_ */

@@ -45,6 +45,7 @@ extern char CDC_ResBuffer[64];
 extern void vTaskSensor(void *argument);
 
 uint8_t UART_RxBuffer[COM_UART_PERIODIC_NUMBER_FRAMES] = {0};
+bool firstInit = true;
 
 /**
  * ---------------------------------------------------------
@@ -52,8 +53,7 @@ uint8_t UART_RxBuffer[COM_UART_PERIODIC_NUMBER_FRAMES] = {0};
  * ---------------------------------------------------------
  */
 static void sendInitBuffer(void);
-static void processUSBData(void);
-static void processUARTData(uint8_t *buffer);
+static void syncComm(void);
 /**
  * ---------------------------------------------------------
  * 					  SOFTWARE COMPONENT MAIN THREAD
@@ -66,60 +66,11 @@ static void processUARTData(uint8_t *buffer);
 */
 void vTaskCOM(void *argument)
 {
-	uint8_t buffer[6] = {0};
-	uint8_t ack = 0; /*Dummy memory region since the data it's handled on the ISR*/
-	osStatus_t status;
-	uint8_t errorCounter = 0;
-
-	osThreadId_t SubTaskUSB;
-	uint32_t SubTaskUSBStackBuffer[128];
-	osThreadId_t SubTaskUART;
-
-
-	HAL_UART_Receive_IT(&huart1, &ack, sizeof(uint8_t));
-	do {
-		/*
-		 * @note If the Daughterboard fails, during SECONDS_TO_WAIT_DAUGHTER_INIT*10
-		 * seconds the system wont be able to communicate via USB since the
-		 * task is polled here (USB Data can be received, but the system
-		 * wont response after that time)
-		 *
-		 */
-		/* Send initial buffer */
-		sendInitBuffer();
-		/* Wait for the UART to receive the init message of Daughter */
-		status = osSemaphoreAcquire(xSemaphore_InitDaughterHandle, pdMS_TO_TICKS(COM_SECONDS_TO_WAIT_DAUGHTER_INIT*1000)); /* Wait for daughter to init*/
-		if(osOK == status)
-		{
-			/* All Ok to go */
-			/* Set the RX UART bit (wait for IDLE bus state to process the ISR)*/
-			HAL_UARTEx_ReceiveToIdle_IT(&huart1, buffer, sizeof(buffer));
-			/* Free the memory reserved by the UART Semaphore */
-			osSemaphoreDelete(xSemaphore_InitDaughterHandle);
-			/* Start soft-timer for UART send */
-			osTimerStart(xTimer_UARTSendHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
-		}
-		else
-		{
-			/* Timeout, asumming errors on the Daughterboard init */
-			/* Reporting to LEDS SWC */
-			osSemaphoreRelease(xSemaphore_InitDaughterHandle);
-			osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
-			//osDelay(pdMS_TO_TICKS(500));
-			errorCounter++;
-			/* TODO: Trigger DTC Not GPU Comm */
-		}
-	}while(osOK != status && errorCounter < 10);
-
+	syncComm();
 	for(;;)
 	{
-		/* TODO: Check possible creation of subthreads for USB and UART communication */
-		/* Process USB info */
-		processUSBData();
-		/* Process UART info */
-		processUARTData(buffer);
 		/* Searching if there are errors on the sensor VL53L0X TODO: Move this to ModeManager*/
-		if(osOK == osSemaphoreAcquire(xSemaphore_SensorErrorHandle, 0U))
+		if(osOK == osSemaphoreAcquire(xSemaphore_SensorErrorHandle, osWaitForever))
 		{
 			/* Errors on the VL53L0X communication */
 			osThreadTerminate(TaskSensorHandle);
@@ -178,52 +129,123 @@ int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType prior
 
 /**
  * ---------------------------------------------------------
- * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
+ * 					    SOFTWARE COMPONENT SUB THREADS
  * ---------------------------------------------------------
  */
 /**
- * @brief  Function that process the incoming data from
- *         the USB, this data it's transmitted with a global
- *         buffer called "CDC_ResBuffer"
- * @param  none
- * @retval none
- */
-static void processUSBData(void)
+* @brief Function implementing the SubTaskUSB thread.
+* @note  Thread that process the incoming data from
+ *       the USB, this data it's transmitted with a global
+ *       buffer called "CDC_ResBuffer"
+* @param argument: Not used
+* @retval None
+*/
+void vSubTaskUSB(void *argument)
 {
-	char statsBuffer[512] = {0};
+	char statsBuffer[1024] = {0};
 	uint32_t usbFlags = 0;
 
-	usbFlags = osEventFlagsWait(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX, osFlagsWaitAny, pdMS_TO_TICKS(5));
-
-	if(usbFlags&CDC_FLAG_MESSAGE_RX)
+	for(;;)
 	{
-		/* An USB message arrived */
-		if(strcmp(CDC_ResBuffer, "CPU") == 0) /* TODO: Instrumented code */
+		usbFlags = osEventFlagsWait(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX, osFlagsWaitAny, osWaitForever);
+
+		if(usbFlags&CDC_FLAG_MESSAGE_RX)
 		{
-			/* TODO: When COM finished, implement this code on DiagAppl */
-			memset(statsBuffer, '\0', strlen(statsBuffer));
-			vTaskGetRunTimeStats(statsBuffer);
-			strcat(statsBuffer, "\nend\n"); /* Data specific for CPULoad script */
-			if(USBD_OK == CDC_getReady())
+			/* An USB message arrived */
+			if(strcmp(CDC_ResBuffer, "CPU") == 0) /* TODO: Instrumented code */
 			{
-				/* The USB it's not busy */
-				CDC_Transmit_FS((uint8_t *)statsBuffer, strlen(statsBuffer));
+				/* TODO: If decided, implement this code on DiagAppl */
+				result_t result = Error;
+				memset(statsBuffer, '\0', strlen(statsBuffer));
+				vTaskGetRunTimeStats(statsBuffer);
+				strcat(statsBuffer, "\nend\n"); /* Data specific for CPULoad script */
+				do{
+					if(USBD_OK == CDC_getReady())
+					{
+						/* The USB it's not busy */
+						result = CDC_Transmit_FS((uint8_t *)statsBuffer, strlen(statsBuffer));
+					}
+					else
+					{
+						/* Wait for the USB to send */
+					}
+				}while(result != OK);
 			}
+			else
+			{
+				/* Unknown message, do nothing */
+			}
+		}
+		else
+		{
+			/* Do Nothing */
 		}
 	}
 }
 
 /**
- * @brief
+* @brief Function implementing the SubTaskUART thread.
+* @param argument: Not used
+* @retval None
+*/
+void vSubTaskUART(void *argument)
+{
+	for(;;)
+	{
+		osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, osWaitForever);
+		/* TODO: Handle here the communication */
+	}
+}
+/**
+ * ---------------------------------------------------------
+ * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
+/**
+ * @brief  Syncronize the communication by sending
+ *         the init frames when called
+ * @note   This function may poll the task when it's called
+ *         do not call this function on an ISR
  * @param  none
  * @retval none
  */
-static void processUARTData(uint8_t *buffer)
+static void syncComm(void)
 {
-	osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, pdMS_TO_TICKS(5));
-	/* TODO: Handle here the communication */
-}
+	osStatus_t status;
+	bool errorFlagWereSet = false;
+	do {
+		HAL_UART_Receive_IT(&huart1, UART_RxBuffer, sizeof(uint8_t)); /* Jump the ISR when first arrived to receive the data */
+		/* Send initial buffer */
+		sendInitBuffer();
+		/* Wait for the UART to receive the init message of Daughter */
+		status = osSemaphoreAcquire(xSemaphore_InitDaughterHandle, pdMS_TO_TICKS(COM_SECONDS_TO_WAIT_DAUGHTER_INIT*1000)); /* Wait for daughter to init*/
+		if(osOK == status)
+		{
+			/* All Ok to go */
+			/* Start soft-timer for UART send */
+			osTimerStart(xTimer_UARTSendHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
+		}
+		else
+		{
+			/* Timeout, asumming errors on the Daughterboard init */
+			/* Reporting to LEDS SWC */
+			//osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
+			//errorFlagWereSet = true;
+			/* TODO: Trigger DTC Not GPU Comm */
+		}
+	}while(osOK != status);
+	firstInit = false;
 
+	if(errorFlagWereSet)
+	{
+		/* Disable the flag */
+		osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
+	}
+	else
+	{
+		/* Do nothing */
+	}
+}
 /**
  * @brief  Send through the UART Bus the "INIT TX BUS"
  * @param  none
@@ -231,9 +253,9 @@ static void processUARTData(uint8_t *buffer)
  */
 static void sendInitBuffer(void)
 {
-	uint8_t buffer[12] = {0}; /* Fixed size following the doc */
-	NVMType32 Kp, Ki, Kd;
-	uint32_t i = 1;
+	uint8_t buffer[COM_UART_INIT_NUMBER_FRAMES] = {0}; /* Fixed size following the doc */
+	NVMType32 Kp, Ki, Kd; /* PID constants */
+	uint32_t i = 1; /* Iterator used as index for the buffer filling */
 
 	NVM_Read(KP_PID_BASE_ADDR, &Kp);
 	NVM_Read(KI_PID_BASE_ADDR, &Ki);
@@ -256,11 +278,9 @@ static void sendInitBuffer(void)
 	{
 		buffer[i] = Kd.rawData[j];
 	}
-	HAL_UART_Transmit_DMA(&huart1, buffer, sizeof(buffer));
+	HAL_UART_Transmit_DMA(&huart1, buffer, COM_UART_INIT_NUMBER_FRAMES);
 	osSemaphoreAcquire(xSemaphore_InitDaughterHandle, osWaitForever);
 }
-
-
 /**
  * ---------------------------------------------------------
  * 					        SOFT-TIMERS CALLBACKS
@@ -285,10 +305,13 @@ void vTimer_UARTSendCallback(void *argument)
 	uint32_t fatalErrorFlags = 0;
 	osStatus_t status;
 
-	fatalErrorFlags = osEventFlagsWait(xEvent_FatalErrorHandle, FATAL_ERROR_GPU, osFlagsWaitAny, osNoTimeout);
-
+	fatalErrorFlags = osEventFlagsGet(xEvent_FatalErrorHandle);
+	uint32_t res = fatalErrorFlags&FATAL_ERROR_GPU;
 	if(fatalErrorFlags&FATAL_ERROR_GPU)
+	{
 		return; /* Cancel the send */
+	}
+
 
 	buffer[0] = acknowledge | confirmReset << 1;
 	/* Getting the distance data */
@@ -359,8 +382,9 @@ void vTimer_WdgUARTCallback(void *argument)
 {
 	/* Watchdog soft-timer */
 	/* Reporting to LEDS SWC */
-		osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
+	//osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
 	/* TODO: Trigger DTC Not GPU Comm */
+	syncComm();
 }
 
 /**
@@ -388,16 +412,15 @@ void vTimer_RestartSensorTaskCallback(void *argument)
   */
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-	static bool firstFrame = true;
+	uint8_t firstFrame = huart->pTxBuffPtr[0];
 
 	if(USART1 == huart -> Instance)
 	{
 		/* Communication with the daughterboard */
-		if(firstFrame)
+		if(COM_UART_INIT_FRAME_VALUE == firstFrame)
 		{
 			/* The first frame (init frame) has been sent */
 			osSemaphoreRelease(xSemaphore_InitDaughterHandle);
-			firstFrame = false;
 		}
 		else
 		{
@@ -414,21 +437,17 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
   */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	static bool firstInit = true;
-	uint8_t firstFrame = huart->pRxBuffPtr[0];
-
-	osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
+	uint32_t stat = osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
 	/* Reseting the Watch dog timer for UART */
 	osTimerStart(xTimer_WdgUARTHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
 
-	if(firstFrame == COM_UART_INIT_FRAME_VALUE)
+	if(UART_RxBuffer[0] == COM_UART_INIT_FRAME_VALUE)
 	{
 		/* It's an init frame */
 		if(firstInit)
 		{
 			/* The system were waiting for this init */
 			osSemaphoreRelease(xSemaphore_InitDaughterHandle);
-			firstInit = false;
 		}
 		else
 		{
@@ -439,7 +458,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	else
 	{
 		/* It's a periodic frame */
-		if(NO_MSG_ID != firstFrame)
+		if(NO_MSG_ID != UART_RxBuffer[0])
 		{
 			/* Indicating that the component has to process the data */
 			osSemaphoreRelease(xSemaphore_UARTRxCpltHandle);
@@ -450,6 +469,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		}
 		HAL_UARTEx_ReceiveToIdle_IT(huart, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES);
 	}
+
 }
 
 uint32_t errorCounterI2C1 = 0;

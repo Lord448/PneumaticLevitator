@@ -3,6 +3,7 @@
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
  * @brief     TODO
+ *            TODO Disabled Component at the moment
  *
  * @date      Jun 2, 2024
  *
@@ -49,6 +50,7 @@ void vTaskDiagAppl(void *argument)
 	uint32_t DiagFlags = 0;
 
 	DiagAppl_Init();
+	osDelay(osWaitForever); /* TODO: Stubbed code, disabling the component */
 	for(;;)
 	{
 		/* Wait for a FIFO diagnostic request */

@@ -96,6 +96,7 @@ TIM_HandleTypeDef htim5;
 
 UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_tx;
+DMA_HandleTypeDef hdma_usart1_rx;
 
 /* Definitions for TaskWdgM */
 osThreadId_t TaskWdgMHandle;
@@ -135,7 +136,7 @@ const osThreadAttr_t TaskPID_attributes = {
 };
 /* Definitions for TaskCOM */
 osThreadId_t TaskCOMHandle;
-uint32_t TaskCOMBuffer[ 2048 ];
+uint32_t TaskCOMBuffer[ 512 ];
 osStaticThreadDef_t TaskCOMControlBlock;
 const osThreadAttr_t TaskCOM_attributes = {
   .name = "TaskCOM",
@@ -192,6 +193,30 @@ const osThreadAttr_t TaskFAN_attributes = {
   .stack_mem = &TaskFANBuffer[0],
   .stack_size = sizeof(TaskFANBuffer),
   .priority = (osPriority_t) osPriorityAboveNormal,
+};
+/* Definitions for SubTaskUSB */
+osThreadId_t SubTaskUSBHandle;
+uint32_t SubTaskUSBBuffer[ 1024 ];
+osStaticThreadDef_t SubTaskUSBControlBlock;
+const osThreadAttr_t SubTaskUSB_attributes = {
+  .name = "SubTaskUSB",
+  .cb_mem = &SubTaskUSBControlBlock,
+  .cb_size = sizeof(SubTaskUSBControlBlock),
+  .stack_mem = &SubTaskUSBBuffer[0],
+  .stack_size = sizeof(SubTaskUSBBuffer),
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for SubTaskUART */
+osThreadId_t SubTaskUARTHandle;
+uint32_t SubTaskUARTBuffer[ 256 ];
+osStaticThreadDef_t SubTaskUARTControlBlock;
+const osThreadAttr_t SubTaskUART_attributes = {
+  .name = "SubTaskUART",
+  .cb_mem = &SubTaskUARTControlBlock,
+  .cb_size = sizeof(SubTaskUARTControlBlock),
+  .stack_mem = &SubTaskUARTBuffer[0],
+  .stack_size = sizeof(SubTaskUARTBuffer),
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for xFIFO_COM */
 osMessageQueueId_t xFIFO_COMHandle;
@@ -331,8 +356,11 @@ const osSemaphoreAttr_t xSemaphore_SensorRxCplt_attributes = {
 };
 /* Definitions for xSemaphore_InitDaughter */
 osSemaphoreId_t xSemaphore_InitDaughterHandle;
+osStaticSemaphoreDef_t xSemaphore_InitDaughterControlBlock;
 const osSemaphoreAttr_t xSemaphore_InitDaughter_attributes = {
-  .name = "xSemaphore_InitDaughter"
+  .name = "xSemaphore_InitDaughter",
+  .cb_mem = &xSemaphore_InitDaughterControlBlock,
+  .cb_size = sizeof(xSemaphore_InitDaughterControlBlock),
 };
 /* Definitions for xSemaphore_SensorError */
 osSemaphoreId_t xSemaphore_SensorErrorHandle;
@@ -410,6 +438,8 @@ extern void vTaskDiagAppl(void *argument);
 extern void vTaskLeds(void *argument);
 extern void vTaskSensor(void *argument);
 extern void vTaskFAN(void *argument);
+extern void vSubTaskUSB(void *argument);
+extern void vSubTaskUART(void *argument);
 extern void vTimer_UARTSendCallback(void *argument);
 extern void vTimer_WdgUARTCallback(void *argument);
 extern void vTimer_RestartSensorTaskCallback(void *argument);
@@ -504,6 +534,7 @@ int main(void)
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   osSemaphoreAcquire(xSemaphore_InitDaughterHandle, osNoTimeout);
+  osSemaphoreAcquire(xSemaphore_SensorErrorHandle, osNoTimeout);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* Create the timer(s) */
@@ -573,6 +604,12 @@ int main(void)
 
   /* creation of TaskFAN */
   TaskFANHandle = osThreadNew(vTaskFAN, NULL, &TaskFAN_attributes);
+
+  /* creation of SubTaskUSB */
+  SubTaskUSBHandle = osThreadNew(vSubTaskUSB, NULL, &SubTaskUSB_attributes);
+
+  /* creation of SubTaskUART */
+  SubTaskUARTHandle = osThreadNew(vSubTaskUART, NULL, &SubTaskUART_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -1091,6 +1128,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Stream7_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream7_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream7_IRQn);
+  /* DMA2_Stream2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
   /* DMA2_Stream7_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);

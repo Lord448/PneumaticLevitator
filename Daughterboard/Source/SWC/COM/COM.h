@@ -20,6 +20,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "Signals.h"
+#include "stm32f4xx_hal_uart.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -29,7 +30,7 @@
 #define COM_MAX_QUEUE_MESSAGES 16
 
 /* Number of frames of the initial messages (for reception)*/
-#define COM_UART_INIT_NUMBER_FRAMES 14
+#define COM_UART_INIT_NUMBER_FRAMES 13
 /* Number of frames of the periodic messages (for reception)*/
 #define COM_UART_PERIODIC_NUMBER_FRAMES 5
 /* Number that the MCU will send to identify the initial frame */
@@ -51,7 +52,9 @@
 #define COM_TIME_TO_RESET_SENSOR_TASK 1000 /*MS*/
 
 /* Flag for the special meesage type */
-#define CPU_LOAD_MESSAGE_TYPE (uint32_t) 1U << 0
+#define CPU_LOAD_MESSAGE_TYPE (uint32_t)   1U << 0
+/* Flag for the init frame */
+#define INIT_FRAME_MESSAGE_TYPE (uint32_t) 1U << 1
 
 /* Definition of message types and priority (ensuring 4 bits) */
 
