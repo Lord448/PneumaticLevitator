@@ -36,6 +36,7 @@ extern osSemaphoreId_t xSemaphore_SensorRxCpltHandle;
 extern osSemaphoreId_t xSemaphore_InitDaughterHandle;
 extern osSemaphoreId_t xSemaphore_SensorErrorHandle;
 extern osSemaphoreId_t xSemaphore_UARTRxCpltHandle;
+extern osSemaphoreId_t xSemaphore_UARTTxCpltHandle;
 
 extern osEventFlagsId_t xEvent_USBHandle;
 extern osEventFlagsId_t xEvent_FatalErrorHandle;
@@ -66,11 +67,18 @@ static void syncComm(void);
 */
 void vTaskCOM(void *argument)
 {
+	uint32_t flags = 0;
 	syncComm();
 	for(;;)
 	{
+		flags = osEventFlagsGet(xEvent_FatalErrorHandle);
+		if(flags&FATAL_ERROR_GPU)
+		{
+			/* Handling the fatal error */
+			syncComm();
+		}
 		/* Searching if there are errors on the sensor VL53L0X TODO: Move this to ModeManager*/
-		if(osOK == osSemaphoreAcquire(xSemaphore_SensorErrorHandle, osWaitForever))
+		if(osOK == osSemaphoreAcquire(xSemaphore_SensorErrorHandle, 100))
 		{
 			/* Errors on the VL53L0X communication */
 			osThreadTerminate(TaskSensorHandle);
@@ -229,8 +237,8 @@ static void syncComm(void)
 		{
 			/* Timeout, asumming errors on the Daughterboard init */
 			/* Reporting to LEDS SWC */
-			//osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
-			//errorFlagWereSet = true;
+			osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
+			errorFlagWereSet = true;
 			/* TODO: Trigger DTC Not GPU Comm */
 		}
 	}while(osOK != status);
@@ -279,7 +287,7 @@ static void sendInitBuffer(void)
 		buffer[i] = Kd.rawData[j];
 	}
 	HAL_UART_Transmit_DMA(&huart1, buffer, COM_UART_INIT_NUMBER_FRAMES);
-	osSemaphoreAcquire(xSemaphore_InitDaughterHandle, osWaitForever);
+	osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, osWaitForever);
 }
 /**
  * ---------------------------------------------------------
@@ -306,14 +314,14 @@ void vTimer_UARTSendCallback(void *argument)
 	osStatus_t status;
 
 	fatalErrorFlags = osEventFlagsGet(xEvent_FatalErrorHandle);
-	uint32_t res = fatalErrorFlags&FATAL_ERROR_GPU;
+	uint32_t res = fatalErrorFlags&FATAL_ERROR_GPU; /* TODO: Stubbed code */
 	if(fatalErrorFlags&FATAL_ERROR_GPU)
 	{
 		return; /* Cancel the send */
 	}
 
 
-	buffer[0] = acknowledge | confirmReset << 1;
+	buffer[0] = ACK_DATA | acknowledge | confirmReset << 1;
 	/* Getting the distance data */
 	status = osMessageQueueGet(xFIFO_COMDistanceHandle, &distance, NULL, osNoTimeout);
 	if(osOK != status)
@@ -382,9 +390,9 @@ void vTimer_WdgUARTCallback(void *argument)
 {
 	/* Watchdog soft-timer */
 	/* Reporting to LEDS SWC */
-	//osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
+	osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
 	/* TODO: Trigger DTC Not GPU Comm */
-	syncComm();
+	//syncComm();
 }
 
 /**
@@ -416,16 +424,19 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 	if(USART1 == huart -> Instance)
 	{
+		/* TODO Legacy logic, delete when project released */
 		/* Communication with the daughterboard */
 		if(COM_UART_INIT_FRAME_VALUE == firstFrame)
 		{
 			/* The first frame (init frame) has been sent */
-			osSemaphoreRelease(xSemaphore_InitDaughterHandle);
+			//osSemaphoreRelease(xSemaphore_InitDaughterHandle);
 		}
 		else
 		{
 			/* Do Nothing */
 		}
+		/* TODO Legacy logic, delete when project released */
+		osSemaphoreRelease(xSemaphore_UARTTxCpltHandle);
 	}
 }
 
@@ -437,7 +448,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
   */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	uint32_t stat = osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
+	uint32_t stat = osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_GPU); /*TODO Stubbed code*/
 	/* Reseting the Watch dog timer for UART */
 	osTimerStart(xTimer_WdgUARTHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
 

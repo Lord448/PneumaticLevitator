@@ -378,6 +378,14 @@ const osSemaphoreAttr_t xSemaphore_UARTRxCplt_attributes = {
   .cb_mem = &xSemaphore_UARTRxCpltControlBlock,
   .cb_size = sizeof(xSemaphore_UARTRxCpltControlBlock),
 };
+/* Definitions for xSemaphore_UARTTxCplt */
+osSemaphoreId_t xSemaphore_UARTTxCpltHandle;
+osStaticSemaphoreDef_t xSemaphore_UARTTxCpltControlBlock;
+const osSemaphoreAttr_t xSemaphore_UARTTxCplt_attributes = {
+  .name = "xSemaphore_UARTTxCplt",
+  .cb_mem = &xSemaphore_UARTTxCpltControlBlock,
+  .cb_size = sizeof(xSemaphore_UARTTxCpltControlBlock),
+};
 /* Definitions for xEvent_FatalError */
 osEventFlagsId_t xEvent_FatalErrorHandle;
 osStaticEventGroupDef_t xEvent_FatalErrorControlBlock;
@@ -531,10 +539,15 @@ int main(void)
   /* creation of xSemaphore_UARTRxCplt */
   xSemaphore_UARTRxCpltHandle = osSemaphoreNew(1, 1, &xSemaphore_UARTRxCplt_attributes);
 
+  /* creation of xSemaphore_UARTTxCplt */
+  xSemaphore_UARTTxCpltHandle = osSemaphoreNew(1, 1, &xSemaphore_UARTTxCplt_attributes);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   osSemaphoreAcquire(xSemaphore_InitDaughterHandle, osNoTimeout);
   osSemaphoreAcquire(xSemaphore_SensorErrorHandle, osNoTimeout);
+  osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, osNoTimeout);
+  osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, osNoTimeout);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* Create the timer(s) */

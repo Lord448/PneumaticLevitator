@@ -276,7 +276,11 @@ static void _UG_ProgressUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
                }
             }
             
+#ifndef VERTICAL_PROGRESS_BAR
             w   = ((obj->a_abs.xe-d)-(obj->a_abs.xs+d));
+#else
+            w   = ((obj->a_abs.ye-d)-(obj->a_abs.ys+d));
+#endif
             wps = w * pgb->progress / 100;
             wpe = w - wps;
 
@@ -287,6 +291,7 @@ static void _UG_ProgressUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
             // Draw remaining frame first
             if(wpe > 0)
             {
+#ifndef VERTICAL_PROGRESS_BAR
                UG_S16 xs = obj->a_abs.xs + d + wps;
                UG_S16 xe = obj->a_abs.xe - d;
                
@@ -302,12 +307,21 @@ static void _UG_ProgressUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
                {
                   UG_FillFrame(xs, obj->a_abs.ys+d, xe, obj->a_abs.ye-d, pgb->bc);
                }
+#else
+               UG_S16 ys = obj->a_abs.ys + d;
+               UG_S16 ye = obj->a_abs.ye - d - wps;
+               UG_FillFrame(obj->a_abs.xs+d, ys, obj->a_abs.xe-d, ye, pgb->bc);
+#endif
             }
 
             // Draw elapsed frame
             if(pgb->progress > 0)
             {
+#ifndef VERTICAL_PROGRESS_BAR
                UG_FillFrame(obj->a_abs.xs+d, obj->a_abs.ys+d, obj->a_abs.xs+d+wps, obj->a_abs.ye-d, pgb->fc);
+#else
+               UG_FillFrame(obj->a_abs.xs+d, obj->a_abs.ye-d-wps, obj->a_abs.xe-d, obj->a_abs.ye-d, pgb->fc);
+#endif
             }
 #ifdef UGUI_USE_POSTRENDER_EVENT
             _UG_SendObjectPostrenderEvent(wnd, obj);

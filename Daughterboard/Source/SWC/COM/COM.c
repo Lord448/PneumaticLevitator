@@ -23,6 +23,8 @@ extern TIM_HandleTypeDef htim4; /* Watchdog timer for UART @ 10ms (Count down)*/
 extern osTimerId_t xTimer_UARTSendHandle;
 extern osTimerId_t xTimer_WdgUARTHandle;
 
+extern osMessageQueueId_t xFIFO_DistanceHandle;
+extern osMessageQueueId_t xFIFO_RPMHandle;
 extern osMessageQueueId_t xFIFO_UARTDataTXHandle;
 
 extern osSemaphoreId_t xSemaphore_InitMotherHandle;
@@ -59,6 +61,8 @@ void vTaskCOM(void *argument)
 	osStatus_t status;
 	char statsBuffer[1024] = {0};
 	bool syncComInProcess = false;
+	uint16_t distance, rpm;
+
 	do {
 		/* Waiting to receive the init frame of Motherboard */
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart1, COM_UARTRxBuffer, COM_UART_INIT_NUMBER_FRAMES);
@@ -91,6 +95,7 @@ void vTaskCOM(void *argument)
 	for(;;)
 	{
 		osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, osWaitForever);
+		osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_MOTHER_COMM);
 		/* An UART message has been received */
 		switch(firstFrame)
 		{
@@ -111,6 +116,12 @@ void vTaskCOM(void *argument)
 			case PERIODIC_ID:
 				/* Normal perdiocal frame */
 				/* TODO handle here the distance and RPM */
+				/* Decoding the message */
+				distance = COM_UARTRxBuffer[1] | (COM_UARTRxBuffer[2]<<8);
+				rpm = COM_UARTRxBuffer[3] | (COM_UARTRxBuffer[4]<<8);
+				/* Sending to the FIFOs */
+				osMessageQueuePut(xFIFO_DistanceHandle, &distance, 0U, osNoTimeout);
+				osMessageQueuePut(xFIFO_RPMHandle, &rpm, 0U, osNoTimeout);
 			break;
 			default:
 				/* Unknown message, Do Nothing */
@@ -274,6 +285,27 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 }
 
 /**
+  * @brief  Rx Half Transfer completed callbacks.
+  * @param  huart  Pointer to a UART_HandleTypeDef structure that contains
+  *                the configuration information for the specified UART module.
+  * @retval None
+  */
+void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
+{
+	const uint8_t initFrame = COM_UART_INIT_FRAME_VALUE;
+	osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_MOTHER_COMM);
+	if(COM_UART_INIT_FRAME_VALUE == firstFrame)
+	{
+		/* Send init frame */
+		HAL_UART_Transmit_DMA(&huart1, &initFrame, sizeof(uint8_t));
+	}
+	else
+	{
+		/* Do Nothing */
+	}
+}
+
+/**
   * @brief  Rx Transfer completed callbacks.
   * @param  huart  Pointer to a UART_HandleTypeDef structure that contains
   *                the configuration information for the specified UART module.
@@ -282,7 +314,6 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
 	static bool firstBoot = true;
-	/* Always do when reception */
 	osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_MOTHER_COMM);
 	/* Reseting the Watch dog timer for UART */
 	TIM3 -> CNT = htim4.Init.Period;

@@ -64,17 +64,17 @@ void MainMenu_buildObjects(void)
 
   /* Setting progress bar */
   /* Distance of the ball */
-  UG_ProgressCreate(&mainWindow, &pgbDistance, PGB_ID_0,
+  UG_ProgressCreate(&mainWindow, &pgbDistance, PROGRESS_BAR_DISTANCE_ID,
   		PROGRESS_BAR_X_CENTRAL_LOC_DISTANCE-PROGRESS_BAR_OFFSET, PROGRESS_BAR_Y_START_LOC,
 			PROGRESS_BAR_X_CENTRAL_LOC_DISTANCE+PROGRESS_BAR_OFFSET, PROGRESS_BAR_Y_END_LOC);
   UG_ProgressSetForeColor(&mainWindow, PGB_ID_0, C_ROYAL_BLUE);
   /* Set point */
-  UG_ProgressCreate(&mainWindow, &pgbSetPoint, PGB_ID_1,
+  UG_ProgressCreate(&mainWindow, &pgbSetPoint, PROGRESS_BAR_SET_POINT_ID,
   		PROGRESS_BAR_X_CENTRAL_LOC_SET_POINT-PROGRESS_BAR_OFFSET, PROGRESS_BAR_Y_START_LOC,
 			PROGRESS_BAR_X_CENTRAL_LOC_SET_POINT+PROGRESS_BAR_OFFSET, PROGRESS_BAR_Y_END_LOC);
   UG_ProgressSetForeColor(&mainWindow, PGB_ID_1, C_ROYAL_BLUE);
   /* Action Control */
-  UG_ProgressCreate(&mainWindow, &pgbActionControl, PGB_ID_2,
+  UG_ProgressCreate(&mainWindow, &pgbActionControl, PROGRESS_BAR_ACTION_CONTROL_ID,
   		PROGRESS_BAR_X_CENTRAL_LOC_ACTION_CONTROL-PROGRESS_BAR_OFFSET, PROGRESS_BAR_Y_START_LOC,
 			PROGRESS_BAR_X_CENTRAL_LOC_ACTION_CONTROL+PROGRESS_BAR_OFFSET, PROGRESS_BAR_Y_END_LOC);
   UG_ProgressSetForeColor(&mainWindow, PGB_ID_2, C_ROYAL_BLUE);
@@ -188,9 +188,21 @@ result_t MainMenu_setKD(float kd)
 	return OK;
 }
 
-result_t MainMenu_setDistance(uint32_t distance)
+result_t MainMenu_setDistance(uint16_t distance)
 {
-	/*TODO Put progress bar and text*/
+	UG_U8 progress = 0;
+	char Buffer[8] = "";
+
+	/* Changing the Textbox */
+	sprintf(Buffer, "%d", distance);
+	if(UG_RESULT_OK != UG_TextboxSetText(&mainWindow, TB_DISTANCE_STR_ID, Buffer))
+		return Error;
+	/* Making percentage */
+	progress = distance * 100 / MAX_DISTANCE;
+	/* Changing the Progress bar */
+	if(UG_RESULT_OK != UG_ProgressSetProgress(&mainWindow, PROGRESS_BAR_DISTANCE_ID, progress))
+		return Error;
+	UG_Update();
 	return OK;
 }
 
@@ -200,9 +212,20 @@ result_t MainMenu_setSetPoint(uint32_t setPoint)
 	return OK;
 }
 
-result_t MainMenu_setActionControl(uint32_t rpm)
+result_t MainMenu_setActionControl(uint16_t rpm)
 {
-	/*TODO Put progress bar and text*/
+	UG_U8 progress = 0;
+	char Buffer[8] = "";
+
+	sprintf(Buffer, "%d", rpm);
+	if(UG_RESULT_OK != UG_TextboxSetText(&mainWindow, TB_RPM_STR_ID, Buffer))
+		return Error;
+	/* Making percentage */
+	progress = rpm * 100 / MAX_DISTANCE;
+	/* Changing the Progress bar */
+	if(UG_RESULT_OK != UG_ProgressSetProgress(&mainWindow, PROGRESS_BAR_ACTION_CONTROL_ID, progress))
+		return Error;
+	UG_Update();
 	return OK;
 }
 

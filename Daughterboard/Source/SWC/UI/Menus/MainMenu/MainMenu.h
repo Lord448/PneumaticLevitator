@@ -17,6 +17,8 @@
 #define SWC_UI_MENUS_MAINMENU_H_
 
 #include "UI.h"
+#include <string.h>
+#include <stdio.h>
 
 #define charslen(_) (int32_t)(sizeof(_)-1)
 
@@ -31,6 +33,10 @@
 #define PROGRESS_BAR_OFFSET 10
 #define PROGRESS_BAR_Y_START_LOC 95 /*TODO: Adjust*/
 #define PROGRESS_BAR_Y_END_LOC 190
+
+#define PROGRESS_BAR_DISTANCE_ID       PGB_ID_0
+#define PROGRESS_BAR_SET_POINT_ID      PGB_ID_1
+#define PROGRESS_BAR_ACTION_CONTROL_ID PGB_ID_2
 
 /**
  * ---------------------------------------------------------
@@ -131,14 +137,16 @@
 /* PID */
 /* USB */
 
+#define MAX_DISTANCE 520
+
 void MainMenu_buildObjects(void);
 
 result_t MainMenu_setKP(float kp);
 result_t MainMenu_setKI(float ki);
 result_t MainMenu_setKD(float kd);
-result_t MainMenu_setDistance(uint32_t distance);
+result_t MainMenu_setDistance(uint16_t distance);
 result_t MainMenu_setSetPoint(uint32_t setPoint);
-result_t MainMenu_setActionControl(uint32_t rpm);
+result_t MainMenu_setActionControl(uint16_t rpm);
 result_t MainMenu_preCheck(uint16_t ID);
 
 #endif /* SWC_UI_MENUS_MAINMENU_H_ */

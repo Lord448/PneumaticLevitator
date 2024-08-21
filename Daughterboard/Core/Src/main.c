@@ -199,6 +199,28 @@ const osMessageQueueAttr_t xFIFO_UARTDataTX_attributes = {
   .mq_mem = &xFIFO_DataTXBuffer,
   .mq_size = sizeof(xFIFO_DataTXBuffer)
 };
+/* Definitions for xFIFO_Distance */
+osMessageQueueId_t xFIFO_DistanceHandle;
+uint8_t xFIFO_DistanceBuffer[ 32 * sizeof( uint16_t ) ];
+osStaticMessageQDef_t xFIFO_DistanceControlBlock;
+const osMessageQueueAttr_t xFIFO_Distance_attributes = {
+  .name = "xFIFO_Distance",
+  .cb_mem = &xFIFO_DistanceControlBlock,
+  .cb_size = sizeof(xFIFO_DistanceControlBlock),
+  .mq_mem = &xFIFO_DistanceBuffer,
+  .mq_size = sizeof(xFIFO_DistanceBuffer)
+};
+/* Definitions for xFIFO_RPM */
+osMessageQueueId_t xFIFO_RPMHandle;
+uint8_t xFIFO_RPMBuffer[ 32 * sizeof( uint16_t ) ];
+osStaticMessageQDef_t xFIFO_RPMControlBlock;
+const osMessageQueueAttr_t xFIFO_RPM_attributes = {
+  .name = "xFIFO_RPM",
+  .cb_mem = &xFIFO_RPMControlBlock,
+  .cb_size = sizeof(xFIFO_RPMControlBlock),
+  .mq_mem = &xFIFO_RPMBuffer,
+  .mq_size = sizeof(xFIFO_RPMBuffer)
+};
 /* Definitions for xSemaphoreDMACplt3 */
 osSemaphoreId_t xSemaphoreDMACplt3Handle;
 osStaticSemaphoreDef_t xSemaphoreDMACplt3ControlBlock;
@@ -418,6 +440,12 @@ int main(void)
 
   /* creation of xFIFO_UARTDataTX */
   xFIFO_UARTDataTXHandle = osMessageQueueNew (16, sizeof(PDU_t), &xFIFO_UARTDataTX_attributes);
+
+  /* creation of xFIFO_Distance */
+  xFIFO_DistanceHandle = osMessageQueueNew (32, sizeof(uint16_t), &xFIFO_Distance_attributes);
+
+  /* creation of xFIFO_RPM */
+  xFIFO_RPMHandle = osMessageQueueNew (32, sizeof(uint16_t), &xFIFO_RPM_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */

@@ -22,6 +22,9 @@ extern osMemoryPoolId_t MemoryPool16; /*Memory Pool designed for members of 2 By
 extern osMemoryPoolId_t MemoryPool16_UI_PixelsValue; /*Component Specific Memory Pool*/
 extern osMemoryPoolId_t MemoryPool16_UI_PixelsIndex; /*Component Specific Memory Pool*/
 
+extern osMessageQueueId_t xFIFO_DistanceHandle;
+extern osMessageQueueId_t xFIFO_RPMHandle;
+
 extern osEventFlagsId_t xEventFinishedInitHandle;
 
 extern osSemaphoreId_t xSemaphoreDMACompleteHandle;
@@ -40,6 +43,7 @@ extern UG_WINDOW mainWindow;
 */
 void vTaskUI(void *argument)
 {
+	uint16_t Distance, rpm;
 	LCD_init();
 #ifndef SKIP_INTRO_ANIM
 	FadeWhiteIn(5);
@@ -59,10 +63,13 @@ void vTaskUI(void *argument)
 
 	UG_WindowShow(&mainWindow);
 	UG_Update();
-	osDelay(pdMS_TO_TICKS(5000));
+	//osDelay(pdMS_TO_TICKS(5000));
   for(;;)
   {
-  	osDelay(1);
+  	if(osMessageQueueGet(xFIFO_DistanceHandle, &Distance, NULL, 1) == osOK)
+  		MainMenu_setDistance(Distance);
+  	if(osMessageQueueGet(xFIFO_RPMHandle, &rpm, NULL, 1) == osOK)
+  		MainMenu_setActionControl(rpm);
   	/*TODO: Possible implementation of parsed loop scheme*/
   	//LCD_Test(); /*TODO Remove the test from here*/
   }
