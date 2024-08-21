@@ -91,7 +91,7 @@ void vTaskCOM(void *argument)
 				controlConst.kp = buildFloatFromUART(COM_UARTRxBuffer, 2);
 				controlConst.ki = buildFloatFromUART(COM_UARTRxBuffer, 6);
 				controlConst.kp = buildFloatFromUART(COM_UARTRxBuffer, 10);
-				//osMessageQueuePut(xFIFO_ControlConstantsHandle, &controlConst, 0U, osNoTimeout);
+				osMessageQueuePut(xFIFO_ControlConstantsHandle, &controlConst, 0U, osNoTimeout);
 			}
 			else
 			{

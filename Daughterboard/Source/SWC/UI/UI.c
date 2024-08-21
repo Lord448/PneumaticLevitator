@@ -66,12 +66,12 @@ void vTaskUI(void *argument)
 	UG_WindowShow(&mainWindow);
 	UG_Update();
 	MainMenu_setSetPoint(DEFAULT_SET_POINT);
-	//if(osOK == osMessageQueueGet(xFIFO_ControlConstantsHandle, &controlConst, NULL, pdMS_TO_TICKS(5000)))
+	if(osOK == osMessageQueueGet(xFIFO_ControlConstantsHandle, &controlConst, NULL, pdMS_TO_TICKS(5000)))
 	{
 		/* Correctly received the data from COM */
-		//MainMenu_setControlConstants(controlConst.kp, controlConst.ki, controlConst.kd);
+		MainMenu_setControlConstants(controlConst.kp, controlConst.ki, controlConst.kd);
 	}
-	//else
+	else
 	{
 		/* Do Nothing */
 	}
