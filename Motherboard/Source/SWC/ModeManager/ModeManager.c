@@ -38,6 +38,11 @@ void vTaskModeManager(void *argument)
 	{
 		/* Search for new request modes */
 		eventFlags = osEventFlagsWait(xEvent_ControlModesHandle, ALL_CONTROL_MODE_FLAGS, osFlagsWaitAny, osWaitForever);
+		if(eventFlags&DEV_MODE_FLAG)
+		{
+			/* Dev mode is enabled */
+			/* TODO Implement here */
+		}
 		/* A new change of mode is requested */
 		switch(currentMode)
 		{

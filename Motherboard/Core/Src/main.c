@@ -65,7 +65,7 @@ Acknowledge with Daughter Board @ 10ms (Period desired by COM Engineer)
 Fan RPM measure (Input Capture)
 Fan PWM controller @ 24KHz (manufacturer recommended frequency)
 
-TIM_HandleTypeDef htim1; //Pending for application
+TIM_HandleTypeDef htim1; //UART Watchdog Timer
 TIM_HandleTypeDef htim2; //CPU Load measure for the OS
 TIM_HandleTypeDef htim3; //Fan PWM controller @ 24KHz (manufacturer recommended frequency)
 TIM_HandleTypeDef htim4; //Fan RPM measure (Input Capture) @
@@ -642,7 +642,9 @@ int main(void)
   xEvent_USBHandle = osEventFlagsNew(&xEvent_USB_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
+#ifdef ALWAYS_DEV_MODE
+  osEventFlagsSet(xEvent_ControlModesHandle, DEV_MODE_FLAG);
+#endif
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
@@ -857,7 +859,7 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 2;
+  htim1.Init.Prescaler = 14;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim1.Init.Period = 63999;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;

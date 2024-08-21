@@ -201,6 +201,9 @@ void vSubTaskUART(void *argument)
 	for(;;)
 	{
 		osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, osWaitForever);
+		/* Reseting the Watch dog timer for UART */
+		osTimerStart(xTimer_WdgUARTHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
+
 		/* TODO: Handle here the communication */
 	}
 }
@@ -221,6 +224,7 @@ static void syncComm(void)
 {
 	osStatus_t status;
 	bool errorFlagWereSet = false;
+
 	do {
 		HAL_UART_Receive_IT(&huart1, UART_RxBuffer, sizeof(uint8_t)); /* Jump the ISR when first arrived to receive the data */
 		/* Send initial buffer */
@@ -294,7 +298,6 @@ static void sendInitBuffer(void)
  * 					        SOFT-TIMERS CALLBACKS
  * ---------------------------------------------------------
  */
-
 /**
  * @brief
  * @param  *argument none
@@ -403,9 +406,29 @@ void vTimer_WdgUARTCallback(void *argument)
 void vTimer_RestartSensorTaskCallback(void *argument)
 {
 	/* Restart the task */
-	TaskSensorHandle = osThreadNew(vTaskSensor, NULL, &TaskSensor_attributes);
+	//TaskSensorHandle = osThreadNew(vTaskSensor, NULL, &TaskSensor_attributes); TODO No secure call before scheduler started
 }
-
+/**
+ * ---------------------------------------------------------
+ * 					        HARD-TIMERS CALLBACKS
+ * ---------------------------------------------------------
+ */
+/**
+  * @brief  Period elapsed callback in non-blocking mode
+  * @param  htim TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if(TIM1 == htim->Instance)
+	{
+		/* Watchdog timer for UART */
+		/* Reporting to LEDS SWC */
+		//osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_GPU); /* TODO Enable Code here */
+		/* TODO: Trigger DTC Not GPU Comm */
+		//syncComm();
+	}
+}
 /**
  * ---------------------------------------------------------
  * 					      ISR COMPONENT CALLBACKS
@@ -449,8 +472,6 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	uint32_t stat = osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_GPU); /*TODO Stubbed code*/
-	/* Reseting the Watch dog timer for UART */
-	osTimerStart(xTimer_WdgUARTHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
 
 	if(UART_RxBuffer[0] == COM_UART_INIT_FRAME_VALUE)
 	{
@@ -478,9 +499,54 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		{
 			/* Do Nothing, It's just the acknowledge */
 		}
-		HAL_UARTEx_ReceiveToIdle_IT(huart, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES);
 	}
+	HAL_UARTEx_ReceiveToIdle_IT(huart, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES);
+}
 
+/**
+  * @brief  UART error callbacks.
+  * @param  huart  Pointer to a UART_HandleTypeDef structure that contains
+  *                the configuration information for the specified UART module.
+  * @retval None
+  */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+	static uint32_t FrameErrorCounts = 0, OverrunErrorsCounts = 0;
+	uint32_t uartError = HAL_UART_GetError(huart);
+	uint32_t dummy = 0; /* Dummy variable to avoid compiler optimization*/
+
+	switch (uartError)
+	{
+		case HAL_UART_ERROR_NONE:
+			/* No errors */
+			dummy++;
+		break;
+		case HAL_UART_ERROR_PE:
+			/* Parity Error */
+			dummy++;
+		break;
+		case HAL_UART_ERROR_NE:
+			/* Noise Error */
+			dummy++;
+		break;
+		case HAL_UART_ERROR_FE:
+			/* Frame Error */
+			FrameErrorCounts++;
+		break;
+		case HAL_UART_ERROR_ORE:
+			/* Overrun error */
+			OverrunErrorsCounts++;
+		break;
+		case HAL_UART_ERROR_DMA:
+			/* DMA Transfer Error */
+			dummy++;
+		break;
+		default:
+			/* Unknown error */
+		break;
+	}
+	/* Continue with the transmission and try to report the number of this errors */
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart1, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES);
 }
 
 uint32_t errorCounterI2C1 = 0;

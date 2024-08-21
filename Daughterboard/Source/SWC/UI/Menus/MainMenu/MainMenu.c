@@ -206,9 +206,20 @@ result_t MainMenu_setDistance(uint16_t distance)
 	return OK;
 }
 
-result_t MainMenu_setSetPoint(uint32_t setPoint)
+result_t MainMenu_setSetPoint(uint16_t setPoint)
 {
-	/*TODO Put progress bar and text*/
+	UG_U8 progress = 0;
+	char Buffer[8] = "";
+
+	sprintf(Buffer, "%d", setPoint);
+	if(UG_RESULT_OK != UG_TextboxSetText(&mainWindow, TB_SET_POINT_STR_ID, Buffer))
+		return Error;
+	/* Making percentage */
+	progress = setPoint * 100 / MAX_DISTANCE;
+	/* Changing the Progress bar */
+	if(UG_RESULT_OK != UG_ProgressSetProgress(&mainWindow, PROGRESS_BAR_SET_POINT_ID, progress))
+		return Error;
+	UG_Update();
 	return OK;
 }
 

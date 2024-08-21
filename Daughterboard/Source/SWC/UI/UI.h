@@ -35,6 +35,8 @@
 
 #define WINDOW_MAX_OBJECTS 30
 
+#define DEFAULT_SET_POINT 520
+
 #define SKIP_INTRO_ANIM
 
 /**

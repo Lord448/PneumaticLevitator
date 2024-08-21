@@ -63,7 +63,7 @@ void vTaskUI(void *argument)
 
 	UG_WindowShow(&mainWindow);
 	UG_Update();
-	//osDelay(pdMS_TO_TICKS(5000));
+	MainMenu_setSetPoint(DEFAULT_SET_POINT);
   for(;;)
   {
   	if(osMessageQueueGet(xFIFO_DistanceHandle, &Distance, NULL, 1) == osOK)

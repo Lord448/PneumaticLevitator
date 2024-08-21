@@ -132,6 +132,12 @@
 #define CB_PID_ID							 CHB_ID_1
 #define CB_USB_ID              CHB_ID_2
 
+
+/**
+ * ---------------------------------------------------------
+ * 					          GENERIC SYMBOLS
+ * ---------------------------------------------------------
+ */
 /* Manual */
 #define CB_MANUAL_INIT
 /* PID */
@@ -139,13 +145,15 @@
 
 #define MAX_DISTANCE 520
 
+#define DEFAULT_SET_POINT 260
+
 void MainMenu_buildObjects(void);
 
 result_t MainMenu_setKP(float kp);
 result_t MainMenu_setKI(float ki);
 result_t MainMenu_setKD(float kd);
 result_t MainMenu_setDistance(uint16_t distance);
-result_t MainMenu_setSetPoint(uint32_t setPoint);
+result_t MainMenu_setSetPoint(uint16_t setPoint);
 result_t MainMenu_setActionControl(uint16_t rpm);
 result_t MainMenu_preCheck(uint16_t ID);
 
