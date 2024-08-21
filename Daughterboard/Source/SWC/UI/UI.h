@@ -29,13 +29,12 @@
 #include "UIMainSM.h"
 #include "Anim.h"
 #include "MainMenu.h"
+#include "COM.h"
 #include "stm32f4xx_hal_dma.h"
 #include <stdio.h>
 #include <string.h>
 
 #define WINDOW_MAX_OBJECTS 30
-
-#define DEFAULT_SET_POINT 520
 
 #define SKIP_INTRO_ANIM
 

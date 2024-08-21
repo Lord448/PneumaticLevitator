@@ -17,6 +17,7 @@
 #define SWC_UI_MENUS_MAINMENU_H_
 
 #include "UI.h"
+#include "COM.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -152,6 +153,7 @@ void MainMenu_buildObjects(void);
 result_t MainMenu_setKP(float kp);
 result_t MainMenu_setKI(float ki);
 result_t MainMenu_setKD(float kd);
+result_t MainMenu_setControlConstants(float kp, float ki, float kd);
 result_t MainMenu_setDistance(uint16_t distance);
 result_t MainMenu_setSetPoint(uint16_t setPoint);
 result_t MainMenu_setActionControl(uint16_t rpm);

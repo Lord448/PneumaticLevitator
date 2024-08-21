@@ -172,19 +172,45 @@ void MainMenu_buildObjects(void)
 
 result_t MainMenu_setKP(float kp)
 {
-	/*TODO Put text*/
-	return OK;
+	result_t result = OK;
+	char Buffer[32] = "";
+
+	sprintf(Buffer, "KP: %1.5f", kp);
+	result = UG_RESULT_OK == UG_TextboxSetText(&mainWindow, TB_KP_ID, Buffer) ? OK : Error;
+	UG_Update();
+	return result;
 }
 
 result_t MainMenu_setKI(float ki)
 {
-	/*TODO Put text*/
-	return OK;
+	result_t result = OK;
+	char Buffer[32] = "";
+
+	sprintf(Buffer, "KP: %1.5f", ki);
+	result = UG_RESULT_OK == UG_TextboxSetText(&mainWindow, TB_KI_ID, Buffer) ? OK : Error;
+	UG_Update();
+	return result;
 }
 
 result_t MainMenu_setKD(float kd)
 {
-	/*TODO Put text*/
+	result_t result = OK;
+	char Buffer[32] = "";
+
+	sprintf(Buffer, "KP: %1.5f", kd);
+	result = UG_RESULT_OK == UG_TextboxSetText(&mainWindow, TB_KD_ID, Buffer) ? OK : Error;
+	UG_Update();
+	return result;
+}
+
+result_t MainMenu_setControlConstants(float kp, float ki, float kd)
+{
+	if(OK != MainMenu_setKP(kp))
+		return Error;
+	if(OK != MainMenu_setKI(ki))
+		return Error;
+	if(OK != MainMenu_setKD(kd))
+		return Error;
 	return OK;
 }
 

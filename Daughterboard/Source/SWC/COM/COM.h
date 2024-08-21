@@ -20,6 +20,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "Signals.h"
+#include "MainMenu.h"
 #include "stm32f4xx_hal_uart.h"
 #include <stdio.h>
 #include <string.h>
@@ -44,7 +45,7 @@
 #define COM_FIFO_EMPTY_COUNTS_FOR_ERROR 10
 
 /* Seconds to wait for mark the Mother Comm as an error*/
-#define COM_SECONDS_TO_WAIT_MOTHER_INIT 5
+#define COM_SECONDS_TO_WAIT_MOTHER_INIT 1
 
 /* Count of sequenced errors to cancel the comm with VL53L0X */
 #define COM_ERROR_COUNTS_TO_CANCEL_VL53L0X_TX 20
@@ -55,6 +56,16 @@
 #define CPU_LOAD_MESSAGE_TYPE (uint32_t)   1U << 0
 /* Flag for the init frame */
 #define INIT_FRAME_MESSAGE_TYPE (uint32_t) 1U << 1
+
+#define KP_INDEX 1
+#define KI_INDEX 2
+#define KD_INDEX 3
+
+typedef struct ControlConstants {
+	float kp;
+	float ki;
+	float kd;
+}ControlConst;
 
 /* Definition of message types and priority (ensuring 4 bits) */
 

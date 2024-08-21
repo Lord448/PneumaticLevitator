@@ -60,6 +60,8 @@ typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+IWDG_HandleTypeDef hiwdg;
+
 SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_tx;
 
@@ -221,6 +223,17 @@ const osMessageQueueAttr_t xFIFO_RPM_attributes = {
   .mq_mem = &xFIFO_RPMBuffer,
   .mq_size = sizeof(xFIFO_RPMBuffer)
 };
+/* Definitions for xFIFO_ControlConstants */
+osMessageQueueId_t xFIFO_ControlConstantsHandle;
+uint8_t xFIFO_ControlConstantsBuffer[ 4 * sizeof( ControlConst ) ];
+osStaticMessageQDef_t xFIFO_ControlConstantsControlBlock;
+const osMessageQueueAttr_t xFIFO_ControlConstants_attributes = {
+  .name = "xFIFO_ControlConstants",
+  .cb_mem = &xFIFO_ControlConstantsControlBlock,
+  .cb_size = sizeof(xFIFO_ControlConstantsControlBlock),
+  .mq_mem = &xFIFO_ControlConstantsBuffer,
+  .mq_size = sizeof(xFIFO_ControlConstantsBuffer)
+};
 /* Definitions for xSemaphoreDMACplt3 */
 osSemaphoreId_t xSemaphoreDMACplt3Handle;
 osStaticSemaphoreDef_t xSemaphoreDMACplt3ControlBlock;
@@ -330,6 +343,7 @@ static void MX_TIM11_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_IWDG_Init(void);
 void vTaskIdle(void *argument);
 extern void vTaskUI(void *argument);
 void vTaskLeds(void *argument);
@@ -384,6 +398,7 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
+  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   memoryPoolInit();
   /* USER CODE END 2 */
@@ -446,6 +461,9 @@ int main(void)
 
   /* creation of xFIFO_RPM */
   xFIFO_RPMHandle = osMessageQueueNew (32, sizeof(uint16_t), &xFIFO_RPM_attributes);
+
+  /* creation of xFIFO_ControlConstants */
+  xFIFO_ControlConstantsHandle = osMessageQueueNew (4, sizeof(ControlConst), &xFIFO_ControlConstants_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -534,8 +552,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 12;
@@ -560,6 +579,34 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief IWDG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_IWDG_Init(void)
+{
+
+  /* USER CODE BEGIN IWDG_Init 0 */
+
+  /* USER CODE END IWDG_Init 0 */
+
+  /* USER CODE BEGIN IWDG_Init 1 */
+
+  /* USER CODE END IWDG_Init 1 */
+  hiwdg.Instance = IWDG;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_4;
+  hiwdg.Init.Reload = 4000;
+  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN IWDG_Init 2 */
+
+  /* USER CODE END IWDG_Init 2 */
+
 }
 
 /**
@@ -1112,10 +1159,16 @@ void vTaskLeds(void *argument)
 void vTaskWdgM(void *argument)
 {
   /* USER CODE BEGIN vTaskWdgM */
-  /* Infinite loop */
+	const TickType_t ticksForResetWDG = pdMS_TO_TICKS(450); //WDG @ 500ms
+	TickType_t ticks;
+
+	HAL_IWDG_Refresh(&hiwdg);
+	ticks = osKernelGetTickCount();
   for(;;)
   {
-    osDelay(1);
+    HAL_IWDG_Refresh(&hiwdg);
+    ticks += ticksForResetWDG;
+    osDelayUntil(ticks);
   }
   /* USER CODE END vTaskWdgM */
 }

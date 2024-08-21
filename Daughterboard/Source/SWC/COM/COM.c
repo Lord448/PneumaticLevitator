@@ -23,6 +23,7 @@ extern TIM_HandleTypeDef htim4; /* Watchdog timer for UART @ 10ms (Count down)*/
 extern osTimerId_t xTimer_UARTSendHandle;
 extern osTimerId_t xTimer_WdgUARTHandle;
 
+extern osMessageQueueId_t xFIFO_ControlConstantsHandle;
 extern osMessageQueueId_t xFIFO_DistanceHandle;
 extern osMessageQueueId_t xFIFO_RPMHandle;
 extern osMessageQueueId_t xFIFO_UARTDataTXHandle;
@@ -44,6 +45,7 @@ uint8_t COM_UARTRxBuffer[COM_UART_INIT_NUMBER_FRAMES] = {0};
  * 					 SOFTWARE COMPONENT LOCAL PROTOYPES
  * ---------------------------------------------------------
  */
+static float buildFloatFromUART(uint8_t *data, uint8_t startIndex);
 static void reSyncCom(bool *syncComInProcess);
 static void sendCPULoad(char *statsBuffer);
 /**
@@ -62,6 +64,7 @@ void vTaskCOM(void *argument)
 	char statsBuffer[1024] = {0};
 	bool syncComInProcess = false;
 	uint16_t distance, rpm;
+	ControlConst controlConst;
 
 	do {
 		/* Waiting to receive the init frame of Motherboard */
@@ -81,6 +84,19 @@ void vTaskCOM(void *argument)
 			/* Start hard-watchdog timer for UART receive */
 			TIM3 -> CNT = htim4.Init.Period;
 			HAL_TIM_Base_Start_IT(&htim4);
+			/* Getting the constants data */
+			if(COM_UART_INIT_FRAME_VALUE == firstFrame)
+			{
+				/* The first frame was sent */
+				controlConst.kp = buildFloatFromUART(COM_UARTRxBuffer, 2);
+				controlConst.ki = buildFloatFromUART(COM_UARTRxBuffer, 6);
+				controlConst.kp = buildFloatFromUART(COM_UARTRxBuffer, 10);
+				//osMessageQueuePut(xFIFO_ControlConstantsHandle, &controlConst, 0U, osNoTimeout);
+			}
+			else
+			{
+				/* Do nothing */
+			}
 		}
 		else
 		{
@@ -139,6 +155,33 @@ void vTaskCOM(void *argument)
  * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
  * ---------------------------------------------------------
  */
+/**
+ * @brief
+ * @param
+ * @retval none
+ */
+static float buildFloatFromUART(uint8_t *data, uint8_t startIndex)
+{
+	/* TODO Unscalable code, fix this with PDU handling */
+	union COM32Type
+	{
+		float result;
+		uint8_t rawData[4];
+	}COM32Type;
+
+	for(uint16_t i = 0; i < sizeof(COM32Type); i++, startIndex++)
+	{
+		/* Filling the float data */
+		COM32Type.rawData[i] = data[startIndex];
+	}
+	return COM32Type.result;
+}
+
+/**
+ * @brief
+ * @param
+ * @retval none
+ */
 static void reSyncCom(bool *syncComInProcess)
 {
 	enum ReSyncStates {
@@ -177,6 +220,11 @@ static void reSyncCom(bool *syncComInProcess)
 	}
 }
 
+/**
+ * @brief
+ * @param
+ * @retval none
+ */
 static void sendCPULoad(char *statsBuffer)
 {
 	/* Enter on small diagnostics session */

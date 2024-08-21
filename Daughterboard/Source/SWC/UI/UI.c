@@ -22,6 +22,7 @@ extern osMemoryPoolId_t MemoryPool16; /*Memory Pool designed for members of 2 By
 extern osMemoryPoolId_t MemoryPool16_UI_PixelsValue; /*Component Specific Memory Pool*/
 extern osMemoryPoolId_t MemoryPool16_UI_PixelsIndex; /*Component Specific Memory Pool*/
 
+extern osMessageQueueId_t xFIFO_ControlConstantsHandle;
 extern osMessageQueueId_t xFIFO_DistanceHandle;
 extern osMessageQueueId_t xFIFO_RPMHandle;
 
@@ -44,6 +45,7 @@ extern UG_WINDOW mainWindow;
 void vTaskUI(void *argument)
 {
 	uint16_t Distance, rpm;
+	ControlConst controlConst;
 	LCD_init();
 #ifndef SKIP_INTRO_ANIM
 	FadeWhiteIn(5);
@@ -64,6 +66,16 @@ void vTaskUI(void *argument)
 	UG_WindowShow(&mainWindow);
 	UG_Update();
 	MainMenu_setSetPoint(DEFAULT_SET_POINT);
+	//if(osOK == osMessageQueueGet(xFIFO_ControlConstantsHandle, &controlConst, NULL, pdMS_TO_TICKS(5000)))
+	{
+		/* Correctly received the data from COM */
+		//MainMenu_setControlConstants(controlConst.kp, controlConst.ki, controlConst.kd);
+	}
+	//else
+	{
+		/* Do Nothing */
+	}
+
   for(;;)
   {
   	if(osMessageQueueGet(xFIFO_DistanceHandle, &Distance, NULL, 1) == osOK)
@@ -107,6 +119,17 @@ UG_RESULT UI_TextboxCreate(UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs,
 	return result;
 }
 
+/**
+ * @brief
+ * @param
+ * @param
+ * @param
+ * @param
+ * @param
+ * @param
+ * @param
+ * @retval
+ */
 UG_RESULT UI_CheckboxCreate(UG_WINDOW* wnd, UG_CHECKBOX* chb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye)
 {
 	result_t result;
