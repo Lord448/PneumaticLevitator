@@ -68,7 +68,7 @@ Fan PWM controller @ 24KHz (manufacturer recommended frequency)
 TIM_HandleTypeDef htim1; //UART Watchdog Timer
 TIM_HandleTypeDef htim2; //CPU Load measure for the OS
 TIM_HandleTypeDef htim3; //Fan PWM controller @ 24KHz (manufacturer recommended frequency)
-TIM_HandleTypeDef htim4; //Fan RPM measure (Input Capture) @
+TIM_HandleTypeDef htim4; //Fan RPM measure (Input Capture) @ 1MHz
 TIM_HandleTypeDef htim5; //Pending for application
 
 UART_HandleTypeDef huart1; //Daughter board connection
@@ -273,7 +273,7 @@ const osMessageQueueAttr_t xFIFO_COMDistance_attributes = {
 };
 /* Definitions for xFIFO_COMRPM */
 osMessageQueueId_t xFIFO_COMRPMHandle;
-uint8_t xFIFO_COMRPMBuffer[ 16 * sizeof( int16_t ) ];
+uint8_t xFIFO_COMRPMBuffer[ 32 * sizeof( int16_t ) ];
 osStaticMessageQDef_t xFIFO_COMRPMControlBlock;
 const osMessageQueueAttr_t xFIFO_COMRPM_attributes = {
   .name = "xFIFO_COMRPM",
@@ -547,7 +547,6 @@ int main(void)
   osSemaphoreAcquire(xSemaphore_InitDaughterHandle, osNoTimeout);
   osSemaphoreAcquire(xSemaphore_SensorErrorHandle, osNoTimeout);
   osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, osNoTimeout);
-  osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, osNoTimeout);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* Create the timer(s) */
@@ -587,7 +586,7 @@ int main(void)
   xFIFO_COMDistanceHandle = osMessageQueueNew (16, sizeof(int16_t), &xFIFO_COMDistance_attributes);
 
   /* creation of xFIFO_COMRPM */
-  xFIFO_COMRPMHandle = osMessageQueueNew (16, sizeof(int16_t), &xFIFO_COMRPM_attributes);
+  xFIFO_COMRPMHandle = osMessageQueueNew (32, sizeof(int16_t), &xFIFO_COMRPM_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -1010,11 +1009,11 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 0;
+  htim4.Init.Prescaler = 96-1;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 65535;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
   {
     Error_Handler();

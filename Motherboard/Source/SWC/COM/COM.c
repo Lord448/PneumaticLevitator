@@ -298,6 +298,7 @@ static void sendInitBuffer(void)
  * 					        SOFT-TIMERS CALLBACKS
  * ---------------------------------------------------------
  */
+static int16_t RPM = 0;
 /**
  * @brief
  * @param  *argument none
@@ -306,25 +307,27 @@ static void sendInitBuffer(void)
 void vTimer_UARTSendCallback(void *argument)
 {
 	static int16_t distance = 0;
-	static int16_t RPM = 0;
 	static uint16_t emptyFIFOCounterDist = 0;
 	static uint16_t emptyFIFOCounterRPM = 0;
-	uint8_t *bytePointer;
-	uint8_t buffer[6] = {0};
+	static uint8_t buffer[COM_UART_PERIODIC_NUMBER_FRAMES+1] = {0};
+	volatile uint8_t *bytePointer;
 	uint8_t acknowledge = 1;
 	uint8_t confirmReset = 0;
 	uint32_t fatalErrorFlags = 0;
 	osStatus_t status;
 
 	fatalErrorFlags = osEventFlagsGet(xEvent_FatalErrorHandle);
-	uint32_t res = fatalErrorFlags&FATAL_ERROR_GPU; /* TODO: Stubbed code */
 	if(fatalErrorFlags&FATAL_ERROR_GPU)
 	{
 		return; /* Cancel the send */
 	}
-
+	else
+	{
+		/* Do Nothing */
+	}
 
 	buffer[0] = ACK_DATA | acknowledge | confirmReset << 1;
+
 	/* Getting the distance data */
 	status = osMessageQueueGet(xFIFO_COMDistanceHandle, &distance, NULL, osNoTimeout);
 	if(osOK != status)
@@ -353,7 +356,6 @@ void vTimer_UARTSendCallback(void *argument)
 		buffer[2] = *bytePointer;
 	}
 
-
 	/* Getting the RPM data */
 	status = osMessageQueueGet(xFIFO_COMRPMHandle, &RPM, NULL, osNoTimeout);
 	if(osOK != status)
@@ -364,6 +366,7 @@ void vTimer_UARTSendCallback(void *argument)
 	{
 		emptyFIFOCounterRPM = 0;
 	}
+
 	/* Send RPM data */
 	if(COM_FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterRPM)
 	{
@@ -380,7 +383,9 @@ void vTimer_UARTSendCallback(void *argument)
 		bytePointer++;
 		buffer[4] = *bytePointer;
 	}
-	HAL_UART_Transmit_DMA(&huart1, buffer, COM_UART_PERIODIC_NUMBER_FRAMES);
+	osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, osWaitForever);
+	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)buffer, COM_UART_PERIODIC_NUMBER_FRAMES);
+	bytePointer = (uint8_t *)&RPM;
 }
 
 /**
@@ -473,13 +478,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	uint32_t stat = osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_GPU); /*TODO Stubbed code*/
 
+	osSemaphoreRelease(xSemaphore_InitDaughterHandle);
 	if(UART_RxBuffer[0] == COM_UART_INIT_FRAME_VALUE)
 	{
 		/* It's an init frame */
 		if(firstInit)
 		{
 			/* The system were waiting for this init */
-			osSemaphoreRelease(xSemaphore_InitDaughterHandle);
+
 		}
 		else
 		{

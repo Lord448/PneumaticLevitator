@@ -28,8 +28,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#define osNoTimeout 0U
-
 /* Used for the send message logic */
 #define COM_MAX_QUEUE_MESSAGES 16
 
@@ -54,6 +52,11 @@
 #define COM_ERROR_COUNTS_TO_CANCEL_VL53L0X_TX 20
 /* Time to wait to reset the sensor task */
 #define COM_TIME_TO_RESET_SENSOR_TASK 1000 /*MS*/
+
+typedef union Data16 {
+	int16_t data;
+	uint8_t rawData[sizeof(int16_t)];
+}COMData16;
 
 /* Definition of message types and priority (ensuring 4 bits) */
 

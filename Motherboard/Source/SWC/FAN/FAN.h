@@ -18,6 +18,12 @@
 #define SWC_FAN_FAN_H_
 
 #include "main.h"
+#include "cmsis_os2.h"
+
+#define DEBUG_IC /* If defined set the frequency variables on global to see in the "live expressions" */
+#define CALCULATE_RPM_IN_HZ
+
+#define CPU_CLOCK 96000000 / 100
 
 #define setPWM_FAN(x) TIM3->CCR1 = ((x*htim3.Init.Period)/100) /* Set the duty cycle of the PWM in percentage */
 #define setPWM_FAN_Counts(x) TIM3->CCR1 = x /* Set the duty cycle of the PWM in counts (cannot be more than "MaxCCR")*/

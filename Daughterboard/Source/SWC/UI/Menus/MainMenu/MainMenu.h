@@ -145,6 +145,7 @@
 /* USB */
 
 #define MAX_DISTANCE 520
+#define MAX_RPM 5200
 
 #define DEFAULT_SET_POINT 260
 

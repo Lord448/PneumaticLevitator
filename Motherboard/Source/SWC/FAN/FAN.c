@@ -17,7 +17,9 @@
 #include "FAN.h"
 
 extern TIM_HandleTypeDef htim3; /* Fan PWM controller @ 24KHz (manufacturer recommended frequency) */
-extern TIM_HandleTypeDef htim4; /* Fan RPM measure (Input Capture) @ */
+extern TIM_HandleTypeDef htim4; /* Fan RPM measure (Input Capture) @ 1MHz */
+
+extern osMessageQueueId_t xFIFO_COMRPMHandle;
 
 /**
 * @brief Function implementing the TaskFAN thread.
@@ -26,65 +28,70 @@ extern TIM_HandleTypeDef htim4; /* Fan RPM measure (Input Capture) @ */
 */
 void vTaskFAN(void *argument)
 {
-	//uint16_t MaxCCR = htim3.Init.Period;
-	EnableFAN(0);
+	uint8_t dutyCycle = 0;
+	EnableFAN(false);
+	EnableFAN(true);
 	setPWM_FAN(0);
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 	HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
 	for(;;)
 	{
-		osDelay(1);
+		setPWM_FAN(dutyCycle);
+		dutyCycle++;
+		if(dutyCycle > 100)
+			dutyCycle = 0;
+		osDelay(100);
 	}
 }
 
-/* TODO: Paavali's code*/
-uint32_t IC_Val1 = 0;
-uint32_t IC_Val2 = 0;
-uint32_t Difference = 0;
-uint8_t Is_First_Captured = 0;
-/* Mesure frecuency */
-float frecuency = 0;
+/**
+ * ---------------------------------------------------------
+ * 					      ISR COMPONENT CALLBACKS
+ * ---------------------------------------------------------
+ */
+#ifdef DEBUG_IC
+	#ifdef CALCULATE_RPM_IN_HZ
+		uint32_t frequencyHZ; /* Debug proposes */
+	#endif
+	int16_t rpm;
+#endif
 
+/**
+  * @brief  Input Capture callback in non-blocking mode
+  * @param  htim TIM IC handle
+  * @retval None
+  */
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
-	if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) // <--- delete
+	static uint16_t IC_Val1 = 0;
+	static uint16_t IC_Val2 = 0;
+	static bool Is_First_Captured = true;
+	uint16_t countsDifference = 0;
+#ifndef DEBUG_IC
+	#ifdef CALCULATE_RPM_IN_HZ
+		uint32_t frequencyHZ; /* Debug proposes */
+	#endif
+		int32_t rpm;
+#endif
+
+	if(Is_First_Captured)
 	{
-		if(Is_First_Captured==0)
-		{
-			IC_Val1 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
-			Is_First_Captured = 1;
-		}
-		else
-		{
-			IC_Val2 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
-			if(IC_Val2 > IC_Val1)
-			{
-				Difference = IC_Val2-IC_Val1;
-			}
-			//Register tics with ...
-		  else if(IC_Val2 < IC_Val1)
-		  {
-		  	Difference = (0xffff - IC_Val1) + IC_Val2;
-		  }
-			uint32_t pclk1 = HAL_RCC_GetPCLK1Freq() * 2;
-			uint32_t prescaler = (htim->Instance->PSC + 1);
-			float refClock = pclk1/prescaler;
-			frecuency = refClock/Difference;
-			__HAL_TIM_SET_COUNTER(htim,0);
-			Is_First_Captured=0;
-		}
+		/* It's the first capture of the IC */
+		IC_Val1 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+		Is_First_Captured = false;
+	}
+	else
+	{
+		/* Normal code flow */
+		IC_Val2 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+		/* When using 16 bit arithmetics the value it's correct even if IC_Val2 < IC_Val1 */
+		countsDifference = IC_Val2 - IC_Val1;
+		/* Saving the past value of IC */
+		IC_Val1 = IC_Val2;
+#ifdef CALCULATE_RPM_IN_HZ
+		frequencyHZ = (CPU_CLOCK/countsDifference);
+#endif
+		rpm = (CPU_CLOCK/countsDifference) * 60;
+		osMessageQueuePut(xFIFO_COMRPMHandle, &rpm, 0U, osNoTimeout); /*Sending to COM*/
 	}
 }
-// 1 comprobar
-// 2 dividir
-// 3 implementar with SO
-
-// 4 medir RMP max ->> Resolution
-// 5 muestrear 10 veces, comprobar n veces
-
-
-//FIFO and TIC TIME
-//mode continious
-
-//Add table of diagnostic
-//Add counter

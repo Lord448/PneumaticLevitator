@@ -29,12 +29,12 @@ extern osMessageQueueId_t xFIFO_COMDistanceHandle;
 void vTaskSensor(void *argument)
 {
 	const uint32_t MeasureTolerance = 5;
-	const uint32_t Reference = 520;
+	const uint32_t Reference = 530;
 	uint32_t refSpadCount;
 	uint8_t isApertureSpads;
 	uint8_t VhvSettings;
 	uint8_t PhaseCal;
-	uint16_t distance, past_measure;
+	int16_t distance, past_measure;
 	PDU_t distance_PDU;
 
 	Dev->I2cHandle = &hi2c1;
@@ -67,16 +67,15 @@ void vTaskSensor(void *argument)
 		VL53L0X_PerformSingleRangingMeasurement(Dev, &RangingData);
 		if(RangingData.RangeStatus == 0)
 	  {
-			if(RangingData.RangeMilliMeter > past_measure+MeasureTolerance || RangingData.RangeMilliMeter < past_measure-MeasureTolerance)
-			{
-				distance = Reference - RangingData.RangeMilliMeter;
-				//distance_PDU.rawData = distance;
-				//distance_PDU.chunks[4] = 0; /*TODO: Add the message ID*/
-				osMessageQueuePut(xFIFO_COMDistanceHandle, &distance, 0U, 0U); /*Sending to COM*/
-				//osMessageQueuePut(xFIFO_COMHandle, &distance_PDU, 0U, 0U);
-			}
+			/* Got the data correctly */
+			distance = Reference - RangingData.RangeMilliMeter;
+			osMessageQueuePut(xFIFO_COMDistanceHandle, &distance, 0U, osNoTimeout); /*Sending to COM*/
+			past_measure = RangingData.RangeMilliMeter;
 		}
-		past_measure = RangingData.RangeMilliMeter;
+		else
+		{
+			/* Do Nothing */
+		}
 	}
 }
 

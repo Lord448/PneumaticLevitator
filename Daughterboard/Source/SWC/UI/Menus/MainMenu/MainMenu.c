@@ -258,7 +258,7 @@ result_t MainMenu_setActionControl(uint16_t rpm)
 	if(UG_RESULT_OK != UG_TextboxSetText(&mainWindow, TB_RPM_STR_ID, Buffer))
 		return Error;
 	/* Making percentage */
-	progress = rpm * 100 / MAX_DISTANCE;
+	progress = rpm * 100 / MAX_RPM;
 	/* Changing the Progress bar */
 	if(UG_RESULT_OK != UG_ProgressSetProgress(&mainWindow, PROGRESS_BAR_ACTION_CONTROL_ID, progress))
 		return Error;
