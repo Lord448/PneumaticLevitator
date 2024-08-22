@@ -69,7 +69,7 @@ void vTaskSensor(void *argument)
 	  {
 			/* Got the data correctly */
 			distance = Reference - RangingData.RangeMilliMeter;
-			osMessageQueuePut(xFIFO_COMDistanceHandle, &distance, 0U, osNoTimeout); /*Sending to COM*/
+			osMessageQueuePut(xFIFO_COMDistanceHandle, &distance, 0U, osNoTimeout); /*Sending to COM*/ 00
 			past_measure = RangingData.RangeMilliMeter;
 		}
 		else

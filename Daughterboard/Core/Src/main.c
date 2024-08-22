@@ -165,7 +165,7 @@ const osThreadAttr_t TaskGPUResMan_attributes = {
 };
 /* Definitions for TaskHMI */
 osThreadId_t TaskHMIHandle;
-uint32_t TaskHMIBuffer[ 128 ];
+uint32_t TaskHMIBuffer[ 256 ];
 osStaticThreadDef_t TaskHMIControlBlock;
 const osThreadAttr_t TaskHMI_attributes = {
   .name = "TaskHMI",
@@ -185,10 +185,16 @@ osMessageQueueId_t xFIFOGetGPUBufHandle;
 const osMessageQueueAttr_t xFIFOGetGPUBuf_attributes = {
   .name = "xFIFOGetGPUBuf"
 };
-/* Definitions for xFIFOButtons */
-osMessageQueueId_t xFIFOButtonsHandle;
-const osMessageQueueAttr_t xFIFOButtons_attributes = {
-  .name = "xFIFOButtons"
+/* Definitions for xFIFO_Buttons */
+osMessageQueueId_t xFIFO_ButtonsHandle;
+uint8_t xFIFO_ButtonsBuffer[ 32 * sizeof( Buttons ) ];
+osStaticMessageQDef_t xFIFO_ButtonsControlBlock;
+const osMessageQueueAttr_t xFIFO_Buttons_attributes = {
+  .name = "xFIFO_Buttons",
+  .cb_mem = &xFIFO_ButtonsControlBlock,
+  .cb_size = sizeof(xFIFO_ButtonsControlBlock),
+  .mq_mem = &xFIFO_ButtonsBuffer,
+  .mq_size = sizeof(xFIFO_ButtonsBuffer)
 };
 /* Definitions for xFIFO_UARTDataTX */
 osMessageQueueId_t xFIFO_UARTDataTXHandle;
@@ -233,6 +239,17 @@ const osMessageQueueAttr_t xFIFO_ControlConstants_attributes = {
   .cb_size = sizeof(xFIFO_ControlConstantsControlBlock),
   .mq_mem = &xFIFO_ControlConstantsBuffer,
   .mq_size = sizeof(xFIFO_ControlConstantsBuffer)
+};
+/* Definitions for xFIFO_EncoderData */
+osMessageQueueId_t xFIFO_EncoderDataHandle;
+uint8_t xFIFO_EncoderDataBuffer[ 64 * sizeof( EncoderDir ) ];
+osStaticMessageQDef_t xFIFO_EncoderDataControlBlock;
+const osMessageQueueAttr_t xFIFO_EncoderData_attributes = {
+  .name = "xFIFO_EncoderData",
+  .cb_mem = &xFIFO_EncoderDataControlBlock,
+  .cb_size = sizeof(xFIFO_EncoderDataControlBlock),
+  .mq_mem = &xFIFO_EncoderDataBuffer,
+  .mq_size = sizeof(xFIFO_EncoderDataBuffer)
 };
 /* Definitions for xSemaphoreDMACplt3 */
 osSemaphoreId_t xSemaphoreDMACplt3Handle;
@@ -302,10 +319,13 @@ osEventFlagsId_t xEventDTCHandle;
 const osEventFlagsAttr_t xEventDTC_attributes = {
   .name = "xEventDTC"
 };
-/* Definitions for xEventButtonsFIFOEnabled */
-osEventFlagsId_t xEventButtonsFIFOEnabledHandle;
-const osEventFlagsAttr_t xEventButtonsFIFOEnabled_attributes = {
-  .name = "xEventButtonsFIFOEnabled"
+/* Definitions for xEvent_ButtonsFIFOEnabled */
+osEventFlagsId_t xEvent_ButtonsFIFOEnabledHandle;
+osStaticEventGroupDef_t xEvent_ButtonsFIFOEnabledControlBlock;
+const osEventFlagsAttr_t xEvent_ButtonsFIFOEnabled_attributes = {
+  .name = "xEvent_ButtonsFIFOEnabled",
+  .cb_mem = &xEvent_ButtonsFIFOEnabledControlBlock,
+  .cb_size = sizeof(xEvent_ButtonsFIFOEnabledControlBlock),
 };
 /* Definitions for xEvent_FatalError */
 osEventFlagsId_t xEvent_FatalErrorHandle;
@@ -322,6 +342,19 @@ const osEventFlagsAttr_t xEvent_UARTSendType_attributes = {
   .name = "xEvent_UARTSendType",
   .cb_mem = &xEvent_UARTSendTypeControlBlock,
   .cb_size = sizeof(xEvent_UARTSendTypeControlBlock),
+};
+/* Definitions for xEvent_ButtonsEnabled */
+osEventFlagsId_t xEvent_ButtonsEnabledHandle;
+osStaticEventGroupDef_t xEvent_ButtonsEnabledControlBlock;
+const osEventFlagsAttr_t xEvent_ButtonsEnabled_attributes = {
+  .name = "xEvent_ButtonsEnabled",
+  .cb_mem = &xEvent_ButtonsEnabledControlBlock,
+  .cb_size = sizeof(xEvent_ButtonsEnabledControlBlock),
+};
+/* Definitions for XEvent_ButtonPressed */
+osEventFlagsId_t XEvent_ButtonPressedHandle;
+const osEventFlagsAttr_t XEvent_ButtonPressed_attributes = {
+  .name = "XEvent_ButtonPressed"
 };
 /* USER CODE BEGIN PV */
 osMemoryPoolId_t MemoryPool8;  /*Generic Memory Pool designed for members of 1 Byte size*/
@@ -450,8 +483,8 @@ int main(void)
   /* creation of xFIFOGetGPUBuf */
   xFIFOGetGPUBufHandle = osMessageQueueNew (16, sizeof(void **), &xFIFOGetGPUBuf_attributes);
 
-  /* creation of xFIFOButtons */
-  xFIFOButtonsHandle = osMessageQueueNew (16, sizeof(Buttons), &xFIFOButtons_attributes);
+  /* creation of xFIFO_Buttons */
+  xFIFO_ButtonsHandle = osMessageQueueNew (32, sizeof(Buttons), &xFIFO_Buttons_attributes);
 
   /* creation of xFIFO_UARTDataTX */
   xFIFO_UARTDataTXHandle = osMessageQueueNew (16, sizeof(PDU_t), &xFIFO_UARTDataTX_attributes);
@@ -464,6 +497,9 @@ int main(void)
 
   /* creation of xFIFO_ControlConstants */
   xFIFO_ControlConstantsHandle = osMessageQueueNew (4, sizeof(ControlConst), &xFIFO_ControlConstants_attributes);
+
+  /* creation of xFIFO_EncoderData */
+  xFIFO_EncoderDataHandle = osMessageQueueNew (64, sizeof(EncoderDir), &xFIFO_EncoderData_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -508,14 +544,20 @@ int main(void)
   /* creation of xEventDTC */
   xEventDTCHandle = osEventFlagsNew(&xEventDTC_attributes);
 
-  /* creation of xEventButtonsFIFOEnabled */
-  xEventButtonsFIFOEnabledHandle = osEventFlagsNew(&xEventButtonsFIFOEnabled_attributes);
+  /* creation of xEvent_ButtonsFIFOEnabled */
+  xEvent_ButtonsFIFOEnabledHandle = osEventFlagsNew(&xEvent_ButtonsFIFOEnabled_attributes);
 
   /* creation of xEvent_FatalError */
   xEvent_FatalErrorHandle = osEventFlagsNew(&xEvent_FatalError_attributes);
 
   /* creation of xEvent_UARTSendType */
   xEvent_UARTSendTypeHandle = osEventFlagsNew(&xEvent_UARTSendType_attributes);
+
+  /* creation of xEvent_ButtonsEnabled */
+  xEvent_ButtonsEnabledHandle = osEventFlagsNew(&xEvent_ButtonsEnabled_attributes);
+
+  /* creation of XEvent_ButtonPressed */
+  XEvent_ButtonPressedHandle = osEventFlagsNew(&XEvent_ButtonPressed_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
 
@@ -1038,15 +1080,15 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : BtnDown_Pin */
   GPIO_InitStruct.Pin = BtnDown_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(BtnDown_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : BtnLeft_Pin BtnOK_Pin BtnRight_Pin BtnUP_Pin
-                           BtnMenu_Pin */
+                           EncoderSW_Pin BtnMenu_Pin */
   GPIO_InitStruct.Pin = BtnLeft_Pin|BtnOK_Pin|BtnRight_Pin|BtnUP_Pin
-                          |BtnMenu_Pin;
+                          |EncoderSW_Pin|BtnMenu_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LCD_DC_Pin LCD_RST_Pin */
@@ -1065,8 +1107,8 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : Reset_IT_Pin */
   GPIO_InitStruct.Pin = Reset_IT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(Reset_IT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LED_COMM_Pin LED_USB_Pin LED_CONTROL_Pin */
@@ -1075,12 +1117,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : EncoderSW_Pin */
-  GPIO_InitStruct.Pin = EncoderSW_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(EncoderSW_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);

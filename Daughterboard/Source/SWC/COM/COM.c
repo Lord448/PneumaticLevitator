@@ -65,7 +65,6 @@ void vTaskCOM(void *argument)
 	bool syncComInProcess = false;
 	uint16_t distance, rpm;
 	ControlConst controlConst;
-
 	do {
 		/* Waiting to receive the init frame of Motherboard */
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart1, COM_UARTRxBuffer, COM_UART_INIT_NUMBER_FRAMES);
@@ -351,6 +350,21 @@ void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
 	{
 		/* Do Nothing */
 	}
+}
+
+/**
+  * @brief  Rx Transfer completed callbacks.
+  * @param  huart  Pointer to a UART_HandleTypeDef structure that contains
+  *                the configuration information for the specified UART module.
+  * @retval None
+  */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(huart);
+  /* NOTE: This function should not be modified, when the callback is needed,
+           the HAL_UART_RxCpltCallback could be implemented in the user file
+   */
 }
 
 /**

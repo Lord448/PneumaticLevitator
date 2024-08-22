@@ -22,6 +22,8 @@ extern osMemoryPoolId_t MemoryPool16; /*Memory Pool designed for members of 2 By
 extern osMemoryPoolId_t MemoryPool16_UI_PixelsValue; /*Component Specific Memory Pool*/
 extern osMemoryPoolId_t MemoryPool16_UI_PixelsIndex; /*Component Specific Memory Pool*/
 
+extern osThreadId_t TaskUIHandle;
+
 extern osMessageQueueId_t xFIFO_ControlConstantsHandle;
 extern osMessageQueueId_t xFIFO_DistanceHandle;
 extern osMessageQueueId_t xFIFO_RPMHandle;

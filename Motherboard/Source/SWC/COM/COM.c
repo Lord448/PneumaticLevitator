@@ -298,7 +298,6 @@ static void sendInitBuffer(void)
  * 					        SOFT-TIMERS CALLBACKS
  * ---------------------------------------------------------
  */
-static int16_t RPM = 0;
 /**
  * @brief
  * @param  *argument none
@@ -307,6 +306,7 @@ static int16_t RPM = 0;
 void vTimer_UARTSendCallback(void *argument)
 {
 	static int16_t distance = 0;
+	static int16_t RPM = 0;
 	static uint16_t emptyFIFOCounterDist = 0;
 	static uint16_t emptyFIFOCounterRPM = 0;
 	static uint8_t buffer[COM_UART_PERIODIC_NUMBER_FRAMES+1] = {0};
@@ -328,60 +328,82 @@ void vTimer_UARTSendCallback(void *argument)
 
 	buffer[0] = ACK_DATA | acknowledge | confirmReset << 1;
 
-	/* Getting the distance data */
-	status = osMessageQueueGet(xFIFO_COMDistanceHandle, &distance, NULL, osNoTimeout);
-	if(osOK != status)
+
+	/* DISTANCE PROCESSING */
 	{
-		emptyFIFOCounterDist++;
-	}
-	else
-	{
-		emptyFIFOCounterDist = 0;
+		/* Getting the distance data */
+		status = osMessageQueueGet(xFIFO_COMDistanceHandle, &distance, NULL, osNoTimeout);
+		if(osOK != status)
+		{
+			emptyFIFOCounterDist++;
+		}
+		else
+		{
+			emptyFIFOCounterDist = 0;
+		}
+		/* Checking value of distance */
+		if(distance < 0)
+		{
+			/* Negative value on distance */
+			distance = 0;
+		}
+		else
+		{
+			/* Do Nothing */
+		}
+
+		/* Send Distance data */
+		if(COM_FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterDist)
+		{
+			/* Send error code */
+			buffer[1] = COM_MSG_ERROR_CODE;
+			/* TODO Trigger DTC Not Receiving Distance FIFO */
+		}
+		else
+		{
+			/* If there's no data on the FIFO, the bus will take the last value*/
+			bytePointer = (uint8_t *)&distance;
+			/* Sending first the LSB (Big Endian) */
+			buffer[1] = *bytePointer;
+			bytePointer++;
+			buffer[2] = *bytePointer;
+		}
 	}
 
-	/* Send Distance data */
-	if(COM_FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterDist)
+	/* RPM PROCESSING */
 	{
-		/* Send error code */
-		buffer[1] = COM_MSG_ERROR_CODE;
-		/* TODO Trigger DTC Not Receiving Distance FIFO */
-	}
-	else
-	{
-		/* If there's no data on the FIFO, the bus will take the last value*/
-		bytePointer = (uint8_t *)&distance;
-		/* Sending first the LSB (Big Endian) */
-		buffer[1] = *bytePointer;
-		bytePointer++;
-		buffer[2] = *bytePointer;
+		/* Getting the RPM data */
+		status = osMessageQueueGet(xFIFO_COMRPMHandle, &RPM, NULL, osNoTimeout);
+		if(osOK != status)
+		{
+			emptyFIFOCounterRPM++;
+		}
+		else
+		{
+			emptyFIFOCounterRPM = 0;
+		}
+
+		/* Send RPM data */
+		if(COM_FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterRPM)
+		{
+			/* Send error code */
+			buffer[3] = COM_MSG_ERROR_CODE;
+			/* TODO Trigger DTC Not Receiving Distance FIFO */
+		}
+		else
+		{
+			/* If there's no data on the FIFO, the bus will take the last value*/
+			bytePointer = (uint8_t *)&RPM;
+			/* Sending first the LSB (Big Endian) */
+			buffer[3] = *bytePointer;
+			bytePointer++;
+			buffer[4] = *bytePointer;
+		}
 	}
 
-	/* Getting the RPM data */
-	status = osMessageQueueGet(xFIFO_COMRPMHandle, &RPM, NULL, osNoTimeout);
-	if(osOK != status)
+	/* TODO: ON DEMAND MSG PROCESS */
 	{
-		emptyFIFOCounterRPM++;
-	}
-	else
-	{
-		emptyFIFOCounterRPM = 0;
-	}
 
-	/* Send RPM data */
-	if(COM_FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterRPM)
-	{
-		/* Send error code */
-		buffer[3] = COM_MSG_ERROR_CODE;
-		/* TODO Trigger DTC Not Receiving Distance FIFO */
-	}
-	else
-	{
-		/* If there's no data on the FIFO, the bus will take the last value*/
-		bytePointer = (uint8_t *)&RPM;
-		/* Sending first the LSB (Big Endian) */
-		buffer[3] = *bytePointer;
-		bytePointer++;
-		buffer[4] = *bytePointer;
 	}
 	osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, osWaitForever);
 	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)buffer, COM_UART_PERIODIC_NUMBER_FRAMES);
@@ -476,7 +498,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
   */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	uint32_t stat = osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_GPU); /*TODO Stubbed code*/
+	osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
 
 	osSemaphoreRelease(xSemaphore_InitDaughterHandle);
 	if(UART_RxBuffer[0] == COM_UART_INIT_FRAME_VALUE)

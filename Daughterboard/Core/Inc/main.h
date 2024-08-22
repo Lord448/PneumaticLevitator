@@ -105,11 +105,12 @@ void Error_Handler(void);
 #define EncoderB_GPIO_Port GPIOA
 #define EncoderSW_Pin GPIO_PIN_10
 #define EncoderSW_GPIO_Port GPIOA
-#define EncoderSW_EXTI_IRQn EXTI15_10_IRQn
 #define BtnMenu_Pin GPIO_PIN_11
 #define BtnMenu_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
+#define osNoTimeout 0U
+
 #define FINISH_INIT_ID 0x1U
 
 #define ALL_OK                             0U

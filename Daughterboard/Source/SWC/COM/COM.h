@@ -25,8 +25,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define osNoTimeout 0U
-
 /* Used for the send message logic */
 #define COM_MAX_QUEUE_MESSAGES 16
 
