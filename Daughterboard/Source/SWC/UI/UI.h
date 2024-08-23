@@ -29,16 +29,19 @@
 #include "UIMainSM.h"
 #include "Anim.h"
 #include "MainMenu.h"
+#include "Menu.h"
 #include "COM.h"
 #include "stm32f4xx_hal_dma.h"
 #include <stdio.h>
 #include <string.h>
 
+#define charslen(_) (int32_t)(sizeof(_)-1)
+
 #define WINDOW_MAX_OBJECTS 30
 
 #define UI_STARTED_THREAD_FLAG (uint32_t) 1U << 0
 
-#define SKIP_INTRO_ANIM
+//#define SKIP_INTRO_ANIM
 
 /**
  * ---------------------------------------------------------
@@ -53,5 +56,6 @@
 void vTaskUI(void *argument);
 UG_RESULT UI_TextboxCreate(UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye);
 UG_RESULT UI_CheckboxCreate(UG_WINDOW* wnd, UG_CHECKBOX* chb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye);
+UG_RESULT UI_CreateImage(UG_WINDOW* wnd, UG_IMAGE* img, UG_U8 id, const UG_BMP* bmp, bool show, UG_S16 xs, UG_S16 ys);
 
 #endif /* UI_H_ */

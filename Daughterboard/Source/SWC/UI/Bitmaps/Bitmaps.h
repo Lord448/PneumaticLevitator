@@ -1,11 +1,18 @@
 /**
- * @file   Bitmaps.h
- * @author Pedro Rojo (pedroeroca@outlook.com)
- * @brief	 TODO
- * @date   2023-12-27
+ * @file      Bitmaps.h
+ * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @copyright Copyright (c) 2023
- * @license
+ * @brief     This is a file that contains all the bitmaps
+ *            of the images displayed on the system
+ *
+ * @date      27 dic 2024
+ *
+ * @license   This Source Code Form is subject to the terms of 
+ *            the Mozilla Public License, v. 2.0. If a copy of 
+ *            the MPL was not distributed with this file, You 
+ *            can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * @copyright Copyright (c) 2024
  */
 #ifndef UI_BITMAPS_BITMAPS_H_
 #define UI_BITMAPS_BITMAPS_H_
@@ -18,5 +25,14 @@
 extern UG_BMP ITMLogo;
 extern UG_BMP ITMLogoSmall;
 extern UG_BMP AnimatedPCFan;
-
+extern UG_BMP LeftArrow;
+extern UG_BMP PressedLeftArrow;
+extern UG_BMP RightArrow;
+extern UG_BMP PressedRightArrow;
+extern UG_BMP MainLobby;
+extern UG_BMP Config;
+extern UG_BMP About;
+extern UG_BMP Plot;
+extern UG_BMP USBConfig;
+extern UG_BMP PlantAnalysis;
 #endif /* UI_BITMAPS_BITMAPS_H_ */

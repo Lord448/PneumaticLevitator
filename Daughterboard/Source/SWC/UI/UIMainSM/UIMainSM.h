@@ -18,30 +18,28 @@
 #define SWC_UI_UIMAINSM_UIMAINSM_H_
 
 #include "ugui.h"
+#include "HMI.h"
+#include "MainMenu.h"
+#include "ugui.h"
 
 /*Macro meant to be used with the uGUI BMP type*/
 #define DrawCenterBitmap(bmp) UG_DrawBMP((LCD_WIDTH-bmp->width)/2, (LCD_HEIGHT-bmp->height)/2, bmp)
 
 typedef enum MenuStages {
-	sMainLobby,
+	sMainLobby = 0,
 	sMenu,
 	sConfiguration,
 	sAbout,
 	sPlot,
 	sUSBConfig,
-	sStepResponse
+	sPlantAnalysis,
+	dummy = -1, /* Dummy variable to make the enum signed */
 }MenuStages;
 
-typedef enum Input {
-	iOk,
-	iUp,
-	iDown,
-	iLeft,
-	iRight,
-	iMenu,
-	iEncoder,
-	iReset
-}Input;
+typedef struct MenuState {
+	MenuStages menuStageID;
+	UG_WINDOW  *window;
+}MenuState;
 
 typedef struct UIWindow {
 	UG_WINDOW window;
@@ -49,6 +47,16 @@ typedef struct UIWindow {
 	uint8_t obj_len;
 }UIWindow;
 
-void UIMainSM(void);
+extern MenuState msMainLobby;
+extern MenuState msMenu;
+extern MenuState msConfiguration;
+extern MenuState msAbout;
+extern MenuState msPlot;
+extern MenuState msUSBConfig;
+extern MenuState msPlantAnalysis;
+
+void UIMainSM_Init(void);
+void UIMainSM_InfiniteLoop(void);
+void UIMainSM_ChangeMenu(MenuState menu);
 
 #endif /* SWC_UI_UIMAINSM_UIMAINSM_H_ */

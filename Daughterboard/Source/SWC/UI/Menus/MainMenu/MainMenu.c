@@ -16,7 +16,20 @@
 
 #include "MainMenu.h"
 
+extern osMessageQueueId_t xFIFO_ControlConstantsHandle;
+extern osMessageQueueId_t xFIFO_DistanceHandle;
+extern osMessageQueueId_t xFIFO_RPMHandle;
+
 UG_WINDOW mainWindow;
+
+void MainMenu_MenuDynamics(void)
+{
+	uint16_t Distance, rpm;
+	if(osMessageQueueGet(xFIFO_DistanceHandle, &Distance, NULL, 1) == osOK)
+		MainMenu_setDistance(Distance);
+	if(osMessageQueueGet(xFIFO_RPMHandle, &rpm, NULL, 1) == osOK)
+		MainMenu_setActionControl(rpm);
+}
 
 void MainMenu_buildObjects(void)
 {

@@ -17,11 +17,10 @@
 #define SWC_UI_MENUS_MAINMENU_H_
 
 #include "UI.h"
-#include "COM.h"
+#include "cmsis_os2.h"
+#include "Bitmaps.h"
 #include <string.h>
 #include <stdio.h>
-
-#define charslen(_) (int32_t)(sizeof(_)-1)
 
 /**
  * ---------------------------------------------------------
@@ -29,10 +28,10 @@
  * ---------------------------------------------------------
  */
 #define PROGRESS_BAR_X_CENTRAL_LOC_DISTANCE       36
-#define PROGRESS_BAR_X_CENTRAL_LOC_SET_POINT      36+80    /*TODO: Adjust*/
-#define PROGRESS_BAR_X_CENTRAL_LOC_ACTION_CONTROL 36+80+80 /*TODO: Adjust*/
+#define PROGRESS_BAR_X_CENTRAL_LOC_SET_POINT      36+80
+#define PROGRESS_BAR_X_CENTRAL_LOC_ACTION_CONTROL 36+80+80
 #define PROGRESS_BAR_OFFSET 10
-#define PROGRESS_BAR_Y_START_LOC 95 /*TODO: Adjust*/
+#define PROGRESS_BAR_Y_START_LOC 95
 #define PROGRESS_BAR_Y_END_LOC 190
 
 #define PROGRESS_BAR_DISTANCE_ID       PGB_ID_0
@@ -149,6 +148,7 @@
 
 #define DEFAULT_SET_POINT 260
 
+void MainMenu_MenuDynamics(void);
 void MainMenu_buildObjects(void);
 
 result_t MainMenu_setKP(float kp);

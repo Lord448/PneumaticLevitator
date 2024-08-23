@@ -74,7 +74,6 @@ static ButtonStates Button_Debounce(Button *Button);
 */
 void vTaskHMI(void *argument)
 {
-	const uint16_t taskResol = 5; /* MS */
 	Button BtnOK, BtnUp, BtnDown, BtnLeft, BtnRight, BtnMenu, BtnEncoderSW;
 	uint32_t BtnEnabledFlags = 0;
 	uint32_t EncoderCounts, EncoderPastCounts;
@@ -82,18 +81,21 @@ void vTaskHMI(void *argument)
 	TickType_t ticks;
 
 	/* Building the buttons */
-	Button_Init(&BtnOK, Ok, BtnOK_GPIO_Port, BtnOK_Pin);
-	Button_Init(&BtnUp, Up, BtnUP_GPIO_Port, BtnUP_Pin);
-	Button_Init(&BtnDown, Down, BtnDown_GPIO_Port, BtnDown_Pin);
-	Button_Init(&BtnLeft, Left, BtnLeft_GPIO_Port, BtnLeft_Pin);
-	Button_Init(&BtnRight, Right, BtnRight_GPIO_Port, BtnRight_Pin);
-	Button_Init(&BtnMenu, Menu, BtnMenu_GPIO_Port, BtnMenu_Pin);
-	Button_Init(&BtnEncoderSW, EncoderSW, EncoderSW_GPIO_Port, EncoderSW_Pin);
+	Button_Init(&BtnOK, iOk, BtnOK_GPIO_Port, BtnOK_Pin);
+	Button_Init(&BtnUp, iUp, BtnUP_GPIO_Port, BtnUP_Pin);
+	Button_Init(&BtnDown, iDown, BtnDown_GPIO_Port, BtnDown_Pin);
+	Button_Init(&BtnLeft, iLeft, BtnLeft_GPIO_Port, BtnLeft_Pin);
+	Button_Init(&BtnRight, iRight, BtnRight_GPIO_Port, BtnRight_Pin);
+	Button_Init(&BtnMenu, iMenu, BtnMenu_GPIO_Port, BtnMenu_Pin);
+	Button_Init(&BtnEncoderSW, iEncoderSW, EncoderSW_GPIO_Port, EncoderSW_Pin);
 
-	EncoderCounts = EncoderPastCounts = EncoderVal;
 	/* TODO: Debug code */
 	HMI_EnableAllButtons();
 	HMI_FIFOEnable();
+	/* TODO: Debug code */
+
+	EncoderCounts = EncoderPastCounts = EncoderVal;
+	ticks = osKernelGetTickCount();
 	for(;;)
 	{
 		/* Debouncing the buttons */
@@ -134,8 +136,7 @@ void vTaskHMI(void *argument)
 			/* Do Nothing */
 		}
 
-
-		ticks = osKernelGetTickCount() + taskResol;
+		ticks += TASK_RESOLUTION;
 		osDelayUntil(ticks);
 	}
 }
@@ -348,7 +349,6 @@ static void Button_Init(Button *Button, Buttons ID, GPIO_TypeDef *GPIOx, uint16_
  */
 static ButtonStates Button_Debounce(Button *Button)
 {
-	const uint16_t RequiredSamples = 3; /* Considering 5ms task resolution */
 	ButtonStates retval = Idle;
 	if(0 == HAL_GPIO_ReadPin(Button->GPIOx, Button->GPIO_Pin))
 	{
@@ -367,7 +367,7 @@ static ButtonStates Button_Debounce(Button *Button)
 	{
 		case WaitingHigh:
 			/* The pin it's currently on Low state and waiting high state */
-			if(Button -> Highs >= RequiredSamples)
+			if(Button -> Highs >= DEBOUNCE_SAMPLES)
 			{
 				/* Rising edge detected, Bouncing has stopped */
 				Button -> Stages = WaitingLow;
@@ -381,7 +381,7 @@ static ButtonStates Button_Debounce(Button *Button)
 		break;
 		case WaitingLow:
 			/* The pin it's currently on high state and waiting a low state */
-			if(Button -> Lows >= RequiredSamples)
+			if(Button -> Lows >= DEBOUNCE_SAMPLES)
 			{
 				/* Falling edge detected, Bouncing has stopped */
 				Button -> Stages = WaitingHigh;

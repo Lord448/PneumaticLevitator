@@ -39,6 +39,9 @@ extern const uint16_t ITMLogoData[IMAGE_SIZE(ITMLogo)];
 
 extern UG_WINDOW mainWindow;
 
+static void waitForConstants(void);
+static void loadGraphicalResources(void);
+
 /**
 * @brief Function implementing the TaskUI thread.
 * @param argument: Not used
@@ -46,8 +49,6 @@ extern UG_WINDOW mainWindow;
 */
 void vTaskUI(void *argument)
 {
-	uint16_t Distance, rpm;
-	ControlConst controlConst;
 	LCD_init();
 #ifndef SKIP_INTRO_ANIM
 	FadeWhiteIn(5);
@@ -55,38 +56,63 @@ void vTaskUI(void *argument)
 	StringFadeIn();
 #endif
 	/* Creating and loading all the graphical resources */
-	MainMenu_buildObjects();
-	/*Report to motherboard that all is ready to run*/
-	//osSemaphoreAcquire(xSemaphoreCOMReadyHandle, osWaitForever); /*Wait until Motherboard is ready*/
-
+	loadGraphicalResources();
+	waitForConstants();
 #ifndef SKIP_INTRO_ANIM
-  osDelay(pdMS_TO_TICKS(5000));
 	StringFadeOut();
 	ITMLogoFadeOut();
 #endif
-
 	UG_WindowShow(&mainWindow);
 	UG_Update();
 	MainMenu_setSetPoint(DEFAULT_SET_POINT);
-	if(osOK == osMessageQueueGet(xFIFO_ControlConstantsHandle, &controlConst, NULL, pdMS_TO_TICKS(5000)))
-	{
-		/* Correctly received the data from COM */
-		MainMenu_setControlConstants(controlConst.kp, controlConst.ki, controlConst.kd);
-	}
-	else
-	{
-		/* Do Nothing */
-	}
 
   for(;;)
   {
-  	if(osMessageQueueGet(xFIFO_DistanceHandle, &Distance, NULL, 1) == osOK)
-  		MainMenu_setDistance(Distance);
-  	if(osMessageQueueGet(xFIFO_RPMHandle, &rpm, NULL, 1) == osOK)
-  		MainMenu_setActionControl(rpm);
-  	/*TODO: Possible implementation of parsed loop scheme*/
+  	UIMainSM_InfiniteLoop();
   	//LCD_Test(); /*TODO Remove the test from here*/
   }
+}
+
+/**
+ * @brief
+ * @param  none
+ * @retval none
+ */
+static void loadGraphicalResources(void)
+{
+	MainMenu_buildObjects();
+	Menu_buildObjects();
+	UIMainSM_Init();
+}
+
+/**
+ * @brief
+ * @param  none
+ * @retval none
+ */
+static void waitForConstants(void)
+{
+	ControlConst controlConst;
+	if(osOK != osMessageQueueGet(xFIFO_ControlConstantsHandle, &controlConst, NULL, osNoTimeout))
+	{
+		/* Need to wait */
+		if(osOK == osMessageQueueGet(xFIFO_ControlConstantsHandle, &controlConst, NULL, pdMS_TO_TICKS(5000))) /* TODO: 5000 */
+		{
+			/* Correctly received the data from COM */
+			MainMenu_setControlConstants(controlConst.kp, controlConst.ki, controlConst.kd);
+		}
+		else
+		{
+			/* Do Nothing */
+		}
+	}
+	else
+	{
+		/* Correctly received the data from COM */
+		MainMenu_setControlConstants(controlConst.kp, controlConst.ki, controlConst.kd);
+		osDelay(pdMS_TO_TICKS(1000));
+	}
+
 }
 
 /**
@@ -109,7 +135,7 @@ UG_RESULT UI_TextboxCreate(UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs,
 	result = UG_TextboxSetFont(wnd, id, TEXTBOX_FONT);
 	if(result != 0)
 		return result;
-	result = UG_TextboxSetBackColor(wnd, id, C_WHITE_94);
+	result = UG_TextboxSetBackColor(wnd, id, C_WHITE_94); /* TODO: debug to see the hole cage */
 	if(result != 0)
 		return result;
 	result = UG_TextboxSetForeColor(wnd, id, C_BLACK);
@@ -158,4 +184,35 @@ UG_RESULT UI_CheckboxCreate(UG_WINDOW* wnd, UG_CHECKBOX* chb, UG_U8 id, UG_S16 x
 			return result;
 	result = UG_CheckboxSetBackColor(wnd, id, C_WHITE);
 	return result;
+}
+
+/**
+ * @brief
+ * @param
+ * @param
+ * @param
+ * @param
+ * @param
+ * @param
+ * @param
+ * @retval
+ */
+UG_RESULT UI_CreateImage(UG_WINDOW* wnd, UG_IMAGE* img, UG_U8 id, const UG_BMP* bmp, bool show, UG_S16 xs, UG_S16 ys)
+{
+	UG_RESULT result;
+	result = UI_ImageCreate(wnd, img, id, xs, ys);
+	if(result != 0)
+		return result;
+	result = UG_ImageSetBMP(wnd, id, bmp);
+	if(result != 0)
+		return result;
+	if(!show)
+	{
+		/* Need to hide the image */
+		result = UG_ImageHide(wnd, id);
+		if(result != 0)
+			return result;
+	}
+	return result;
+
 }
