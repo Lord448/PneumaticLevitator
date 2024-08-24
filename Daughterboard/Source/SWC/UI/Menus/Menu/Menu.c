@@ -91,8 +91,8 @@ struct MenuSelectorsGroup {
  * 					 SOFTWARE COMPONENT LOCAL PROTOYPES
  * ---------------------------------------------------------
  */
+static bool sMenu_ProcessButtonPress(Buttons btn);
 static void sMenu_MakeArrowPressAnim(Buttons side);
-static void sMenu_ProcessButtonPress(Buttons btn);
 static void sMenu_CreateTextbox(UG_TEXTBOX* txb, UG_U8 id, char *str, bool show, UG_S16 xs, UG_S16 ys);
 static void sMenu_MakeSelectedAnim(MenuSelector *menu);
 static void sMenu_HideAllTextboxes(void);
@@ -107,22 +107,28 @@ void Menu_MenuDynamics(void)
 		Init,
 		Periodic
 	}static stateHandler = Init;
-	Buttons btnPressed = None;
+	Buttons btnPressed = iNone;
 
-	osMessageQueueGet(xFIFO_ButtonsHandle, &btnPressed, NULL, osWaitForever);
 	switch(stateHandler)
 	{
 		case Init:
 			HMI_DisableButtons(iUp | iDown | iEncoder);
+			UG_ImageShow(&menuWindow, MAIN_LOBBY_MENU_IMG_ID);
+			UG_Update();
 			stateHandler = Periodic;
 		break;
 		case Periodic:
-			if(None != btnPressed)
+			osMessageQueueGet(xFIFO_ButtonsHandle, &btnPressed, NULL, osWaitForever);
+			if(iNone != btnPressed)
 			{
 				/* There is a press */
 				sMenu_MakeArrowPressAnim(btnPressed);
-				sMenu_ProcessButtonPress(btnPressed);
-				btnPressed = None;
+				if(true == sMenu_ProcessButtonPress(btnPressed))
+				{
+					/* Registered a menu selection */
+					stateHandler = Init;
+				}
+				btnPressed = iNone;
 			}
 		break;
 		default:
@@ -133,7 +139,7 @@ void Menu_MenuDynamics(void)
 
 void Menu_buildObjects(void)
 {
-	static UG_OBJECT ObjWinBuf[WINDOW_MAX_OBJECTS];
+	static UG_OBJECT  ObjWinBuf[WINDOW_MAX_OBJECTS];
 	/* Images */
 	static UG_IMAGE   LeftArrowImage;
 	static UG_IMAGE   PressedLeftArrowImage;
@@ -185,40 +191,18 @@ void Menu_buildObjects(void)
   sMenu_CreateTextbox(&tbPlantAnalysis, TB_PLANT_ID, "Analisis de Planta", false, TB_PLANT_X_POS, MENU_TEXBOX_Y_POS);
   sMenu_CreateTextbox(&tbEarlyVersionPrompt, TB_VER_PROMPT_ID, "En desarrollo", false, TB_VER_PROMPT_X_POS, TB_VER_PROMPT_Y_POS);
 }
+
+void Menu_ShowInitImage(void)
+{
+	UG_ImageShow(&menuWindow, MAIN_LOBBY_MENU_IMG_ID);
+}
 /**
  * ---------------------------------------------------------
  * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
  * ---------------------------------------------------------
  */
 
-static void sMenu_MakeArrowPressAnim(Buttons side)
-{
-	const TickType_t AnimDelay = 100; /* MS */
-	if(iLeft == side)
-	{
-		/* Left button has been pressed */
-		UG_ImageShow(&menuWindow, PRESSED_LEFT_ARROW_IMG_ID);
-		UG_Update();
-		osDelay(pdMS_TO_TICKS(AnimDelay));
-		UG_ImageShow(&menuWindow, LEFT_ARROW_IMG_ID);
-		UG_Update();
-	}
-	else if(iRight == side)
-	{
-		/* Right button has been pressed */
-		UG_ImageShow(&menuWindow, PRESSED_RIGHT_ARROW_IMG_ID);
-		UG_Update();
-		osDelay(pdMS_TO_TICKS(AnimDelay));
-		UG_ImageShow(&menuWindow, RIGHT_ARROW_IMG_ID);
-		UG_Update();
-	}
-	else
-	{
-		/* Do Nothing */
-	}
-}
-
-static void sMenu_ProcessButtonPress(Buttons btn)
+static bool sMenu_ProcessButtonPress(Buttons btn)
 {
 	MenuSelector *firstMenu = &MenuSelectorsGroup.mSelMainLobby;
 	MenuSelector *lastMenu = &MenuSelectorsGroup.mSelPlantAnalysis;
@@ -260,8 +244,9 @@ static void sMenu_ProcessButtonPress(Buttons btn)
 		{
 			/* We can enter to the menu */
 			UIMainSM_ChangeMenu(currentMenu->menuStage);
+			return true;
 		}
-		return; /* Skip Image processing */
+		return false; /* Skip Image processing */
 	}
 	else
 	{
@@ -280,6 +265,34 @@ static void sMenu_ProcessButtonPress(Buttons btn)
 		/* Do Nothing */
 	}
 	UG_Update();
+	return false;
+}
+
+static void sMenu_MakeArrowPressAnim(Buttons side)
+{
+	const TickType_t AnimDelay = 100; /* MS */
+	if(iLeft == side)
+	{
+		/* Left button has been pressed */
+		UG_ImageShow(&menuWindow, PRESSED_LEFT_ARROW_IMG_ID);
+		UG_Update();
+		osDelay(pdMS_TO_TICKS(AnimDelay));
+		UG_ImageShow(&menuWindow, LEFT_ARROW_IMG_ID);
+		UG_Update();
+	}
+	else if(iRight == side)
+	{
+		/* Right button has been pressed */
+		UG_ImageShow(&menuWindow, PRESSED_RIGHT_ARROW_IMG_ID);
+		UG_Update();
+		osDelay(pdMS_TO_TICKS(AnimDelay));
+		UG_ImageShow(&menuWindow, RIGHT_ARROW_IMG_ID);
+		UG_Update();
+	}
+	else
+	{
+		/* Do Nothing */
+	}
 }
 
 static void sMenu_MakeSelectedAnim(MenuSelector *menu)

@@ -25,6 +25,8 @@
 
 #include "HMI.h"
 
+extern TIM_HandleTypeDef htim1; /* Timer used for the encoder decodification */
+
 extern osMessageQueueId_t xFIFO_ButtonsHandle;
 extern osMessageQueueId_t xFIFO_EncoderDataHandle;
 
@@ -89,11 +91,13 @@ void vTaskHMI(void *argument)
 	Button_Init(&BtnMenu, iMenu, BtnMenu_GPIO_Port, BtnMenu_Pin);
 	Button_Init(&BtnEncoderSW, iEncoderSW, EncoderSW_GPIO_Port, EncoderSW_Pin);
 
+	/* Waiting for UI to init */
+
 	/* TODO: Debug code */
 	HMI_EnableAllButtons();
 	HMI_FIFOEnable();
 	/* TODO: Debug code */
-
+	HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
 	EncoderCounts = EncoderPastCounts = EncoderVal;
 	ticks = osKernelGetTickCount();
 	for(;;)

@@ -20,38 +20,52 @@ extern osMessageQueueId_t xFIFO_ButtonsHandle;
 extern UG_WINDOW mainWindow;
 extern UG_WINDOW menuWindow;
 
-MenuStages menuStage = sMainLobby; /*Global variable*/
+extern struct MenuSelectorsGroup MenuSelectorsGroup;
 
+/**
+ * ---------------------------------------------------------
+ * 					   SOFTWARE COMPONENT GLOBALS
+ * ---------------------------------------------------------
+ */
+MenuStages menuStage = sMainLobby;
+
+/**
+ * ---------------------------------------------------------
+ * 					 SOFTWARE COMPONENT LOCAL PROTOYPES
+ * ---------------------------------------------------------
+ */
+static UG_WINDOW* UIMainSM_SelectWindow(MenuStages menuStageID);
+/**
+ * ---------------------------------------------------------
+ * 					 SOFTWARE COMPONENT GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 void UIMainSM_Init(void)
 {
 }
 
 void UIMainSM_InfiniteLoop(void)
 {
-	Buttons btnPress;
+	Buttons btnPress = iNone;
+	static bool isFirstMenuInit = true;
 	osMessageQueueGet(xFIFO_ButtonsHandle, &btnPress, NULL, osNoTimeout);
 	if(iMenu == btnPress)
 	{
 		/* Menu Button pressed */
+		Menu_ShowInitImage();
 		UIMainSM_ChangeMenu(sMenu);
-		btnPress = None;
+		isFirstMenuInit = true;
+		btnPress = iNone;
 	}
 	else
 	{
-		/* Do Nothing */
+		/* Returning the button to the fifo */
+		//osMessageQueuePut(xFIFO_ButtonsHandle, &btnPress, 0U, osNoTimeout);
 	}
-	/* TODO: Debug proposes */
-	static bool firstInit = true;
-	if(firstInit)
-	{
-		UIMainSM_ChangeMenu(sMenu);
-		firstInit = false;
-	}
-	/* TODO: Debug proposes */
 	switch(menuStage)
 	{
 		case sMainLobby:
-			MainMenu_MenuDynamics();
+			MainMenu_MenuDynamics(btnPress, &isFirstMenuInit);
 		break;
 		case sMenu:
 			Menu_MenuDynamics();
@@ -73,6 +87,23 @@ void UIMainSM_InfiniteLoop(void)
 }
 
 void UIMainSM_ChangeMenu(MenuStages menuStageID)
+{
+	static MenuStages pastMenuStage = sMainLobby;
+	UG_WINDOW *window = UIMainSM_SelectWindow(menuStageID);
+	UG_WINDOW *pastWindow = UIMainSM_SelectWindow(pastMenuStage);
+
+	UG_WindowHide(pastWindow);
+	menuStage = menuStageID;
+	UG_WindowShow(window);
+	UG_Update();
+	pastMenuStage = menuStageID;
+}
+/**
+ * ---------------------------------------------------------
+ * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
+static UG_WINDOW* UIMainSM_SelectWindow(MenuStages menuStageID)
 {
 	UG_WINDOW *window;
 	switch(menuStageID)
@@ -98,8 +129,5 @@ void UIMainSM_ChangeMenu(MenuStages menuStageID)
 		default:
 		break;
 	}
-	UG_WindowHide(window);
-	menuStage = menuStageID;
-	UG_WindowShow(window);
-	UG_Update();
+	return window;
 }

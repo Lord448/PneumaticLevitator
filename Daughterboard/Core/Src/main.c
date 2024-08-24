@@ -47,6 +47,7 @@ typedef StaticEventGroup_t osStaticEventGroupDef_t;
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+
 /*
  * Documentation of timer usage
  *
@@ -55,7 +56,8 @@ typedef StaticEventGroup_t osStaticEventGroupDef_t;
  * htim3  Timer used for the UART periodical info send
  * htim4  Timer used as a UART Watchdog timer
  * htim11 TODO Fill here the documentation for this timer
- * */
+ *
+ */
 
 /* USER CODE END PM */
 

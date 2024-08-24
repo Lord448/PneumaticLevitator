@@ -55,7 +55,7 @@ typedef enum ButtonStates {
 }ButtonStates;
 
 typedef enum Buttons {
-	None,
+	iNone,
 	iOk = BTN_OK_ENABLED_FLAG,
 	iUp = BTN_UP_ENABLED_FLAG,
 	iDown = BTN_DOWN_ENABLED_FLAG,

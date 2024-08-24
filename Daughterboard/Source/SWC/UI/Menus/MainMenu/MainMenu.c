@@ -19,16 +19,59 @@
 extern osMessageQueueId_t xFIFO_ControlConstantsHandle;
 extern osMessageQueueId_t xFIFO_DistanceHandle;
 extern osMessageQueueId_t xFIFO_RPMHandle;
+extern osMessageQueueId_t xFIFO_ButtonsHandle;
+extern osMessageQueueId_t xFIFO_EncoderDataHandle;
 
 UG_WINDOW mainWindow;
 
-void MainMenu_MenuDynamics(void)
+/**
+ * ---------------------------------------------------------
+ * 					 SOFTWARE COMPONENT LOCAL PROTOYPES
+ * ---------------------------------------------------------
+ */
+static void sMainMenu_ProcessButtonPress(Buttons btnPressed, int16_t *setPoint);
+/**
+ * ---------------------------------------------------------
+ * 					 SOFTWARE COMPONENT GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
+void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit)
 {
+	static int16_t setPoint = DEFAULT_SET_POINT;
 	uint16_t Distance, rpm;
+	EncoderDir encoderDir;
+
+	if(*isFirstMenuInit)
+	{
+		/* First init of the menu */
+		HMI_EnableAllButtons();
+		MainMenu_setSetPoint(setPoint);
+		*isFirstMenuInit = false;
+	}
+	/* Printing the bars */
 	if(osMessageQueueGet(xFIFO_DistanceHandle, &Distance, NULL, 1) == osOK)
 		MainMenu_setDistance(Distance);
 	if(osMessageQueueGet(xFIFO_RPMHandle, &rpm, NULL, 1) == osOK)
 		MainMenu_setActionControl(rpm);
+	if(osMessageQueueGet(xFIFO_EncoderDataHandle, &encoderDir, NULL, 1) == osOK)
+	{
+		/* The encoder has been moved */
+		switch(encoderDir)
+		{
+			case Plus:
+				setPoint+=15;
+				if(MAX_DISTANCE < setPoint)
+					setPoint = MAX_DISTANCE;
+			break;
+			case Minus:
+				setPoint-=15;
+				if(0 > setPoint)
+					setPoint = 0;
+			break;
+		}
+		MainMenu_setSetPoint(setPoint);
+	}
+	sMainMenu_ProcessButtonPress(btnPressed, &setPoint);
 }
 
 void MainMenu_buildObjects(void)
@@ -285,4 +328,40 @@ result_t MainMenu_preCheck(uint16_t ID)
 	UG_CheckboxSetAlternateForeColor(&mainWindow, ID, C_RED);
 	UG_CheckboxSetForeColor(&mainWindow, ID, C_RED);
 	return OK;
+}
+/**
+ * ---------------------------------------------------------
+ * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
+static void sMainMenu_ProcessButtonPress(Buttons btnPressed, int16_t *setPoint)
+{
+	switch(btnPressed)
+	{
+		case iOk:
+		case iEncoderSW:
+		break;
+		case iUp:
+			*setPoint = *setPoint + 1;
+			if(MAX_DISTANCE < *setPoint)
+				*setPoint = MAX_DISTANCE;
+			MainMenu_setSetPoint(*setPoint);
+		break;
+		case iDown:
+			*setPoint = *setPoint - 1;
+			if(0 > *setPoint)
+				*setPoint = 0;
+			MainMenu_setSetPoint(*setPoint);
+		break;
+		case iLeft:
+		break;
+		case iRight:
+		break;
+		case iMenu:
+		case iNone:
+		case iEncoder:
+		case Reset:
+		default:
+		break;
+	}
 }

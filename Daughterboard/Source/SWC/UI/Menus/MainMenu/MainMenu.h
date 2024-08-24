@@ -148,7 +148,7 @@
 
 #define DEFAULT_SET_POINT 260
 
-void MainMenu_MenuDynamics(void);
+void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit);
 void MainMenu_buildObjects(void);
 
 result_t MainMenu_setKP(float kp);

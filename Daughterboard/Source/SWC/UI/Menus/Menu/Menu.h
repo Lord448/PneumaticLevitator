@@ -83,5 +83,6 @@
 
 void Menu_MenuDynamics(void);
 void Menu_buildObjects(void);
+void Menu_ShowInitImage(void);
 
 #endif /* SWC_UI_MENUS_MENU_MENU_H_ */
