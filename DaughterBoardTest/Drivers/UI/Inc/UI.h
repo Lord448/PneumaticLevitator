@@ -21,7 +21,7 @@ typedef enum MenuStages {
 	sInitialAnim,
 	sMainLobby,
 	sMenu,
-	sConfiguration,
+	sConfigs,
 	sAbout,
 	sPlot,
 	sUSBConfig,

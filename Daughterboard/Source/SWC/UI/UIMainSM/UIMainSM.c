@@ -22,26 +22,8 @@ extern UG_WINDOW menuWindow;
 
 MenuStages menuStage = sMainLobby; /*Global variable*/
 
-MenuState currentMenuState;
-
-MenuState msMainLobby;
-MenuState msMenu;
-MenuState msConfiguration;
-MenuState msAbout;
-MenuState msPlot;
-MenuState msUSBConfig;
-MenuState msPlantAnalysis;
-
-
 void UIMainSM_Init(void)
 {
-	/* Initalizing the structures */
-	msMainLobby.menuStageID = sMainLobby;
-	msMainLobby.window = &mainWindow;
-	msMenu.menuStageID = sMenu;
-	msMenu.window = &menuWindow;
-
-	currentMenuState = msMainLobby;
 }
 
 void UIMainSM_InfiniteLoop(void)
@@ -51,7 +33,7 @@ void UIMainSM_InfiniteLoop(void)
 	if(iMenu == btnPress)
 	{
 		/* Menu Button pressed */
-		UIMainSM_ChangeMenu(msMenu);
+		UIMainSM_ChangeMenu(sMenu);
 		btnPress = None;
 	}
 	else
@@ -62,11 +44,11 @@ void UIMainSM_InfiniteLoop(void)
 	static bool firstInit = true;
 	if(firstInit)
 	{
-		UIMainSM_ChangeMenu(msMenu);
+		UIMainSM_ChangeMenu(sMenu);
 		firstInit = false;
 	}
 	/* TODO: Debug proposes */
-	switch(currentMenuState.menuStageID)
+	switch(menuStage)
 	{
 		case sMainLobby:
 			MainMenu_MenuDynamics();
@@ -74,7 +56,7 @@ void UIMainSM_InfiniteLoop(void)
 		case sMenu:
 			Menu_MenuDynamics();
 		break;
-		case sConfiguration:
+		case sConfigs:
 		break;
 		case sAbout:
 		break;
@@ -84,13 +66,40 @@ void UIMainSM_InfiniteLoop(void)
 		break;
 		case sPlantAnalysis:
 		break;
+		case dummy:
+		default:
+		break;
 	}
 }
 
-void UIMainSM_ChangeMenu(MenuState menu)
+void UIMainSM_ChangeMenu(MenuStages menuStageID)
 {
-	UG_WindowHide(currentMenuState.window);
-	currentMenuState = menu;
-	UG_WindowShow(menu.window);
+	UG_WINDOW *window;
+	switch(menuStageID)
+	{
+		case sMainLobby:
+			window = &mainWindow;
+		break;
+		case sMenu:
+			window = &menuWindow;
+		break;
+		case sConfigs:
+
+		break;
+		case sAbout:
+		break;
+		case sPlot:
+		break;
+		case sUSBConfig:
+		break;
+		case sPlantAnalysis:
+		break;
+		case dummy:
+		default:
+		break;
+	}
+	UG_WindowHide(window);
+	menuStage = menuStageID;
+	UG_WindowShow(window);
 	UG_Update();
 }

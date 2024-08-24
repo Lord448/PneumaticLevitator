@@ -18,19 +18,72 @@
 
 extern osMessageQueueId_t xFIFO_ButtonsHandle;
 
-UG_WINDOW menuWindow;
-
 typedef struct MenuSelector {
 	MenuStages menuStage;
 	uint8_t idImage;
 	uint8_t idTextbox;
+	bool isOnDevelopment;
 }MenuSelector;
 
+/**
+ * ---------------------------------------------------------
+ * 					   SOFTWARE COMPONENT GLOBALS
+ * ---------------------------------------------------------
+ */
+
+UG_WINDOW menuWindow;
+
 /* Menu Handlers */
-MenuSelector mSelMainLobby = {
-	.menuStage = sMainLobby,
-	.idImage = MAIN_LOBBY_MENU_IMG_ID,
-	.idTextbox = TB_MAIN_LOBBY_ID
+/**
+ * @brief Grouping all the menu structures on a mega structure
+ *        in order to force the linker to save all the structures
+ *        under contiguous RAM Addresses and perform safe pointer
+ *        arithmetics through the whole group
+ */
+struct MenuSelectorsGroup {
+	MenuSelector mSelMainLobby;
+	MenuSelector mSelConfigs;
+	MenuSelector mSelAbout;
+	MenuSelector mSelPlot;
+	MenuSelector mSelUSBConfigs;
+	MenuSelector mSelPlantAnalysis;
+}MenuSelectorsGroup = {
+		.mSelMainLobby = {
+			.menuStage = sMainLobby,
+			.idImage = MAIN_LOBBY_MENU_IMG_ID,
+			.idTextbox = TB_MAIN_LOBBY_ID,
+			.isOnDevelopment = false
+		},
+		.mSelConfigs = {
+			.menuStage = sConfigs,
+			.idImage = CONFIG_MENU_IMG_ID,
+			.idTextbox = TB_CONFIG_ID,
+			.isOnDevelopment = true /* TODO: Remove when finished */
+		},
+		.mSelAbout = {
+			.menuStage = sAbout,
+			.idImage = ABOUT_MENU_IMG_ID,
+			.idTextbox = TB_ABOUT_ID,
+			.isOnDevelopment = true /* TODO: Remove when finished */
+		},
+		.mSelPlot = {
+			.menuStage = sPlot,
+			.idImage = PLOT_MENU_IMG_ID,
+			.idTextbox = TB_PLOT_ID,
+			.isOnDevelopment = true /* TODO: Remove when finished */
+		},
+		.mSelUSBConfigs = {
+			.menuStage = sUSBConfig,
+			.idImage = USB_CONFIG_MENU_IMG_ID,
+			.idTextbox = TB_USB_CONFIG_ID,
+			.isOnDevelopment = true /* TODO: Remove when finished */
+		},
+		.mSelPlantAnalysis = {
+			.menuStage = sPlantAnalysis,
+			.idImage = PLANT_MENU_IMG_ID,
+			.idTextbox = TB_PLANT_ID,
+			.isOnDevelopment = true /* TODO: Remove when finished */
+		}
 };
 
 /**
@@ -41,7 +94,7 @@ MenuSelector mSelMainLobby = {
 static void sMenu_MakeArrowPressAnim(Buttons side);
 static void sMenu_ProcessButtonPress(Buttons btn);
 static void sMenu_CreateTextbox(UG_TEXTBOX* txb, UG_U8 id, char *str, bool show, UG_S16 xs, UG_S16 ys);
-static void sMenu_MakeSelectedAnim(MenuStages menu);
+static void sMenu_MakeSelectedAnim(MenuSelector *menu);
 static void sMenu_HideAllTextboxes(void);
 /**
  * ---------------------------------------------------------
@@ -73,7 +126,7 @@ void Menu_MenuDynamics(void)
 			}
 		break;
 		default:
-
+			/* Do Nothing */
 		break;
 	}
 }
@@ -163,39 +216,51 @@ static void sMenu_MakeArrowPressAnim(Buttons side)
 	{
 		/* Do Nothing */
 	}
-
 }
 
 static void sMenu_ProcessButtonPress(Buttons btn)
 {
-	const MenuStages firstMenu = sMainLobby;
-	const MenuStages lastMenu = sPlantAnalysis;
-	//static MenuSelector *currentMenu = &msM;
-	static MenuStages currentMenuSel = sMainLobby;
+	MenuSelector *firstMenu = &MenuSelectorsGroup.mSelMainLobby;
+	MenuSelector *lastMenu = &MenuSelectorsGroup.mSelPlantAnalysis;
+	static MenuSelector *currentMenu = &MenuSelectorsGroup.mSelMainLobby;
 
 	if(iLeft == btn)
 	{
 		/* Change image menu sel */
-		currentMenuSel--;
-		if(currentMenuSel < firstMenu)
-			currentMenuSel = lastMenu;
-		if(sMenu == currentMenuSel)
-			currentMenuSel--;
+		if(currentMenu->menuStage == firstMenu->menuStage)
+		{
+			/* We are on the low bound of the carousel */
+			currentMenu = lastMenu;
+		}
+		else
+		{
+			/* We are inside of the bounds */
+			currentMenu--;
+		}
 	}
 	else if(iRight == btn)
 	{
 		/* Change image menu sel */
-		currentMenuSel++;
-		if(currentMenuSel > lastMenu)
-			currentMenuSel = firstMenu;
-		if(sMenu == currentMenuSel)
-			currentMenuSel++;
+		if(currentMenu->menuStage == lastMenu->menuStage)
+		{
+			/* We are on the top bound of the carousel */
+			currentMenu = firstMenu;
+		}
+		else
+		{
+			/* We are inside of the bounds */
+			currentMenu++;
+		}
 	}
 	else if(iOk == btn || iEncoderSW == btn)
 	{
 		/* Enter to the menu  */
-		sMenu_MakeSelectedAnim(currentMenuSel);
-
+		sMenu_MakeSelectedAnim(currentMenu);
+		if(!currentMenu->isOnDevelopment)
+		{
+			/* We can enter to the menu */
+			UIMainSM_ChangeMenu(currentMenu->menuStage);
+		}
 		return; /* Skip Image processing */
 	}
 	else
@@ -203,80 +268,24 @@ static void sMenu_ProcessButtonPress(Buttons btn)
 		/* Do Nothing */
 	}
 	sMenu_HideAllTextboxes();
-	switch(currentMenuSel)
+	UG_ImageShow(&menuWindow, currentMenu->idImage);
+	UG_TextboxShow(&menuWindow, currentMenu->idTextbox);
+	if(currentMenu->isOnDevelopment)
 	{
-		case sMainLobby:
-			UG_ImageShow(&menuWindow, MAIN_LOBBY_MENU_IMG_ID);
-			UG_TextboxShow(&menuWindow, TB_MAIN_LOBBY_ID);
-			UG_Update();
-		break;
-		case sConfiguration:
-			UG_ImageShow(&menuWindow, CONFIG_MENU_IMG_ID);
-			UG_TextboxShow(&menuWindow, TB_CONFIG_ID);
-			UG_TextboxShow(&menuWindow, TB_VER_PROMPT_ID); /* TODO: Remove when finished */
-			UG_Update();
-		break;
-		case sAbout:
-			UG_ImageShow(&menuWindow, ABOUT_MENU_IMG_ID);
-			UG_TextboxShow(&menuWindow, TB_ABOUT_ID);
-			UG_TextboxShow(&menuWindow, TB_VER_PROMPT_ID); /* TODO: Remove when finished */
-			UG_Update();
-		break;
-		case sPlot:
-			UG_ImageShow(&menuWindow, PLOT_MENU_IMG_ID);
-			UG_TextboxShow(&menuWindow, TB_PLOT_ID);
-			UG_TextboxShow(&menuWindow, TB_VER_PROMPT_ID); /* TODO: Remove when finished */
-			UG_Update();
-		break;
-		case sUSBConfig:
-			UG_ImageShow(&menuWindow, USB_CONFIG_MENU_IMG_ID);
-			UG_TextboxShow(&menuWindow, TB_USB_CONFIG_ID);
-			UG_TextboxShow(&menuWindow, TB_VER_PROMPT_ID); /* TODO: Remove when finished */
-			UG_Update();
-		break;
-		case sPlantAnalysis:
-			UG_ImageShow(&menuWindow, PLANT_MENU_IMG_ID);
-			UG_TextboxShow(&menuWindow, TB_PLANT_ID);
-			UG_TextboxShow(&menuWindow, TB_VER_PROMPT_ID); /* TODO: Remove when finished */
-			UG_Update();
-		break;
-		case sMenu:
-		default:
-		break;
+		/* Need to show the development texbox */
+		UG_TextboxShow(&menuWindow, TB_VER_PROMPT_ID);
 	}
+	else
+	{
+		/* Do Nothing */
+	}
+	UG_Update();
 }
 
-static void sMenu_MakeSelectedAnim(MenuStages menu)
+static void sMenu_MakeSelectedAnim(MenuSelector *menu)
 {
 	const TickType_t AnimDelay = 45; /* x2 MS */
 	const uint16_t AnimTimes = 3;
-	uint8_t id;
-
-	/* Choosing the ID */
-	switch(menu)
-	{
-		case sMainLobby:
-			id = MAIN_LOBBY_MENU_IMG_ID;
-		break;
-		case sConfiguration:
-			id =  CONFIG_MENU_IMG_ID;
-		break;
-		case sAbout:
-			id = ABOUT_MENU_IMG_ID;
-		break;
-		case sPlot:
-			id = PLOT_MENU_IMG_ID;
-		break;
-		case sUSBConfig:
-			id = USB_CONFIG_MENU_IMG_ID;
-		break;
-		case sPlantAnalysis:
-			id = PLANT_MENU_IMG_ID;
-		break;
-		case sMenu:
-		default:
-		break;
-	}
 
 	/* Making the animation */
 	for(uint16_t i = 0; i < AnimTimes; i++)
@@ -284,7 +293,7 @@ static void sMenu_MakeSelectedAnim(MenuStages menu)
 		UG_FillFrame(ICON_X_POS, ICON_Y_POS, ICON_X_POS+120, ICON_Y_POS+120, C_WHITE);
 		UG_Update();
 		osDelay(pdMS_TO_TICKS(AnimDelay));
-		UG_ImageShow(&menuWindow, id);
+		UG_ImageShow(&menuWindow, menu->idImage);
 		UG_Update();
 		osDelay(pdMS_TO_TICKS(AnimDelay));
 	}
@@ -292,13 +301,17 @@ static void sMenu_MakeSelectedAnim(MenuStages menu)
 
 static void sMenu_HideAllTextboxes(void)
 {
-	UG_TextboxHide(&menuWindow, TB_MAIN_LOBBY_ID);
-	UG_TextboxHide(&menuWindow, TB_CONFIG_ID);
-	UG_TextboxHide(&menuWindow, TB_ABOUT_ID);
-	UG_TextboxHide(&menuWindow, TB_PLOT_ID);
-	UG_TextboxHide(&menuWindow, TB_USB_CONFIG_ID);
-	UG_TextboxHide(&menuWindow, TB_PLANT_ID);
-	UG_TextboxHide(&menuWindow, TB_VER_PROMPT_ID);
+	MenuSelector *menu = (MenuSelector *)&MenuSelectorsGroup; /* Pointing to the top of the structure */
+	for(uint16_t i = 0; i < sizeof(MenuSelectorsGroup)/sizeof(MenuSelector); i++, menu++)
+	{
+		/* Hiding all the textboxes */
+		UG_TextboxHide(&menuWindow, menu->idTextbox);
+	}
+	if(menu->isOnDevelopment)
+	{
+		/* Need to hide the prompt textbox */
+		UG_TextboxHide(&menuWindow, TB_VER_PROMPT_ID);
+	}
 	UG_Update();
 }
 

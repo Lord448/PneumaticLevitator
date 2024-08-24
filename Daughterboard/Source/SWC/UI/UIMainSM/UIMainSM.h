@@ -26,9 +26,9 @@
 #define DrawCenterBitmap(bmp) UG_DrawBMP((LCD_WIDTH-bmp->width)/2, (LCD_HEIGHT-bmp->height)/2, bmp)
 
 typedef enum MenuStages {
-	sMainLobby = 0,
+	sMainLobby,
 	sMenu,
-	sConfiguration,
+	sConfigs,
 	sAbout,
 	sPlot,
 	sUSBConfig,
@@ -36,27 +36,14 @@ typedef enum MenuStages {
 	dummy = -1, /* Dummy variable to make the enum signed */
 }MenuStages;
 
-typedef struct MenuState {
-	MenuStages menuStageID;
-	UG_WINDOW  *window;
-}MenuState;
-
 typedef struct UIWindow {
 	UG_WINDOW window;
 	UG_OBJECT *obj_buff;
 	uint8_t obj_len;
 }UIWindow;
 
-extern MenuState msMainLobby;
-extern MenuState msMenu;
-extern MenuState msConfiguration;
-extern MenuState msAbout;
-extern MenuState msPlot;
-extern MenuState msUSBConfig;
-extern MenuState msPlantAnalysis;
-
 void UIMainSM_Init(void);
 void UIMainSM_InfiniteLoop(void);
-void UIMainSM_ChangeMenu(MenuState menu);
+void UIMainSM_ChangeMenu(MenuStages menuStageID);
 
 #endif /* SWC_UI_UIMAINSM_UIMAINSM_H_ */

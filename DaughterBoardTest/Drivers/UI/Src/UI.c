@@ -211,7 +211,7 @@ void vTaskUI(MenuStage *stage, Input *input)
 		case sMenu:
 			vMenu(stage, input);
 		break;
-		case sConfiguration:
+		case sConfigs:
 			vConfigurationMenu(stage, input);
 		break;
 		case sAbout:
