@@ -21,6 +21,7 @@ extern osMessageQueueId_t xFIFO_DistanceHandle;
 extern osMessageQueueId_t xFIFO_RPMHandle;
 extern osMessageQueueId_t xFIFO_ButtonsHandle;
 extern osMessageQueueId_t xFIFO_EncoderDataHandle;
+extern osMessageQueueId_t xFIFO_ActionControlHandle;
 
 UG_WINDOW mainWindow;
 
@@ -38,7 +39,8 @@ static void sMainMenu_ProcessButtonPress(Buttons btnPressed, int16_t *setPoint);
 void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit)
 {
 	static int16_t setPoint = DEFAULT_SET_POINT;
-	uint16_t Distance, rpm;
+	int16_t Distance, rpm;
+	int8_t actionControl;
 	EncoderDir encoderDir;
 
 	if(*isFirstMenuInit)
@@ -52,7 +54,9 @@ void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit)
 	if(osMessageQueueGet(xFIFO_DistanceHandle, &Distance, NULL, 1) == osOK)
 		MainMenu_setDistance(Distance);
 	if(osMessageQueueGet(xFIFO_RPMHandle, &rpm, NULL, 1) == osOK)
-		MainMenu_setActionControl(rpm);
+		MainMenu_setRPM(rpm);
+	if(osMessageQueueGet(xFIFO_ActionControlHandle, &actionControl, NULL, 1) == osOK)
+		MainMenu_setActionControl(actionControl);
 	if(osMessageQueueGet(xFIFO_EncoderDataHandle, &encoderDir, NULL, 1) == osOK)
 	{
 		/* The encoder has been moved */
@@ -82,6 +86,7 @@ void MainMenu_buildObjects(void)
 	static UG_PROGRESS pgbDistance;
 	static UG_PROGRESS pgbSetPoint;
 	static UG_PROGRESS pgbActionControl;
+	static UG_PROGRESS pgbRPM;
 	/* TextBox */
 	static UG_TEXTBOX  tbRPM;
 	static UG_TEXTBOX  tbRPMStr;
@@ -90,6 +95,7 @@ void MainMenu_buildObjects(void)
 	static UG_TEXTBOX  tbSetPoint;
 	static UG_TEXTBOX  tbSetPointStr;
 	static UG_TEXTBOX  tbCtrlAction;
+	static UG_TEXTBOX  tbCtrlActionStr;
 	static UG_TEXTBOX  tbActionMode;
 	static UG_TEXTBOX  tbManual;
 	static UG_TEXTBOX  tbPID;
@@ -123,17 +129,22 @@ void MainMenu_buildObjects(void)
   UG_ProgressCreate(&mainWindow, &pgbDistance, PROGRESS_BAR_DISTANCE_ID,
   		PROGRESS_BAR_X_CENTRAL_LOC_DISTANCE-PROGRESS_BAR_OFFSET, PROGRESS_BAR_Y_START_LOC,
 			PROGRESS_BAR_X_CENTRAL_LOC_DISTANCE+PROGRESS_BAR_OFFSET, PROGRESS_BAR_Y_END_LOC);
-  UG_ProgressSetForeColor(&mainWindow, PGB_ID_0, C_ROYAL_BLUE);
+  UG_ProgressSetForeColor(&mainWindow, PROGRESS_BAR_DISTANCE_ID, C_ROYAL_BLUE);
   /* Set point */
   UG_ProgressCreate(&mainWindow, &pgbSetPoint, PROGRESS_BAR_SET_POINT_ID,
   		PROGRESS_BAR_X_CENTRAL_LOC_SET_POINT-PROGRESS_BAR_OFFSET, PROGRESS_BAR_Y_START_LOC,
 			PROGRESS_BAR_X_CENTRAL_LOC_SET_POINT+PROGRESS_BAR_OFFSET, PROGRESS_BAR_Y_END_LOC);
-  UG_ProgressSetForeColor(&mainWindow, PGB_ID_1, C_ROYAL_BLUE);
+  UG_ProgressSetForeColor(&mainWindow, PROGRESS_BAR_SET_POINT_ID, C_ROYAL_BLUE);
   /* Action Control */
   UG_ProgressCreate(&mainWindow, &pgbActionControl, PROGRESS_BAR_ACTION_CONTROL_ID,
   		PROGRESS_BAR_X_CENTRAL_LOC_ACTION_CONTROL-PROGRESS_BAR_OFFSET, PROGRESS_BAR_Y_START_LOC,
 			PROGRESS_BAR_X_CENTRAL_LOC_ACTION_CONTROL+PROGRESS_BAR_OFFSET, PROGRESS_BAR_Y_END_LOC);
-  UG_ProgressSetForeColor(&mainWindow, PGB_ID_2, C_ROYAL_BLUE);
+  UG_ProgressSetForeColor(&mainWindow, PROGRESS_BAR_ACTION_CONTROL_ID, C_ROYAL_BLUE);
+  /* RPM */
+  UG_ProgressCreate(&mainWindow, &pgbRPM, PROGRESS_BAR_RPM_ID,
+  		PROGRESS_BAR_X_CENTRAL_LOC_RPM-PROGRESS_BAR_OFFSET, PROGRESS_BAR_Y_START_LOC,
+			PROGRESS_BAR_X_CENTRAL_LOC_RPM+PROGRESS_BAR_OFFSET, PROGRESS_BAR_Y_END_LOC);
+  UG_ProgressSetForeColor(&mainWindow, PROGRESS_BAR_RPM_ID, C_ROYAL_BLUE);
 
   /* Setting text boxes */
   /* RPM*/
@@ -145,17 +156,17 @@ void MainMenu_buildObjects(void)
   UI_TextboxCreate(&mainWindow, &tbRPMStr, TB_RPM_STR_ID,
   		TB_RPM_STR_X_INIT, TB_RPM_STR_Y,
 			TB_RPM_STR_X_INIT+(TB_RPM_STR_CHARS*TEXTBOX_FONT_X)-10, TB_RPM_STR_Y+TEXTBOX_FONT_Y);
-  UG_TextboxSetText(&mainWindow, TB_RPM_STR_ID, "10000");
+  UG_TextboxSetText(&mainWindow, TB_RPM_STR_ID, "5200");
   /* Distance */
   UI_TextboxCreate(&mainWindow, &tbDistance, TB_DISTANCE_ID,
   		TB_DISTANCE_INIT, TB_DISTANCE_Y,
-			(TB_DISTANCE_CHARS*TEXTBOX_FONT_X)-40, TB_DISTANCE_Y+TEXTBOX_FONT_Y);
+			(TB_DISTANCE_CHARS*TEXTBOX_FONT_X)-50, TB_DISTANCE_Y+TEXTBOX_FONT_Y);
   UG_TextboxSetText(&mainWindow, TB_DISTANCE_ID, "Distancia");
   /* Distance STR */
   UI_TextboxCreate(&mainWindow, &tbDistanceStr, TB_DISTANCE_STR_ID,
   		TB_DISTANCE_STR_INIT, TB_DISTANCE_STR_Y,
 			TB_DISTANCE_STR_INIT+(TB_DISTANCE_STR_CHARS*TEXTBOX_FONT_X)-10, TB_DISTANCE_STR_Y+TEXTBOX_FONT_Y);
-	UG_TextboxSetText(&mainWindow, TB_DISTANCE_STR_ID, "500");
+	UG_TextboxSetText(&mainWindow, TB_DISTANCE_STR_ID, "0");
   /* SetPoint */
   UI_TextboxCreate(&mainWindow, &tbSetPoint, TB_SET_POINT_ID,
   		TB_SET_POINT_INIT, TB_SET_POINT_Y,
@@ -169,8 +180,13 @@ void MainMenu_buildObjects(void)
   /* Control Action */
   UI_TextboxCreate(&mainWindow, &tbCtrlAction, TB_CTRL_ACTION_ID,
   		TB_CTRL_ACTION_INIT, TB_CTRL_ACTION_Y,
-			TB_CTRL_ACTION_INIT+(TB_ACTION_MODE_CHARS*TEXTBOX_FONT_X)-10, TB_CTRL_ACTION_Y+TEXTBOX_FONT_Y);
-  UG_TextboxSetText(&mainWindow, TB_CTRL_ACTION_ID, "Accion Ctrl");
+			TB_CTRL_ACTION_INIT+(TB_ACTION_MODE_CHARS*TEXTBOX_FONT_X)-35, TB_CTRL_ACTION_Y+TEXTBOX_FONT_Y);
+  UG_TextboxSetText(&mainWindow, TB_CTRL_ACTION_ID, "Act Ctrl");
+  /* Control Action STR */
+  UI_TextboxCreate(&mainWindow, &tbCtrlActionStr, TB_CTRL_ACT_STR_ID,
+  		TB_CTRL_ACT_STR_INIT, TB_CTRL_ACT_STR_Y,
+			TB_CTRL_ACT_STR_INIT+(TB_CTRL_ACT_STR_CHARS*TEXTBOX_FONT_X)-10, TB_CTRL_ACT_STR_Y+TEXTBOX_FONT_Y);
+  UG_TextboxSetText(&mainWindow, TB_CTRL_ACT_STR_ID, "100");
   /* Action Mode */
   UI_TextboxCreate(&mainWindow, &tbActionMode, TB_ACTION_MODE_ID,
   		TB_ACTION_MODE_INIT, TB_ACTION_MODE_Y,
@@ -270,11 +286,13 @@ result_t MainMenu_setControlConstants(float kp, float ki, float kd)
 	return OK;
 }
 
-result_t MainMenu_setDistance(uint16_t distance)
+result_t MainMenu_setDistance(int16_t distance)
 {
 	UG_U8 progress = 0;
 	char Buffer[8] = "";
-
+	/* COM Error Check */
+	if(COM_MSG_ERROR_CODE == distance)
+		distance = 0; /* Error Handling */
 	/* Changing the Textbox */
 	sprintf(Buffer, "%d", distance);
 	if(UG_RESULT_OK != UG_TextboxSetText(&mainWindow, TB_DISTANCE_STR_ID, Buffer))
@@ -305,18 +323,36 @@ result_t MainMenu_setSetPoint(uint16_t setPoint)
 	return OK;
 }
 
-result_t MainMenu_setActionControl(uint16_t rpm)
+result_t MainMenu_setRPM(int16_t rpm)
 {
 	UG_U8 progress = 0;
 	char Buffer[8] = "";
 
+	if(COM_MSG_ERROR_CODE == rpm)
+		rpm = 0;/* Error Handling */ /* TODO: Consider put "Error" */
 	sprintf(Buffer, "%d", rpm);
 	if(UG_RESULT_OK != UG_TextboxSetText(&mainWindow, TB_RPM_STR_ID, Buffer))
 		return Error;
 	/* Making percentage */
 	progress = rpm * 100 / MAX_RPM;
 	/* Changing the Progress bar */
-	if(UG_RESULT_OK != UG_ProgressSetProgress(&mainWindow, PROGRESS_BAR_ACTION_CONTROL_ID, progress))
+	if(UG_RESULT_OK != UG_ProgressSetProgress(&mainWindow, PROGRESS_BAR_RPM_ID, progress))
+		return Error;
+	UG_Update();
+	return OK;
+}
+
+result_t MainMenu_setActionControl(int8_t actionControl)
+{
+	char Buffer[8] = "";
+
+	if(COM_MSG_ERROR_CODE == actionControl)
+		actionControl = 0;/* Error Handling */ /* TODO: Consider put "Error" */
+	sprintf(Buffer, "%d", actionControl);
+	if(UG_RESULT_OK != UG_TextboxSetText(&mainWindow, TB_CTRL_ACT_STR_ID, Buffer))
+		return Error;
+	/* Changing the Progress bar */
+	if(UG_RESULT_OK != UG_ProgressSetProgress(&mainWindow, PROGRESS_BAR_ACTION_CONTROL_ID, actionControl))
 		return Error;
 	UG_Update();
 	return OK;

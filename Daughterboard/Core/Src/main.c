@@ -33,9 +33,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
-typedef StaticQueue_t osStaticMessageQDef_t;
 typedef StaticSemaphore_t osStaticSemaphoreDef_t;
-typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -189,69 +187,38 @@ const osMessageQueueAttr_t xFIFOGetGPUBuf_attributes = {
 };
 /* Definitions for xFIFO_Buttons */
 osMessageQueueId_t xFIFO_ButtonsHandle;
-uint8_t xFIFO_ButtonsBuffer[ 32 * sizeof( Buttons ) ];
-osStaticMessageQDef_t xFIFO_ButtonsControlBlock;
 const osMessageQueueAttr_t xFIFO_Buttons_attributes = {
-  .name = "xFIFO_Buttons",
-  .cb_mem = &xFIFO_ButtonsControlBlock,
-  .cb_size = sizeof(xFIFO_ButtonsControlBlock),
-  .mq_mem = &xFIFO_ButtonsBuffer,
-  .mq_size = sizeof(xFIFO_ButtonsBuffer)
+  .name = "xFIFO_Buttons"
 };
 /* Definitions for xFIFO_UARTDataTX */
 osMessageQueueId_t xFIFO_UARTDataTXHandle;
-uint8_t xFIFO_DataTXBuffer[ 16 * sizeof( PDU_t ) ];
-osStaticMessageQDef_t xFIFO_DataTXControlBlock;
 const osMessageQueueAttr_t xFIFO_UARTDataTX_attributes = {
-  .name = "xFIFO_UARTDataTX",
-  .cb_mem = &xFIFO_DataTXControlBlock,
-  .cb_size = sizeof(xFIFO_DataTXControlBlock),
-  .mq_mem = &xFIFO_DataTXBuffer,
-  .mq_size = sizeof(xFIFO_DataTXBuffer)
+  .name = "xFIFO_UARTDataTX"
 };
 /* Definitions for xFIFO_Distance */
 osMessageQueueId_t xFIFO_DistanceHandle;
-uint8_t xFIFO_DistanceBuffer[ 32 * sizeof( uint16_t ) ];
-osStaticMessageQDef_t xFIFO_DistanceControlBlock;
 const osMessageQueueAttr_t xFIFO_Distance_attributes = {
-  .name = "xFIFO_Distance",
-  .cb_mem = &xFIFO_DistanceControlBlock,
-  .cb_size = sizeof(xFIFO_DistanceControlBlock),
-  .mq_mem = &xFIFO_DistanceBuffer,
-  .mq_size = sizeof(xFIFO_DistanceBuffer)
+  .name = "xFIFO_Distance"
 };
 /* Definitions for xFIFO_RPM */
 osMessageQueueId_t xFIFO_RPMHandle;
-uint8_t xFIFO_RPMBuffer[ 32 * sizeof( uint16_t ) ];
-osStaticMessageQDef_t xFIFO_RPMControlBlock;
 const osMessageQueueAttr_t xFIFO_RPM_attributes = {
-  .name = "xFIFO_RPM",
-  .cb_mem = &xFIFO_RPMControlBlock,
-  .cb_size = sizeof(xFIFO_RPMControlBlock),
-  .mq_mem = &xFIFO_RPMBuffer,
-  .mq_size = sizeof(xFIFO_RPMBuffer)
+  .name = "xFIFO_RPM"
 };
 /* Definitions for xFIFO_ControlConstants */
 osMessageQueueId_t xFIFO_ControlConstantsHandle;
-uint8_t xFIFO_ControlConstantsBuffer[ 4 * sizeof( ControlConst ) ];
-osStaticMessageQDef_t xFIFO_ControlConstantsControlBlock;
 const osMessageQueueAttr_t xFIFO_ControlConstants_attributes = {
-  .name = "xFIFO_ControlConstants",
-  .cb_mem = &xFIFO_ControlConstantsControlBlock,
-  .cb_size = sizeof(xFIFO_ControlConstantsControlBlock),
-  .mq_mem = &xFIFO_ControlConstantsBuffer,
-  .mq_size = sizeof(xFIFO_ControlConstantsBuffer)
+  .name = "xFIFO_ControlConstants"
 };
 /* Definitions for xFIFO_EncoderData */
 osMessageQueueId_t xFIFO_EncoderDataHandle;
-uint8_t xFIFO_EncoderDataBuffer[ 64 * sizeof( EncoderDir ) ];
-osStaticMessageQDef_t xFIFO_EncoderDataControlBlock;
 const osMessageQueueAttr_t xFIFO_EncoderData_attributes = {
-  .name = "xFIFO_EncoderData",
-  .cb_mem = &xFIFO_EncoderDataControlBlock,
-  .cb_size = sizeof(xFIFO_EncoderDataControlBlock),
-  .mq_mem = &xFIFO_EncoderDataBuffer,
-  .mq_size = sizeof(xFIFO_EncoderDataBuffer)
+  .name = "xFIFO_EncoderData"
+};
+/* Definitions for xFIFO_ActionControl */
+osMessageQueueId_t xFIFO_ActionControlHandle;
+const osMessageQueueAttr_t xFIFO_ActionControl_attributes = {
+  .name = "xFIFO_ActionControl"
 };
 /* Definitions for xSemaphoreDMACplt3 */
 osSemaphoreId_t xSemaphoreDMACplt3Handle;
@@ -306,57 +273,50 @@ const osSemaphoreAttr_t xSemaphore_UARTTxCplt_attributes = {
   .cb_mem = &xSemaphore_UARTTxCpltControlBlock,
   .cb_size = sizeof(xSemaphore_UARTTxCpltControlBlock),
 };
-/* Definitions for xEventFinishedInit */
-osEventFlagsId_t xEventFinishedInitHandle;
-const osEventFlagsAttr_t xEventFinishedInit_attributes = {
-  .name = "xEventFinishedInit"
+/* Definitions for xEvent_UIFinishedInit */
+osEventFlagsId_t xEvent_UIFinishedInitHandle;
+const osEventFlagsAttr_t xEvent_UIFinishedInit_attributes = {
+  .name = "xEvent_UIFinishedInit"
 };
-/* Definitions for xEventDID */
-osEventFlagsId_t xEventDIDHandle;
-const osEventFlagsAttr_t xEventDID_attributes = {
-  .name = "xEventDID"
+/* Definitions for xEvent_DID */
+osEventFlagsId_t xEvent_DIDHandle;
+const osEventFlagsAttr_t xEvent_DID_attributes = {
+  .name = "xEvent_DID"
 };
-/* Definitions for xEventDTC */
-osEventFlagsId_t xEventDTCHandle;
-const osEventFlagsAttr_t xEventDTC_attributes = {
-  .name = "xEventDTC"
+/* Definitions for xEvent_DTC */
+osEventFlagsId_t xEvent_DTCHandle;
+const osEventFlagsAttr_t xEvent_DTC_attributes = {
+  .name = "xEvent_DTC"
 };
 /* Definitions for xEvent_ButtonsFIFOEnabled */
 osEventFlagsId_t xEvent_ButtonsFIFOEnabledHandle;
-osStaticEventGroupDef_t xEvent_ButtonsFIFOEnabledControlBlock;
 const osEventFlagsAttr_t xEvent_ButtonsFIFOEnabled_attributes = {
-  .name = "xEvent_ButtonsFIFOEnabled",
-  .cb_mem = &xEvent_ButtonsFIFOEnabledControlBlock,
-  .cb_size = sizeof(xEvent_ButtonsFIFOEnabledControlBlock),
+  .name = "xEvent_ButtonsFIFOEnabled"
 };
 /* Definitions for xEvent_FatalError */
 osEventFlagsId_t xEvent_FatalErrorHandle;
-osStaticEventGroupDef_t xEvent_FatalErrorControlBlock;
 const osEventFlagsAttr_t xEvent_FatalError_attributes = {
-  .name = "xEvent_FatalError",
-  .cb_mem = &xEvent_FatalErrorControlBlock,
-  .cb_size = sizeof(xEvent_FatalErrorControlBlock),
+  .name = "xEvent_FatalError"
 };
 /* Definitions for xEvent_UARTSendType */
 osEventFlagsId_t xEvent_UARTSendTypeHandle;
-osStaticEventGroupDef_t xEvent_UARTSendTypeControlBlock;
 const osEventFlagsAttr_t xEvent_UARTSendType_attributes = {
-  .name = "xEvent_UARTSendType",
-  .cb_mem = &xEvent_UARTSendTypeControlBlock,
-  .cb_size = sizeof(xEvent_UARTSendTypeControlBlock),
+  .name = "xEvent_UARTSendType"
 };
 /* Definitions for xEvent_ButtonsEnabled */
 osEventFlagsId_t xEvent_ButtonsEnabledHandle;
-osStaticEventGroupDef_t xEvent_ButtonsEnabledControlBlock;
 const osEventFlagsAttr_t xEvent_ButtonsEnabled_attributes = {
-  .name = "xEvent_ButtonsEnabled",
-  .cb_mem = &xEvent_ButtonsEnabledControlBlock,
-  .cb_size = sizeof(xEvent_ButtonsEnabledControlBlock),
+  .name = "xEvent_ButtonsEnabled"
 };
 /* Definitions for XEvent_ButtonPressed */
 osEventFlagsId_t XEvent_ButtonPressedHandle;
 const osEventFlagsAttr_t XEvent_ButtonPressed_attributes = {
   .name = "XEvent_ButtonPressed"
+};
+/* Definitions for xEvent_UIConfigs */
+osEventFlagsId_t xEvent_UIConfigsHandle;
+const osEventFlagsAttr_t xEvent_UIConfigs_attributes = {
+  .name = "xEvent_UIConfigs"
 };
 /* USER CODE BEGIN PV */
 osMemoryPoolId_t MemoryPool8;  /*Generic Memory Pool designed for members of 1 Byte size*/
@@ -492,16 +452,19 @@ int main(void)
   xFIFO_UARTDataTXHandle = osMessageQueueNew (16, sizeof(PDU_t), &xFIFO_UARTDataTX_attributes);
 
   /* creation of xFIFO_Distance */
-  xFIFO_DistanceHandle = osMessageQueueNew (32, sizeof(uint16_t), &xFIFO_Distance_attributes);
+  xFIFO_DistanceHandle = osMessageQueueNew (32, sizeof(int16_t), &xFIFO_Distance_attributes);
 
   /* creation of xFIFO_RPM */
-  xFIFO_RPMHandle = osMessageQueueNew (32, sizeof(uint16_t), &xFIFO_RPM_attributes);
+  xFIFO_RPMHandle = osMessageQueueNew (32, sizeof(int16_t), &xFIFO_RPM_attributes);
 
   /* creation of xFIFO_ControlConstants */
   xFIFO_ControlConstantsHandle = osMessageQueueNew (4, sizeof(ControlConst), &xFIFO_ControlConstants_attributes);
 
   /* creation of xFIFO_EncoderData */
   xFIFO_EncoderDataHandle = osMessageQueueNew (64, sizeof(EncoderDir), &xFIFO_EncoderData_attributes);
+
+  /* creation of xFIFO_ActionControl */
+  xFIFO_ActionControlHandle = osMessageQueueNew (32, sizeof(int16_t), &xFIFO_ActionControl_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -537,14 +500,14 @@ int main(void)
   /* USER CODE END RTOS_THREADS */
 
   /* Create the event(s) */
-  /* creation of xEventFinishedInit */
-  xEventFinishedInitHandle = osEventFlagsNew(&xEventFinishedInit_attributes);
+  /* creation of xEvent_UIFinishedInit */
+  xEvent_UIFinishedInitHandle = osEventFlagsNew(&xEvent_UIFinishedInit_attributes);
 
-  /* creation of xEventDID */
-  xEventDIDHandle = osEventFlagsNew(&xEventDID_attributes);
+  /* creation of xEvent_DID */
+  xEvent_DIDHandle = osEventFlagsNew(&xEvent_DID_attributes);
 
-  /* creation of xEventDTC */
-  xEventDTCHandle = osEventFlagsNew(&xEventDTC_attributes);
+  /* creation of xEvent_DTC */
+  xEvent_DTCHandle = osEventFlagsNew(&xEvent_DTC_attributes);
 
   /* creation of xEvent_ButtonsFIFOEnabled */
   xEvent_ButtonsFIFOEnabledHandle = osEventFlagsNew(&xEvent_ButtonsFIFOEnabled_attributes);
@@ -560,6 +523,9 @@ int main(void)
 
   /* creation of XEvent_ButtonPressed */
   XEvent_ButtonPressedHandle = osEventFlagsNew(&XEvent_ButtonPressed_attributes);
+
+  /* creation of xEvent_UIConfigs */
+  xEvent_UIConfigsHandle = osEventFlagsNew(&xEvent_UIConfigs_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
 

@@ -262,7 +262,7 @@ const osMessageQueueAttr_t xFIFO_DiagShort_attributes = {
 };
 /* Definitions for xFIFO_COMDistance */
 osMessageQueueId_t xFIFO_COMDistanceHandle;
-uint8_t xFIFO_COMDistanceBuffer[ 16 * sizeof( int16_t ) ];
+uint8_t xFIFO_COMDistanceBuffer[ 32 * sizeof( int16_t ) ];
 osStaticMessageQDef_t xFIFO_COMDistanceControlBlock;
 const osMessageQueueAttr_t xFIFO_COMDistance_attributes = {
   .name = "xFIFO_COMDistance",
@@ -281,6 +281,17 @@ const osMessageQueueAttr_t xFIFO_COMRPM_attributes = {
   .cb_size = sizeof(xFIFO_COMRPMControlBlock),
   .mq_mem = &xFIFO_COMRPMBuffer,
   .mq_size = sizeof(xFIFO_COMRPMBuffer)
+};
+/* Definitions for xFIFO_COMActionControl */
+osMessageQueueId_t xFIFO_COMActionControlHandle;
+uint8_t xFIFO_COMActionControlBuffer[ 32 * sizeof( int16_t ) ];
+osStaticMessageQDef_t xFIFO_COMActionControlControlBlock;
+const osMessageQueueAttr_t xFIFO_COMActionControl_attributes = {
+  .name = "xFIFO_COMActionControl",
+  .cb_mem = &xFIFO_COMActionControlControlBlock,
+  .cb_size = sizeof(xFIFO_COMActionControlControlBlock),
+  .mq_mem = &xFIFO_COMActionControlBuffer,
+  .mq_size = sizeof(xFIFO_COMActionControlBuffer)
 };
 /* Definitions for xTimer_UARTSend */
 osTimerId_t xTimer_UARTSendHandle;
@@ -583,10 +594,13 @@ int main(void)
   xFIFO_DiagShortHandle = osMessageQueueNew (16, sizeof(PDU_t), &xFIFO_DiagShort_attributes);
 
   /* creation of xFIFO_COMDistance */
-  xFIFO_COMDistanceHandle = osMessageQueueNew (16, sizeof(int16_t), &xFIFO_COMDistance_attributes);
+  xFIFO_COMDistanceHandle = osMessageQueueNew (32, sizeof(int16_t), &xFIFO_COMDistance_attributes);
 
   /* creation of xFIFO_COMRPM */
   xFIFO_COMRPMHandle = osMessageQueueNew (32, sizeof(int16_t), &xFIFO_COMRPM_attributes);
+
+  /* creation of xFIFO_COMActionControl */
+  xFIFO_COMActionControlHandle = osMessageQueueNew (32, sizeof(int16_t), &xFIFO_COMActionControl_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */

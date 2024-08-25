@@ -31,14 +31,14 @@
 /* Number of frames of the initial messages (for reception)*/
 #define COM_UART_INIT_NUMBER_FRAMES 13
 /* Number of frames of the periodic messages (for reception)*/
-#define COM_UART_PERIODIC_NUMBER_FRAMES 5
+#define COM_UART_PERIODIC_NUMBER_FRAMES 6
 /* Number that the MCU will send to identify the initial frame */
 #define COM_UART_INIT_FRAME_VALUE 0xA5
 /* Time of the send of the periodical frames */
 #define COM_UART_PERIOD_FOR_DATA_TX 10 /*MS*/
 
 /* Error code for the RPM & distance Frames (could not get the value)*/
-#define COM_MSG_ERROR_CODE -1
+#define COM_MSG_ERROR_CODE (int16_t) -1
 /* Number of counts to assume errors on the FIFO get for distance & RPM */
 #define COM_FIFO_EMPTY_COUNTS_FOR_ERROR 10
 

@@ -27,6 +27,7 @@ extern osMessageQueueId_t xFIFO_ControlConstantsHandle;
 extern osMessageQueueId_t xFIFO_DistanceHandle;
 extern osMessageQueueId_t xFIFO_RPMHandle;
 extern osMessageQueueId_t xFIFO_UARTDataTXHandle;
+extern osMessageQueueId_t xFIFO_ActionControlHandle;
 
 extern osSemaphoreId_t xSemaphore_InitMotherHandle;
 extern osSemaphoreId_t xSemaphore_UARTTxCpltHandle;
@@ -63,7 +64,7 @@ void vTaskCOM(void *argument)
 	osStatus_t status;
 	char statsBuffer[1024] = {0};
 	bool syncComInProcess = false;
-	uint16_t distance, rpm;
+	int16_t distance, rpm, actionControl;
 	ControlConst controlConst;
 	do {
 		/* Waiting to receive the init frame of Motherboard */
@@ -134,9 +135,12 @@ void vTaskCOM(void *argument)
 				/* Decoding the message */
 				distance = COM_UARTRxBuffer[1] | (COM_UARTRxBuffer[2]<<8);
 				rpm = COM_UARTRxBuffer[3] | (COM_UARTRxBuffer[4]<<8);
+				actionControl = COM_UARTRxBuffer[5];
 				/* Sending to the FIFOs */
+				/* TODO: Add logic for FIFO reseting when overflow */
 				osMessageQueuePut(xFIFO_DistanceHandle, &distance, 0U, osNoTimeout);
 				osMessageQueuePut(xFIFO_RPMHandle, &rpm, 0U, osNoTimeout);
+				osMessageQueuePut(xFIFO_ActionControlHandle, &actionControl, 0U, osNoTimeout);
 			break;
 			default:
 				/* Unknown message, Do Nothing */

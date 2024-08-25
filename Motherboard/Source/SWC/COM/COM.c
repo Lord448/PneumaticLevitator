@@ -25,6 +25,7 @@ extern osThreadAttr_t TaskSensor_attributes;
 extern osMessageQueueId_t xFIFO_COMHandle;
 extern osMessageQueueId_t xFIFO_COMDistanceHandle;
 extern osMessageQueueId_t xFIFO_COMRPMHandle;
+extern osMessageQueueId_t xFIFO_COMActionControlHandle;
 
 extern osTimerId_t xTimer_UARTSendHandle;
 extern osTimerId_t xTimer_WdgUARTHandle;
@@ -307,8 +308,10 @@ void vTimer_UARTSendCallback(void *argument)
 {
 	static int16_t distance = 0;
 	static int16_t RPM = 0;
+	static int16_t actionControl = 0;
 	static uint16_t emptyFIFOCounterDist = 0;
 	static uint16_t emptyFIFOCounterRPM = 0;
+	static uint16_t emptyFIFOCounterAct = 0;
 	static uint8_t buffer[COM_UART_PERIODIC_NUMBER_FRAMES+1] = {0};
 	volatile uint8_t *bytePointer;
 	uint8_t acknowledge = 1;
@@ -335,10 +338,12 @@ void vTimer_UARTSendCallback(void *argument)
 		status = osMessageQueueGet(xFIFO_COMDistanceHandle, &distance, NULL, osNoTimeout);
 		if(osOK != status)
 		{
+			/* The FIFO is empty */
 			emptyFIFOCounterDist++;
 		}
 		else
 		{
+			/* All Good */
 			emptyFIFOCounterDist = 0;
 		}
 		/* Checking value of distance */
@@ -352,11 +357,12 @@ void vTimer_UARTSendCallback(void *argument)
 			/* Do Nothing */
 		}
 
-		/* Send Distance data */
+		/* Load Distance data */
 		if(COM_FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterDist)
 		{
 			/* Send error code */
 			buffer[1] = COM_MSG_ERROR_CODE;
+			buffer[2] = COM_MSG_ERROR_CODE;
 			/* TODO Trigger DTC Not Receiving Distance FIFO */
 		}
 		else
@@ -376,18 +382,21 @@ void vTimer_UARTSendCallback(void *argument)
 		status = osMessageQueueGet(xFIFO_COMRPMHandle, &RPM, NULL, osNoTimeout);
 		if(osOK != status)
 		{
+			/* The FIFO is empty */
 			emptyFIFOCounterRPM++;
 		}
 		else
 		{
+			/* All Good */
 			emptyFIFOCounterRPM = 0;
 		}
 
-		/* Send RPM data */
+		/* Load RPM data */
 		if(COM_FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterRPM)
 		{
 			/* Send error code */
 			buffer[3] = COM_MSG_ERROR_CODE;
+			buffer[4] = COM_MSG_ERROR_CODE;
 			/* TODO Trigger DTC Not Receiving Distance FIFO */
 		}
 		else
@@ -400,14 +409,40 @@ void vTimer_UARTSendCallback(void *argument)
 			buffer[4] = *bytePointer;
 		}
 	}
+	/* ACTION CONTROL PROCESSING */
+	{
+		status = osMessageQueueGet(xFIFO_COMActionControlHandle, &actionControl, NULL, osNoTimeout);
+		if(osOK != status)
+		{
+			/* The FIFO is empty */
+			emptyFIFOCounterAct++;
+		}
+		else
+		{
+			/* All Good */
+			emptyFIFOCounterAct = 0;
+		}
 
+		/* Load Action Control Data */
+		if(COM_FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterAct)
+		{
+			/* Send Error Code */
+			buffer[5] = COM_MSG_ERROR_CODE;
+			/* TODO: Trigger DTC Not receiving action control */
+		}
+		else
+		{
+			/* If there's no data on the FIFO, the bus will take the last value*/
+			buffer[5] = actionControl;
+		}
+	}
 	/* TODO: ON DEMAND MSG PROCESS */
 	{
 
 	}
 	osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, osWaitForever);
 	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)buffer, COM_UART_PERIODIC_NUMBER_FRAMES);
-	bytePointer = (uint8_t *)&RPM;
+	bytePointer = (uint8_t *)&RPM; /* TODO: Stubbed code */
 }
 
 /**

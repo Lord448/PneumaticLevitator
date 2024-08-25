@@ -27,9 +27,10 @@
  * 					       PROGRESS BAR SYMBOLS
  * ---------------------------------------------------------
  */
-#define PROGRESS_BAR_X_CENTRAL_LOC_DISTANCE       36
-#define PROGRESS_BAR_X_CENTRAL_LOC_SET_POINT      36+80
-#define PROGRESS_BAR_X_CENTRAL_LOC_ACTION_CONTROL 36+80+80
+#define PROGRESS_BAR_X_CENTRAL_LOC_DISTANCE       28
+#define PROGRESS_BAR_X_CENTRAL_LOC_SET_POINT      PROGRESS_BAR_X_CENTRAL_LOC_DISTANCE+68
+#define PROGRESS_BAR_X_CENTRAL_LOC_ACTION_CONTROL PROGRESS_BAR_X_CENTRAL_LOC_SET_POINT+62
+#define PROGRESS_BAR_X_CENTRAL_LOC_RPM						PROGRESS_BAR_X_CENTRAL_LOC_ACTION_CONTROL+50
 #define PROGRESS_BAR_OFFSET 10
 #define PROGRESS_BAR_Y_START_LOC 95
 #define PROGRESS_BAR_Y_END_LOC 190
@@ -37,6 +38,7 @@
 #define PROGRESS_BAR_DISTANCE_ID       PGB_ID_0
 #define PROGRESS_BAR_SET_POINT_ID      PGB_ID_1
 #define PROGRESS_BAR_ACTION_CONTROL_ID PGB_ID_2
+#define PROGRESS_BAR_RPM_ID 					 PGB_ID_3
 
 /**
  * ---------------------------------------------------------
@@ -66,33 +68,37 @@
 
 /* Date */
 /* RPM */
-#define TB_RPM_X_INIT          LCD_WIDTH-80
-#define TB_RPM_Y						   76
+#define TB_RPM_X_INIT          LCD_WIDTH-45
+#define TB_RPM_Y						   PROGRESS_BAR_Y_END_LOC+5
 #define TB_RPM_CHARS           charslen("RPM")
 /* RPM STR*/
-#define TB_RPM_STR_X_INIT      TB_RPM_X_INIT+(TB_RPM_CHARS*TEXTBOX_FONT_X)-2
-#define TB_RPM_STR_Y				   TB_RPM_Y
+#define TB_RPM_STR_X_INIT      LCD_WIDTH-50
+#define TB_RPM_STR_Y				   76
 #define TB_RPM_STR_CHARS       charslen("5000")
 /* Distance */
-#define TB_DISTANCE_INIT       5
+#define TB_DISTANCE_INIT       0
 #define TB_DISTANCE_Y				   PROGRESS_BAR_Y_END_LOC+5
 #define TB_DISTANCE_CHARS      charslen("Distancia")
 /* Distance STR */
-#define TB_DISTANCE_STR_INIT   22
-#define TB_DISTANCE_STR_Y		   TB_RPM_Y
+#define TB_DISTANCE_STR_INIT   15
+#define TB_DISTANCE_STR_Y		   TB_RPM_STR_Y
 #define TB_DISTANCE_STR_CHARS  charslen("500")
 /* SetPoint */
-#define TB_SET_POINT_INIT      TB_DISTANCE_INIT+85
+#define TB_SET_POINT_INIT      TB_DISTANCE_INIT+70
 #define TB_SET_POINT_Y			   PROGRESS_BAR_Y_END_LOC+5
 #define TB_SET_POINT_CHARS     charslen("SetPoint")
 /* SetPoint STR */
-#define TB_SET_POINT_STR_INIT  TB_DISTANCE_STR_INIT+80
-#define TB_SET_POINT_STR_Y		 TB_RPM_Y
+#define TB_SET_POINT_STR_INIT  TB_DISTANCE_STR_INIT+68
+#define TB_SET_POINT_STR_Y		 TB_RPM_STR_Y
 #define TB_SET_POINT_STR_CHARS charslen("500")
 /* Control Action */
-#define TB_CTRL_ACTION_INIT    TB_SET_POINT_INIT+70
+#define TB_CTRL_ACTION_INIT    TB_SET_POINT_INIT+65
 #define TB_CTRL_ACTION_Y		   PROGRESS_BAR_Y_END_LOC+5
 #define TB_CTRL_ACTION_CHARS   charslen("Accion Ctrl")
+/* Control Action STR */
+#define TB_CTRL_ACT_STR_INIT   TB_SET_POINT_INIT+75
+#define TB_CTRL_ACT_STR_Y		   TB_RPM_STR_Y
+#define TB_CTRL_ACT_STR_CHARS  charslen("100")
 /* Action Mode */
 #define TB_ACTION_MODE_INIT    TB_SET_POINT_STR_INIT-10
 #define TB_ACTION_MODE_Y		   0
@@ -155,9 +161,10 @@ result_t MainMenu_setKP(float kp);
 result_t MainMenu_setKI(float ki);
 result_t MainMenu_setKD(float kd);
 result_t MainMenu_setControlConstants(float kp, float ki, float kd);
-result_t MainMenu_setDistance(uint16_t distance);
+result_t MainMenu_setDistance(int16_t distance);
 result_t MainMenu_setSetPoint(uint16_t setPoint);
-result_t MainMenu_setActionControl(uint16_t rpm);
+result_t MainMenu_setRPM(int16_t rpm);
+result_t MainMenu_setActionControl(int8_t actionControl);
 result_t MainMenu_preCheck(uint16_t ID);
 
 #endif /* SWC_UI_MENUS_MAINMENU_H_ */

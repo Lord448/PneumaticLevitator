@@ -34,7 +34,7 @@
 /* Number of frames of the initial messages (for transmission)*/
 #define COM_UART_INIT_NUMBER_FRAMES     13
 /* Number of frames of the periodic messages (for transmission)*/
-#define COM_UART_PERIODIC_NUMBER_FRAMES 5
+#define COM_UART_PERIODIC_NUMBER_FRAMES 6
 /* Number that the MCU will send to identify the initial frame */
 #define COM_UART_INIT_FRAME_VALUE       0xA5
 /* Time of the send of the periodical frames */

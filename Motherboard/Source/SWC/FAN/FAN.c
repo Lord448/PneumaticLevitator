@@ -20,6 +20,7 @@ extern TIM_HandleTypeDef htim3; /* Fan PWM controller @ 24KHz (manufacturer reco
 extern TIM_HandleTypeDef htim4; /* Fan RPM measure (Input Capture) @ 1MHz */
 
 extern osMessageQueueId_t xFIFO_COMRPMHandle;
+extern osMessageQueueId_t xFIFO_COMActionControlHandle;
 
 /**
 * @brief Function implementing the TaskFAN thread.
@@ -28,19 +29,30 @@ extern osMessageQueueId_t xFIFO_COMRPMHandle;
 */
 void vTaskFAN(void *argument)
 {
-	uint8_t dutyCycle = 0;
+	int8_t dutyCycle = 0;
+	uint16_t timeCounter = 0;
+	TickType_t ticks;
+
 	EnableFAN(false);
 	EnableFAN(true);
 	setPWM_FAN(0);
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 	HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
+	ticks = osKernelGetTickCount();
 	for(;;)
 	{
-		setPWM_FAN(dutyCycle);
-		dutyCycle++;
-		if(dutyCycle > 100)
-			dutyCycle = 0;
-		osDelay(100);
+		if(timeCounter > 10) /* Each 100ms */
+		{
+			setPWM_FAN(dutyCycle);
+			dutyCycle++;
+			if(dutyCycle > 100)
+				dutyCycle = 0;
+			timeCounter = 0;
+		}
+		osMessageQueuePut(xFIFO_COMActionControlHandle, &dutyCycle, 0U, osNoTimeout);
+		timeCounter++;
+		ticks+=pdMS_TO_TICKS(10);
+		osDelayUntil(ticks);
 	}
 }
 

@@ -20,8 +20,8 @@
 #include "main.h"
 #include "cmsis_os2.h"
 
-#define DEBUG_IC /* If defined set the frequency variables on global to see in the "live expressions" */
-#define CALCULATE_RPM_IN_HZ
+//#define DEBUG_IC /* If defined set the frequency variables on global to see in the "live expressions" */
+//#define CALCULATE_RPM_IN_HZ
 
 #define CPU_CLOCK 96000000 / 100
 

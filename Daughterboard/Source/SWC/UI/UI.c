@@ -29,6 +29,7 @@ extern osMessageQueueId_t xFIFO_DistanceHandle;
 extern osMessageQueueId_t xFIFO_RPMHandle;
 
 extern osEventFlagsId_t xEventFinishedInitHandle;
+extern osEventFlagsId_t xEvent_UIConfigsHandle;
 
 extern osSemaphoreId_t xSemaphoreDMACompleteHandle;
 extern osSemaphoreId_t xSemaphoreCOMReadyHandle;
@@ -96,7 +97,13 @@ static void waitForConstants(void)
 	if(osOK != osMessageQueueGet(xFIFO_ControlConstantsHandle, &controlConst, NULL, osNoTimeout))
 	{
 		/* Need to wait */
-		if(osOK == osMessageQueueGet(xFIFO_ControlConstantsHandle, &controlConst, NULL, pdMS_TO_TICKS(5000))) /* TODO: 5000 */
+		if(osOK == osMessageQueueGet(xFIFO_ControlConstantsHandle, &controlConst, NULL,
+#ifndef SKIP_INTRO_ANIM
+				pdMS_TO_TICKS(5000)))
+#else
+				osNoTimeout))
+#endif
+
 		{
 			/* Correctly received the data from COM */
 			MainMenu_setControlConstants(controlConst.kp, controlConst.ki, controlConst.kd);
@@ -110,7 +117,9 @@ static void waitForConstants(void)
 	{
 		/* Correctly received the data from COM */
 		MainMenu_setControlConstants(controlConst.kp, controlConst.ki, controlConst.kd);
+#ifndef SKIP_INTRO_ANIM
 		osDelay(pdMS_TO_TICKS(1000));
+#endif
 	}
 
 }
