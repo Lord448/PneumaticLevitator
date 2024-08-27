@@ -34,7 +34,9 @@
 /* Number of frames of the initial messages (for transmission)*/
 #define COM_UART_INIT_NUMBER_FRAMES     13
 /* Number of frames of the periodic messages (for transmission)*/
-#define COM_UART_PERIODIC_NUMBER_FRAMES 6
+#define COM_UART_PERIODIC_NUMBER_FRAMES_TX 6
+/* Number of frames of the periodic messages (for reception)*/
+#define COM_UART_PERIODIC_NUMBER_FRAMES_RX 5
 /* Number that the MCU will send to identify the initial frame */
 #define COM_UART_INIT_FRAME_VALUE       0xA5
 /* Time of the send of the periodical frames */
@@ -103,7 +105,6 @@ void vTaskCOM(void *argument);
 void vSubTaskUSB(void *argument);
 void vSubTaskUART(void *argument);
 
-uint8_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 
 void vTimer_UARTSendCallback(void *argument);

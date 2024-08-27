@@ -26,7 +26,7 @@ extern osTimerId_t xTimer_WdgUARTHandle;
 extern osMessageQueueId_t xFIFO_ControlConstantsHandle;
 extern osMessageQueueId_t xFIFO_DistanceHandle;
 extern osMessageQueueId_t xFIFO_RPMHandle;
-extern osMessageQueueId_t xFIFO_UARTDataTXHandle;
+extern osMessageQueueId_t xFIFO_COMHandle;
 extern osMessageQueueId_t xFIFO_ActionControlHandle;
 
 extern osSemaphoreId_t xSemaphore_InitMotherHandle;
@@ -46,6 +46,7 @@ uint8_t COM_UARTRxBuffer[COM_UART_INIT_NUMBER_FRAMES] = {0};
  * 					 SOFTWARE COMPONENT LOCAL PROTOYPES
  * ---------------------------------------------------------
  */
+static result_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 static float buildFloatFromUART(uint8_t *data, uint8_t startIndex);
 static void reSyncCom(bool *syncComInProcess);
 static void sendCPULoad(char *statsBuffer);
@@ -153,6 +154,48 @@ void vTaskCOM(void *argument)
  * 					 SOFTWARE COMPONENT GLOBAL FUNCTIONS
  * ---------------------------------------------------------
  */
+/* PDU Constructor */
+/*
+ * @brief 		Set values to a blank PDU
+ * @return		result of the operation
+ */
+static result_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload) {
+    /* Checking that the data is inside of bounderies */
+    if (MSG_TYPE_MAX  <= type ||  PRIORITY_MAX <= priority)
+    {
+        return Error; /* Values out of range */
+    }
+
+    pdu->fields.messageID = messageID;
+    pdu->fields.messageType = type;
+    pdu->fields.priority = priority;
+    pdu->fields.payload = payload;
+
+    return OK;
+}
+
+/* Approach for the COM message sender */
+/*
+ * @brief		Send the message to the buffer
+ * @return	Number of messages in the queue, -1 for full queue
+ */
+int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload) {
+	PDU_t pdu;
+
+	if (OK == COM_CreatePDU(&pdu, messageID, type, priority, payload)) { /* Check sucessful set */
+		uint16_t currentMessages = osMessageQueueGetCount(xFIFO_COMHandle);
+		/* Checking if the queue is not full */
+		if (COM_MAX_QUEUE_MESSAGES > currentMessages) {
+			/* Putting the message in the queue and returning queue current messages */
+			osMessageQueuePut(xFIFO_COMHandle, &pdu, 0U, osNoTimeout);
+			return currentMessages;
+		}
+
+		return -1;
+	}
+
+	return 0;
+}
 /**
  * ---------------------------------------------------------
  * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
@@ -256,13 +299,14 @@ static void sendCPULoad(char *statsBuffer)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	const uint8_t noMSGData = NO_MSG_ID;
-	uint8_t bufferTX[COM_UART_PERIODIC_NUMBER_FRAMES] = {0};
+	static uint8_t bufferTX[COM_UART_PERIODIC_NUMBER_FRAMES_TX] = {0};
+	volatile uint8_t *bytePointer;
 	PDU_t dataTX;
 
 	if(TIM3 == htim -> Instance)
 	{
 		/* Time to send a UART transmission */
-		if(0 != osMessageQueueGetCount(xFIFO_UARTDataTXHandle))
+		if(0 == osMessageQueueGetCount(xFIFO_COMHandle))
 		{
 			/* The FIFO is empty */
 			HAL_UART_Transmit_DMA(&huart1, &noMSGData, sizeof(uint8_t));
@@ -270,17 +314,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		else
 		{
 			/* The FIFO has data */
-			osStatus_t status = osMessageQueueGet(xFIFO_UARTDataTXHandle, &dataTX, NULL, osNoTimeout);
+			osStatus_t status = osMessageQueueGet(xFIFO_COMHandle, &dataTX, NULL, osNoTimeout);
 			if(osOK == status)
 			{
 				/* Building the buffer for transmission */
+				bytePointer = (uint8_t *)&dataTX.fields.payload;
 				bufferTX[0] = ACK_DATA | dataTX.fields.messageID;
-				for(uint16_t i = 1; i < sizeof(uint32_t)+1; i++)
+				for(uint16_t i = 1; i < sizeof(uint32_t)+1; i++, bytePointer++)
 				{
-					bufferTX[i] = dataTX.rawData[i+1];
+					bufferTX[i] = *bytePointer;
 				}
 				/* Buffer ready for transmission */
-				HAL_UART_Transmit_DMA(&huart1, bufferTX, COM_UART_PERIODIC_NUMBER_FRAMES);
+				HAL_UART_Transmit_DMA(&huart1, (uint8_t *)bufferTX, COM_UART_PERIODIC_NUMBER_FRAMES_TX);
 			}
 			else
 			{

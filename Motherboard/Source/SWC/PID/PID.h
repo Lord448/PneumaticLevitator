@@ -21,14 +21,21 @@
 #define EEPROM_OK 0
 
 #include "main.h"
+#include "DistanceSensor.h"
 #include "cmsis_os2.h"
-#include "COM/COM.h"
-#include "COM/Signals.h"
+#include "COM.h"
+
+#define HZToMS(x) (1/x)*1000
+#define FtoT(x) HZToMS(x)
+
+#define PID_LimitActionControl(x) x = x > 100 ? 100 : x
+
+#define DEFAULT_CONTROL_SAMPLING_RATE 1000 /* HZ */
 
 /*TODO: Calculate gains*/
-#define KP_DEFAULT (float) 0
-#define KI_DEFAULT (float) 0
-#define KD_DEFAULT (float) 0
+#define KP_DEFAULT (float) 0.32
+#define KI_DEFAULT (float) 0.000015
+#define KD_DEFAULT (float) 0.02
 
 typedef struct PIDLimits {
 	int32_t P;

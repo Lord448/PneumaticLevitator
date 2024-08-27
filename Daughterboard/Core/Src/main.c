@@ -190,10 +190,10 @@ osMessageQueueId_t xFIFO_ButtonsHandle;
 const osMessageQueueAttr_t xFIFO_Buttons_attributes = {
   .name = "xFIFO_Buttons"
 };
-/* Definitions for xFIFO_UARTDataTX */
-osMessageQueueId_t xFIFO_UARTDataTXHandle;
-const osMessageQueueAttr_t xFIFO_UARTDataTX_attributes = {
-  .name = "xFIFO_UARTDataTX"
+/* Definitions for xFIFO_COM */
+osMessageQueueId_t xFIFO_COMHandle;
+const osMessageQueueAttr_t xFIFO_COM_attributes = {
+  .name = "xFIFO_COM"
 };
 /* Definitions for xFIFO_Distance */
 osMessageQueueId_t xFIFO_DistanceHandle;
@@ -448,8 +448,8 @@ int main(void)
   /* creation of xFIFO_Buttons */
   xFIFO_ButtonsHandle = osMessageQueueNew (32, sizeof(Buttons), &xFIFO_Buttons_attributes);
 
-  /* creation of xFIFO_UARTDataTX */
-  xFIFO_UARTDataTXHandle = osMessageQueueNew (16, sizeof(PDU_t), &xFIFO_UARTDataTX_attributes);
+  /* creation of xFIFO_COM */
+  xFIFO_COMHandle = osMessageQueueNew (32, sizeof(PDU_t), &xFIFO_COM_attributes);
 
   /* creation of xFIFO_Distance */
   xFIFO_DistanceHandle = osMessageQueueNew (32, sizeof(int16_t), &xFIFO_Distance_attributes);

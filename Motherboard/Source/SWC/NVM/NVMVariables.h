@@ -29,8 +29,7 @@
  */
 
 #define FABRIC_CONFIG_BASE_ADDR (uint16_t) 0x0000
-
-#define MODE_CONFIG_BASE_ADDR (uint16_t) 0x0001
+#define MODE_CONFIG_BASE_ADDR   (uint16_t) 0x0001
 
 
 /**
@@ -39,19 +38,15 @@
  * ---------------------------------------------------------
  */
 
-#define KP_PID_BASE_ADDR (uint16_t) 0x000B
+#define KP_PID_BASE_ADDR        (uint16_t) 0x000B
+#define KI_PID_BASE_ADDR        (uint16_t) 0x000F
+#define KD_PID_BASE_ADDR        (uint16_t) 0x0013
+#define PLIMIT_PID_BASE_ADDR    (uint16_t) 0x0017
+#define ILIMIT_PID_BASE_ADDR    (uint16_t) 0x001B
+#define DLIMIT_PID_BASE_ADDR    (uint16_t) 0x001F
+#define SETPOINT_PID_BASE_ADDR  (uint16_t) 0x0023
 
-#define KI_PID_BASE_ADDR (uint16_t) 0x000F
-
-#define KD_PID_BASE_ADDR (uint16_t) 0x0013
-
-#define PLIMIT_PID_BASE_ADDR (uint16_t) 0x0017
-
-#define ILIMIT_PID_BASE_ADDR (uint16_t) 0x001B
-
-#define DLIMIT_PID_BASE_ADDR (uint16_t) 0x001F
-
-#define SETPOINT_PID_BASE_ADDR (uint16_t) 0x0023
+/* TODO: Add the sampling rate as a new variable */
 
 /**
  * ---------------------------------------------------------

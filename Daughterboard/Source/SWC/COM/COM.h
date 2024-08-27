@@ -31,7 +31,9 @@
 /* Number of frames of the initial messages (for reception)*/
 #define COM_UART_INIT_NUMBER_FRAMES 13
 /* Number of frames of the periodic messages (for reception)*/
-#define COM_UART_PERIODIC_NUMBER_FRAMES 6
+#define COM_UART_PERIODIC_NUMBER_FRAMES_RX 6
+/* Number of frames of the periodic messages (for transmission) */
+#define COM_UART_PERIODIC_NUMBER_FRAMES_TX 5
 /* Number that the MCU will send to identify the initial frame */
 #define COM_UART_INIT_FRAME_VALUE 0xA5
 /* Time of the send of the periodical frames */
@@ -95,8 +97,9 @@ typedef union {
     uint8_t rawData[6];             /* Access as byte array */
 } PDU_t;
 
-void vTaskCOM(void *argument);
+int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 
+void vTaskCOM(void *argument);
 void vTimer_UARTSendCallback(void *argument);
 
 #endif /* SWC_COM_COM_H_ */

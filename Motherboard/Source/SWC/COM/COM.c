@@ -16,6 +16,8 @@
 
 #include "COM.h"
 
+#define UARTfirstFrame UART_RxBuffer[0]
+
 extern UART_HandleTypeDef huart1;
 
 extern osThreadId_t TaskSensorHandle;
@@ -26,6 +28,7 @@ extern osMessageQueueId_t xFIFO_COMHandle;
 extern osMessageQueueId_t xFIFO_COMDistanceHandle;
 extern osMessageQueueId_t xFIFO_COMRPMHandle;
 extern osMessageQueueId_t xFIFO_COMActionControlHandle;
+extern osMessageQueueId_t xFIFO_PIDSetPointHandle;
 
 extern osTimerId_t xTimer_UARTSendHandle;
 extern osTimerId_t xTimer_WdgUARTHandle;
@@ -46,7 +49,7 @@ extern char CDC_ResBuffer[64];
 
 extern void vTaskSensor(void *argument);
 
-uint8_t UART_RxBuffer[COM_UART_PERIODIC_NUMBER_FRAMES] = {0};
+uint8_t UART_RxBuffer[COM_UART_PERIODIC_NUMBER_FRAMES_RX] = {0};
 bool firstInit = true;
 
 /**
@@ -54,6 +57,7 @@ bool firstInit = true;
  * 					 SOFTWARE COMPONENT LOCAL PROTOYPES
  * ---------------------------------------------------------
  */
+static result_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 static void sendInitBuffer(void);
 static void syncComm(void);
 /**
@@ -87,55 +91,6 @@ void vTaskCOM(void *argument)
 		}
 	}
 }
-
-/**
- * ---------------------------------------------------------
- * 					 SOFTWARE COMPONENT GLOBAL FUNCTIONS
- * ---------------------------------------------------------
- */
-/* PDU Constructor */
-/*
- * @brief 		Set values to a blank PDU
- * @return		0 for successful value assignment
- */
-uint8_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload) {
-    /* Checking that the data is inside of bounderies */
-    if (MSG_TYPE_MAX  <= type ||  PRIORITY_MAX <= priority)
-    {
-        return 1; /* Values out of range */
-    }
-
-    pdu->fields.messageID = messageID;
-    pdu->fields.messageType = type;
-    pdu->fields.priority = priority;
-    pdu->fields.payload = payload;
-
-    return 0;
-}
-
-/* Approach for the COM message sender */
-/*
- * @brief		Send the message to the buffer
- * @return		Number of messages in the queue, -1 for full queue
- */
-int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload) {
-	PDU_t pdu;
-	
-	if (0 == COM_CreatePDU(&pdu, messageID, type, priority, payload)) { /* Check sucessful set */
-		uint16_t currentMessages = osMessageQueueGetCount(xFIFO_COMHandle);
-		/* Checking if the queue is not full */	
-		if (COM_MAX_QUEUE_MESSAGES > currentMessages) { 
-			/* Putting the message in the queue and returning queue current messages */
-			osMessageQueuePut(xFIFO_COMHandle, &pdu, 0U, 0U);
-			return currentMessages; 
-		}
-
-		return -1;
-	}
-
-	return 0;	
-}
-
 /**
  * ---------------------------------------------------------
  * 					    SOFTWARE COMPONENT SUB THREADS
@@ -199,20 +154,76 @@ void vSubTaskUSB(void *argument)
 */
 void vSubTaskUART(void *argument)
 {
+	int16_t setPoint = 0;
 	for(;;)
 	{
 		osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, osWaitForever);
 		/* Reseting the Watch dog timer for UART */
 		osTimerStart(xTimer_WdgUARTHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
-
-		/* TODO: Handle here the communication */
+		switch(UARTfirstFrame)
+		{
+			case SET_POINT:
+				/* Communicate with PID component */
+				setPoint = UART_RxBuffer[1] | (UART_RxBuffer[2] << 8);
+				osMessageQueuePut(xFIFO_PIDSetPointHandle, &setPoint, 0U, osNoTimeout);
+			case NO_MSG_ID:
+			default:
+				/* Do Nothing */
+			break;
+		}
 	}
+}
+/**
+ * ---------------------------------------------------------
+ * 					 SOFTWARE COMPONENT GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
+/* Approach for the COM message sender */
+/*
+ * @brief		Send the message to the buffer
+ * @return	Number of messages in the queue, -1 for full queue
+ */
+int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload) {
+	PDU_t pdu;
+
+	if (OK == COM_CreatePDU(&pdu, messageID, type, priority, payload)) { /* Check sucessful set */
+		uint16_t currentMessages = osMessageQueueGetCount(xFIFO_COMHandle);
+		/* Checking if the queue is not full */
+		if (COM_MAX_QUEUE_MESSAGES > currentMessages) {
+			/* Putting the message in the queue and returning queue current messages */
+			osMessageQueuePut(xFIFO_COMHandle, &pdu, 0U, 0U);
+			return currentMessages;
+		}
+
+		return -1;
+	}
+
+	return 0;
 }
 /**
  * ---------------------------------------------------------
  * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
  * ---------------------------------------------------------
  */
+/* PDU Constructor */
+/*
+ * @brief 		Set values to a blank PDU
+ * @return		0 for successful value assignment
+ */
+static result_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload) {
+    /* Checking that the data is inside of bounderies */
+    if (MSG_TYPE_MAX  <= type ||  PRIORITY_MAX <= priority)
+    {
+        return Error; /* Values out of range */
+    }
+
+    pdu->fields.messageID = messageID;
+    pdu->fields.messageType = type;
+    pdu->fields.priority = priority;
+    pdu->fields.payload = payload;
+
+    return OK;
+}
 /**
  * @brief  Syncronize the communication by sending
  *         the init frames when called
@@ -227,7 +238,7 @@ static void syncComm(void)
 	bool errorFlagWereSet = false;
 
 	do {
-		HAL_UART_Receive_IT(&huart1, UART_RxBuffer, sizeof(uint8_t)); /* Jump the ISR when first arrived to receive the data */
+		HAL_UART_Receive_DMA(&huart1, UART_RxBuffer, sizeof(uint8_t)); /* Jump the ISR when first arrived to receive the data */
 		/* Send initial buffer */
 		sendInitBuffer();
 		/* Wait for the UART to receive the init message of Daughter */
@@ -311,8 +322,7 @@ void vTimer_UARTSendCallback(void *argument)
 	static int16_t actionControl = 0;
 	static uint16_t emptyFIFOCounterDist = 0;
 	static uint16_t emptyFIFOCounterRPM = 0;
-	static uint16_t emptyFIFOCounterAct = 0;
-	static uint8_t buffer[COM_UART_PERIODIC_NUMBER_FRAMES+1] = {0};
+	static uint8_t buffer[COM_UART_PERIODIC_NUMBER_FRAMES_TX+1] = {0};
 	volatile uint8_t *bytePointer;
 	uint8_t acknowledge = 1;
 	uint8_t confirmReset = 0;
@@ -412,36 +422,15 @@ void vTimer_UARTSendCallback(void *argument)
 	/* ACTION CONTROL PROCESSING */
 	{
 		status = osMessageQueueGet(xFIFO_COMActionControlHandle, &actionControl, NULL, osNoTimeout);
-		if(osOK != status)
-		{
-			/* The FIFO is empty */
-			emptyFIFOCounterAct++;
-		}
-		else
-		{
-			/* All Good */
-			emptyFIFOCounterAct = 0;
-		}
-
-		/* Load Action Control Data */
-		if(COM_FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterAct)
-		{
-			/* Send Error Code */
-			buffer[5] = COM_MSG_ERROR_CODE;
-			/* TODO: Trigger DTC Not receiving action control */
-		}
-		else
-		{
-			/* If there's no data on the FIFO, the bus will take the last value*/
-			buffer[5] = actionControl;
-		}
+		/* If there's no data on the FIFO, the bus will take the last value*/
+		buffer[5] = actionControl;
 	}
 	/* TODO: ON DEMAND MSG PROCESS */
 	{
 
 	}
 	osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, osWaitForever);
-	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)buffer, COM_UART_PERIODIC_NUMBER_FRAMES);
+	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)buffer, COM_UART_PERIODIC_NUMBER_FRAMES_TX);
 	bytePointer = (uint8_t *)&RPM; /* TODO: Stubbed code */
 }
 
@@ -542,7 +531,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		if(firstInit)
 		{
 			/* The system were waiting for this init */
-
+			firstInit = false;
 		}
 		else
 		{
@@ -563,7 +552,48 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			/* Do Nothing, It's just the acknowledge */
 		}
 	}
-	HAL_UARTEx_ReceiveToIdle_IT(huart, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES);
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart1, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES_RX);
+}
+
+/**
+  * @brief  Rx Transfer completed callbacks.
+  * @param  huart  Pointer to a UART_HandleTypeDef structure that contains
+  *                the configuration information for the specified UART module.
+  * @retval None
+  */
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+	osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
+
+	osSemaphoreRelease(xSemaphore_InitDaughterHandle);
+	if(UART_RxBuffer[0] == COM_UART_INIT_FRAME_VALUE)
+	{
+		/* It's an init frame */
+		if(firstInit)
+		{
+			/* The system were waiting for this init */
+			firstInit = false;
+		}
+		else
+		{
+			/* Watchdog timer were triggered on daughterboard */
+			/* TODO: Handle here */
+		}
+	}
+	else
+	{
+		/* It's a periodic frame */
+		if(NO_MSG_ID != UART_RxBuffer[0])
+		{
+			/* Indicating that the component has to process the data */
+			osSemaphoreRelease(xSemaphore_UARTRxCpltHandle);
+		}
+		else
+		{
+			/* Do Nothing, It's just the acknowledge */
+		}
+	}
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart1, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES_RX);
 }
 
 /**
@@ -609,7 +639,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 		break;
 	}
 	/* Continue with the transmission and try to report the number of this errors */
-	HAL_UARTEx_ReceiveToIdle_DMA(&huart1, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES);
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart1, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES_RX);
 }
 
 uint32_t errorCounterI2C1 = 0;

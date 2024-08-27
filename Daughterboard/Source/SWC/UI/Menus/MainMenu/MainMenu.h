@@ -17,6 +17,7 @@
 #define SWC_UI_MENUS_MAINMENU_H_
 
 #include "UI.h"
+#include "COM.h"
 #include "cmsis_os2.h"
 #include "Bitmaps.h"
 #include <string.h>
@@ -100,7 +101,7 @@
 #define TB_CTRL_ACT_STR_Y		   TB_RPM_STR_Y
 #define TB_CTRL_ACT_STR_CHARS  charslen("100")
 /* Action Mode */
-#define TB_ACTION_MODE_INIT    TB_SET_POINT_STR_INIT-10
+#define TB_ACTION_MODE_INIT    TB_SET_POINT_STR_INIT+10
 #define TB_ACTION_MODE_Y		   0
 #define TB_ACTION_MODE_CHARS   charslen("Control")
 /*Manual*/

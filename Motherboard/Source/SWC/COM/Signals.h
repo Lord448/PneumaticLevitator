@@ -26,8 +26,9 @@
 
 /*Declare here all the signals*/
 #define NO_MSG_ID         SIGNAL(0x00)
-#define PERIODIC_ID       SIGNAL(0x01)
-#define ENTER_DIAGS_ID    SIGNAL(0x02)
+#define PERIODIC_ID       SIGNAL(0x01) /* Only sent by motherboard */
+#define ENTER_DIAGS_ID    SIGNAL(0x02) /* Only sent by motherboard */
+#define SET_POINT					SIGNAL(0x03)
 
 #define CPU_LOAD_DAUGHTER SIGNAL(0x7F) /* 7 bit limit */
 

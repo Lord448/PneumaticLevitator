@@ -319,6 +319,8 @@ result_t MainMenu_setSetPoint(uint16_t setPoint)
 	/* Changing the Progress bar */
 	if(UG_RESULT_OK != UG_ProgressSetProgress(&mainWindow, PROGRESS_BAR_SET_POINT_ID, progress))
 		return Error;
+	/* Send to COM */
+	COM_SendMessage(SET_POINT, MSG_TYPE_ONDEMAND, PRIORITY_HIGH, setPoint);
 	UG_Update();
 	return OK;
 }

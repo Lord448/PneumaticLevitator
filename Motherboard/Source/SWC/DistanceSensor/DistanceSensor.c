@@ -22,13 +22,11 @@ static VL53L0X_Dev_t  vl53l0x_c; /*Center module*/
 static VL53L0X_DEV    Dev = &vl53l0x_c;
 static VL53L0X_RangingMeasurementData_t RangingData;
 
-extern osMessageQueueId_t xFIFO_COMHandle;
-extern osMessageQueueId_t xFIFO_DistanceHandle;
+extern osMessageQueueId_t xFIFO_PIDDistanceHandle;
 extern osMessageQueueId_t xFIFO_COMDistanceHandle;
 
 void vTaskSensor(void *argument)
 {
-	const uint32_t Reference = 530;
 	uint32_t refSpadCount;
 	uint8_t isApertureSpads;
 	uint8_t VhvSettings;
@@ -66,8 +64,9 @@ void vTaskSensor(void *argument)
 		if(RangingData.RangeStatus == 0)
 	  {
 			/* Got the data correctly */
-			distance = Reference - RangingData.RangeMilliMeter;
-			osMessageQueuePut(xFIFO_COMDistanceHandle, &distance, 0U, osNoTimeout); /*Sending to COM*/
+			distance = RangingData.RangeMilliMeter > MAX_DISTANCE ? 0 : MAX_DISTANCE - RangingData.RangeMilliMeter; /* Setting bounds */
+			osMessageQueuePut(xFIFO_COMDistanceHandle, &distance, 0U, osNoTimeout); /* Sending to COM */
+			osMessageQueuePut(xFIFO_PIDDistanceHandle, &distance, 0U, osNoTimeout); /* Sending to PID */
 		}
 		else
 		{

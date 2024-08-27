@@ -2,7 +2,11 @@
  * @file      FAN.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This component handles all the timers that
+ *            works with the FAN, the input capture in
+ *            non blocking mode (interrupts), the PWM
+ *            generator for the FAN control and the data
+ *            send to COM as a periodic data
  *
  * @date      May 29, 2024
  *
@@ -21,6 +25,7 @@ extern TIM_HandleTypeDef htim4; /* Fan RPM measure (Input Capture) @ 1MHz */
 
 extern osMessageQueueId_t xFIFO_COMRPMHandle;
 extern osMessageQueueId_t xFIFO_COMActionControlHandle;
+extern osMessageQueueId_t xFIFO_FANDutyCycleHandle;
 
 /**
 * @brief Function implementing the TaskFAN thread.
@@ -30,17 +35,25 @@ extern osMessageQueueId_t xFIFO_COMActionControlHandle;
 void vTaskFAN(void *argument)
 {
 	int8_t dutyCycle = 0;
+#ifdef HARD_CODED_TEST
 	uint16_t timeCounter = 0;
 	TickType_t ticks;
+#endif
 
-	EnableFAN(false);
 	EnableFAN(true);
 	setPWM_FAN(0);
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 	HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
+#ifdef HARD_CODED_TEST
 	ticks = osKernelGetTickCount();
+#endif
 	for(;;)
 	{
+#ifndef HARD_CODED_TEST
+		osMessageQueueGet(xFIFO_FANDutyCycleHandle, &dutyCycle, NULL, osWaitForever); /* Receiving data from the OS */
+		setPWM_FAN(dutyCycle);
+		osMessageQueuePut(xFIFO_COMActionControlHandle, &dutyCycle, 0U, osNoTimeout); /* Sending to COM as a periodic signal */
+#else
 		if(timeCounter > 10) /* Each 100ms */
 		{
 			setPWM_FAN(dutyCycle);
@@ -53,6 +66,7 @@ void vTaskFAN(void *argument)
 		timeCounter++;
 		ticks+=pdMS_TO_TICKS(10);
 		osDelayUntil(ticks);
+#endif
 	}
 }
 

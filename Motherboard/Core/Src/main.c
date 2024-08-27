@@ -132,7 +132,7 @@ const osThreadAttr_t TaskPID_attributes = {
   .cb_size = sizeof(TaskPIDControlBlock),
   .stack_mem = &TaskPIDBuffer[0],
   .stack_size = sizeof(TaskPIDBuffer),
-  .priority = (osPriority_t) osPriorityHigh,
+  .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for TaskCOM */
 osThreadId_t TaskCOMHandle;
@@ -144,7 +144,7 @@ const osThreadAttr_t TaskCOM_attributes = {
   .cb_size = sizeof(TaskCOMControlBlock),
   .stack_mem = &TaskCOMBuffer[0],
   .stack_size = sizeof(TaskCOMBuffer),
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 /* Definitions for TaskDiagAppl */
 osThreadId_t TaskDiagApplHandle;
@@ -184,7 +184,7 @@ const osThreadAttr_t TaskSensor_attributes = {
 };
 /* Definitions for TaskFAN */
 osThreadId_t TaskFANHandle;
-uint32_t TaskFANBuffer[ 256 ];
+uint32_t TaskFANBuffer[ 128 ];
 osStaticThreadDef_t TaskFANControlBlock;
 const osThreadAttr_t TaskFAN_attributes = {
   .name = "TaskFAN",
@@ -229,36 +229,49 @@ const osMessageQueueAttr_t xFIFO_COM_attributes = {
   .mq_mem = &xFIFO_COMBuffer,
   .mq_size = sizeof(xFIFO_COMBuffer)
 };
-/* Definitions for xFIFO_Distance */
-osMessageQueueId_t xFIFO_DistanceHandle;
-uint8_t xFIFO_DistanceBuffer[ 4 * sizeof( uint16_t ) ];
+/* Definitions for xFIFO_PIDDistance */
+osMessageQueueId_t xFIFO_PIDDistanceHandle;
+uint8_t xFIFO_DistanceBuffer[ 16 * sizeof( uint16_t ) ];
 osStaticMessageQDef_t xFIFO_DistanceControlBlock;
-const osMessageQueueAttr_t xFIFO_Distance_attributes = {
-  .name = "xFIFO_Distance",
+const osMessageQueueAttr_t xFIFO_PIDDistance_attributes = {
+  .name = "xFIFO_PIDDistance",
   .cb_mem = &xFIFO_DistanceControlBlock,
   .cb_size = sizeof(xFIFO_DistanceControlBlock),
   .mq_mem = &xFIFO_DistanceBuffer,
   .mq_size = sizeof(xFIFO_DistanceBuffer)
 };
-/* Definitions for xFIFO_ControlAction */
-osMessageQueueId_t xFIFO_ControlActionHandle;
-const osMessageQueueAttr_t xFIFO_ControlAction_attributes = {
-  .name = "xFIFO_ControlAction"
-};
 /* Definitions for xFIFO_PIDConfigs */
 osMessageQueueId_t xFIFO_PIDConfigsHandle;
+uint8_t xFIFO_PIDConfigsBuffer[ 16 * sizeof( PIDConfigs ) ];
+osStaticMessageQDef_t xFIFO_PIDConfigsControlBlock;
 const osMessageQueueAttr_t xFIFO_PIDConfigs_attributes = {
-  .name = "xFIFO_PIDConfigs"
+  .name = "xFIFO_PIDConfigs",
+  .cb_mem = &xFIFO_PIDConfigsControlBlock,
+  .cb_size = sizeof(xFIFO_PIDConfigsControlBlock),
+  .mq_mem = &xFIFO_PIDConfigsBuffer,
+  .mq_size = sizeof(xFIFO_PIDConfigsBuffer)
 };
 /* Definitions for xFIFO_DiagsLong */
 osMessageQueueId_t xFIFO_DiagsLongHandle;
+uint8_t xFIFO_DiagsLongBuffer[ 16 * sizeof( DiagPDU_t ) ];
+osStaticMessageQDef_t xFIFO_DiagsLongControlBlock;
 const osMessageQueueAttr_t xFIFO_DiagsLong_attributes = {
-  .name = "xFIFO_DiagsLong"
+  .name = "xFIFO_DiagsLong",
+  .cb_mem = &xFIFO_DiagsLongControlBlock,
+  .cb_size = sizeof(xFIFO_DiagsLongControlBlock),
+  .mq_mem = &xFIFO_DiagsLongBuffer,
+  .mq_size = sizeof(xFIFO_DiagsLongBuffer)
 };
 /* Definitions for xFIFO_DiagShort */
 osMessageQueueId_t xFIFO_DiagShortHandle;
+uint8_t xFIFO_DiagShortBuffer[ 16 * sizeof( PDU_t ) ];
+osStaticMessageQDef_t xFIFO_DiagShortControlBlock;
 const osMessageQueueAttr_t xFIFO_DiagShort_attributes = {
-  .name = "xFIFO_DiagShort"
+  .name = "xFIFO_DiagShort",
+  .cb_mem = &xFIFO_DiagShortControlBlock,
+  .cb_size = sizeof(xFIFO_DiagShortControlBlock),
+  .mq_mem = &xFIFO_DiagShortBuffer,
+  .mq_size = sizeof(xFIFO_DiagShortBuffer)
 };
 /* Definitions for xFIFO_COMDistance */
 osMessageQueueId_t xFIFO_COMDistanceHandle;
@@ -292,6 +305,28 @@ const osMessageQueueAttr_t xFIFO_COMActionControl_attributes = {
   .cb_size = sizeof(xFIFO_COMActionControlControlBlock),
   .mq_mem = &xFIFO_COMActionControlBuffer,
   .mq_size = sizeof(xFIFO_COMActionControlBuffer)
+};
+/* Definitions for xFIFO_FANDutyCycle */
+osMessageQueueId_t xFIFO_FANDutyCycleHandle;
+uint8_t xFIFO_FANDutyCycleBuffer[ 16 * sizeof( int8_t ) ];
+osStaticMessageQDef_t xFIFO_FANDutyCycleControlBlock;
+const osMessageQueueAttr_t xFIFO_FANDutyCycle_attributes = {
+  .name = "xFIFO_FANDutyCycle",
+  .cb_mem = &xFIFO_FANDutyCycleControlBlock,
+  .cb_size = sizeof(xFIFO_FANDutyCycleControlBlock),
+  .mq_mem = &xFIFO_FANDutyCycleBuffer,
+  .mq_size = sizeof(xFIFO_FANDutyCycleBuffer)
+};
+/* Definitions for xFIFO_PIDSetPoint */
+osMessageQueueId_t xFIFO_PIDSetPointHandle;
+uint8_t xFIFO_PIDSetPointBuffer[ 16 * sizeof( int16_t ) ];
+osStaticMessageQDef_t xFIFO_PIDSetPointControlBlock;
+const osMessageQueueAttr_t xFIFO_PIDSetPoint_attributes = {
+  .name = "xFIFO_PIDSetPoint",
+  .cb_mem = &xFIFO_PIDSetPointControlBlock,
+  .cb_size = sizeof(xFIFO_PIDSetPointControlBlock),
+  .mq_mem = &xFIFO_PIDSetPointBuffer,
+  .mq_size = sizeof(xFIFO_PIDSetPointBuffer)
 };
 /* Definitions for xTimer_UARTSend */
 osTimerId_t xTimer_UARTSendHandle;
@@ -578,11 +613,8 @@ int main(void)
   /* creation of xFIFO_COM */
   xFIFO_COMHandle = osMessageQueueNew (16, sizeof(PDU_t), &xFIFO_COM_attributes);
 
-  /* creation of xFIFO_Distance */
-  xFIFO_DistanceHandle = osMessageQueueNew (4, sizeof(uint16_t), &xFIFO_Distance_attributes);
-
-  /* creation of xFIFO_ControlAction */
-  xFIFO_ControlActionHandle = osMessageQueueNew (16, sizeof(float), &xFIFO_ControlAction_attributes);
+  /* creation of xFIFO_PIDDistance */
+  xFIFO_PIDDistanceHandle = osMessageQueueNew (16, sizeof(uint16_t), &xFIFO_PIDDistance_attributes);
 
   /* creation of xFIFO_PIDConfigs */
   xFIFO_PIDConfigsHandle = osMessageQueueNew (16, sizeof(PIDConfigs), &xFIFO_PIDConfigs_attributes);
@@ -601,6 +633,12 @@ int main(void)
 
   /* creation of xFIFO_COMActionControl */
   xFIFO_COMActionControlHandle = osMessageQueueNew (32, sizeof(int16_t), &xFIFO_COMActionControl_attributes);
+
+  /* creation of xFIFO_FANDutyCycle */
+  xFIFO_FANDutyCycleHandle = osMessageQueueNew (16, sizeof(int8_t), &xFIFO_FANDutyCycle_attributes);
+
+  /* creation of xFIFO_PIDSetPoint */
+  xFIFO_PIDSetPointHandle = osMessageQueueNew (16, sizeof(int16_t), &xFIFO_PIDSetPoint_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
