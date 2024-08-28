@@ -64,7 +64,7 @@ struct MenuSelectorsGroup {
 			.menuStage = sAbout,
 			.idImage = ABOUT_MENU_IMG_ID,
 			.idTextbox = TB_ABOUT_ID,
-			.isOnDevelopment = true /* TODO: Remove when finished */
+			.isOnDevelopment = false
 		},
 		.mSelPlot = {
 			.menuStage = sPlot,
@@ -101,6 +101,12 @@ static void sMenu_HideAllTextboxes(void);
  * 					 SOFTWARE COMPONENT GLOBAL FUNCTIONS
  * ---------------------------------------------------------
  */
+/**
+ * @brief  This function makes all the animations and
+ *         processes the button pressions
+ * @param  none
+ * @retval none
+ */
 void Menu_MenuDynamics(void)
 {
 	enum states {
@@ -112,7 +118,7 @@ void Menu_MenuDynamics(void)
 	switch(stateHandler)
 	{
 		case Init:
-			HMI_DisableButtons(iUp | iDown | iEncoder);
+			HMI_EnableButtons(iLeft | iRight | iEncoderSW | iOk | iMenu);
 			UG_ImageShow(&menuWindow, MAIN_LOBBY_MENU_IMG_ID);
 			UG_Update();
 			stateHandler = Periodic;
@@ -137,6 +143,12 @@ void Menu_MenuDynamics(void)
 	}
 }
 
+/**
+ * @brief  Build and declare all the graphical
+ *         resources needed by this component
+ * @param  none
+ * @retval none
+ */
 void Menu_buildObjects(void)
 {
 	static UG_OBJECT  ObjWinBuf[WINDOW_MAX_OBJECTS];

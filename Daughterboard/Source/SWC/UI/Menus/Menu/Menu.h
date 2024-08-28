@@ -43,7 +43,7 @@
 
 /**
  * ---------------------------------------------------------
- * 					           IMAGE POSITION SYMBOLS
+ * 					          IMAGE POSITION SYMBOLS
  * ---------------------------------------------------------
  */
 #define LEFT_ARROW_X_POS  10
@@ -55,7 +55,7 @@
 
 /**
  * ---------------------------------------------------------
- * 					          TEXBOX SYMBOLS
+ * 					           TEXBOX SYMBOLS
  * ---------------------------------------------------------
  */
 #define MENU_TEXTBOX_FONT   FONT_arial_20X23_CYRILLIC
@@ -70,6 +70,11 @@
 #define TB_PLANT_ID         TXB_ID_5
 #define TB_VER_PROMPT_ID    TXB_ID_6
 
+/**
+ * ---------------------------------------------------------
+ * 					       TEXBOX POSITION SYMBOLS
+ * ---------------------------------------------------------
+ */
 #define MENU_TEXBOX_Y_POS   160
 
 #define TB_MAIN_LOBBY_X_POS 43

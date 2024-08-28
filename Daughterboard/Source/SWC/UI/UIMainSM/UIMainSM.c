@@ -17,6 +17,7 @@
 
 extern osMessageQueueId_t xFIFO_ButtonsHandle;
 
+extern UG_WINDOW aboutWindow;
 extern UG_WINDOW mainWindow;
 extern UG_WINDOW menuWindow;
 
@@ -49,6 +50,7 @@ void UIMainSM_InfiniteLoop(void)
 	Buttons btnPress = iNone;
 	static bool isFirstMenuInit = true;
 	osMessageQueueGet(xFIFO_ButtonsHandle, &btnPress, NULL, osNoTimeout);
+	static bool debugInitMenu = true; /* TODO: Debug porpouses */
 	if(iMenu == btnPress)
 	{
 		/* Menu Button pressed */
@@ -59,8 +61,13 @@ void UIMainSM_InfiniteLoop(void)
 	}
 	else
 	{
-		/* Returning the button to the fifo */
-		//osMessageQueuePut(xFIFO_ButtonsHandle, &btnPress, 0U, osNoTimeout);
+		/* Do Nothing */
+	}
+
+	if(debugInitMenu) /* TODO: Debug porpouses */
+	{
+		UIMainSM_ChangeMenu(sAbout);
+		debugInitMenu = false;
 	}
 	switch(menuStage)
 	{
@@ -73,6 +80,7 @@ void UIMainSM_InfiniteLoop(void)
 		case sConfigs:
 		break;
 		case sAbout:
+			AboutMenu_Dynamics(btnPress, &isFirstMenuInit);
 		break;
 		case sPlot:
 		break;
@@ -92,6 +100,7 @@ void UIMainSM_ChangeMenu(MenuStages menuStageID)
 	UG_WINDOW *window = UIMainSM_SelectWindow(menuStageID);
 	UG_WINDOW *pastWindow = UIMainSM_SelectWindow(pastMenuStage);
 
+	HMI_DisableAllButtons();
 	UG_WindowHide(pastWindow);
 	menuStage = menuStageID;
 	UG_WindowShow(window);
@@ -118,6 +127,7 @@ static UG_WINDOW* UIMainSM_SelectWindow(MenuStages menuStageID)
 
 		break;
 		case sAbout:
+			window = &aboutWindow;
 		break;
 		case sPlot:
 		break;

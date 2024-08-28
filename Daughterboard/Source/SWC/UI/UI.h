@@ -28,6 +28,7 @@
 #include "GPUResMan.h"
 #include "UIMainSM.h"
 #include "Anim.h"
+#include "AboutMenu.h"
 #include "MainMenu.h"
 #include "Menu.h"
 #include "COM.h"

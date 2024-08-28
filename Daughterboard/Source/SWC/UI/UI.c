@@ -81,6 +81,7 @@ void vTaskUI(void *argument)
  */
 static void loadGraphicalResources(void)
 {
+	AboutMenu_buildObjects();
 	MainMenu_buildObjects();
 	Menu_buildObjects();
 	UIMainSM_Init();
