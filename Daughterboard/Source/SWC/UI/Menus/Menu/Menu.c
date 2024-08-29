@@ -18,13 +18,6 @@
 
 extern osMessageQueueId_t xFIFO_ButtonsHandle;
 
-typedef struct MenuSelector {
-	MenuStages menuStage;
-	uint8_t idImage;
-	uint8_t idTextbox;
-	bool isOnDevelopment;
-}MenuSelector;
-
 /**
  * ---------------------------------------------------------
  * 					   SOFTWARE COMPONENT GLOBALS
@@ -32,6 +25,13 @@ typedef struct MenuSelector {
  */
 
 UG_WINDOW menuWindow;
+
+typedef struct MenuSelector {
+	MenuStages menuStage;
+	uint8_t idImage;
+	uint8_t idTextbox;
+	bool isOnDevelopment;
+}MenuSelector;
 
 /* Menu Handlers */
 /**
@@ -47,7 +47,7 @@ struct MenuSelectorsGroup {
 	MenuSelector mSelPlot;
 	MenuSelector mSelUSBConfigs;
 	MenuSelector mSelPlantAnalysis;
-}MenuSelectorsGroup = {
+}static MenuSelectorsGroup = {
 		.mSelMainLobby = {
 			.menuStage = sMainLobby,
 			.idImage = MAIN_LOBBY_MENU_IMG_ID,
@@ -58,7 +58,7 @@ struct MenuSelectorsGroup {
 			.menuStage = sConfigs,
 			.idImage = CONFIG_MENU_IMG_ID,
 			.idTextbox = TB_CONFIG_ID,
-			.isOnDevelopment = true /* TODO: Remove when finished */
+			.isOnDevelopment = false
 		},
 		.mSelAbout = {
 			.menuStage = sAbout,
@@ -119,8 +119,6 @@ void Menu_MenuDynamics(void)
 	{
 		case Init:
 			HMI_EnableButtons(iLeft | iRight | iEncoderSW | iOk | iMenu);
-			UG_ImageShow(&menuWindow, MAIN_LOBBY_MENU_IMG_ID);
-			UG_Update();
 			stateHandler = Periodic;
 		break;
 		case Periodic:

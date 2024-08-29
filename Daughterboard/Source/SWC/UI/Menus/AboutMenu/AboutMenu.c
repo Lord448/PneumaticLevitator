@@ -266,7 +266,7 @@ void AboutMenu_Dynamics(Buttons btnPress, bool *isFirstMenuInit)
 	switch(stateHandler)
 	{
 		case Init:
-			HMI_EnableButtons(iUp | iDown);
+			HMI_EnableButtons(iUp | iDown | iMenu);
 			stateHandler = Periodic;
 		break;
 		case Periodic:
@@ -291,7 +291,7 @@ void AboutMenu_Dynamics(Buttons btnPress, bool *isFirstMenuInit)
  */
 void AboutMenu_buildObjects(void)
 {
-	static UG_OBJECT ObjWinBuf[64];
+	static UG_OBJECT ObjWinBuf[32];
 	/* Images */
 	static UG_IMAGE  UpArrowImage;
 	static UG_IMAGE  PressedUpArrowImage;

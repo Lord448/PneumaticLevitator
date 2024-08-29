@@ -155,6 +155,10 @@ void vSubTaskUSB(void *argument)
 void vSubTaskUART(void *argument)
 {
 	int16_t setPoint = 0;
+	float Kp, Ki, Kd;
+	char kpBuf[16] = "";
+	char kiBuf[16] = "";
+	char kdBuf[16] = "";
 	for(;;)
 	{
 		osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, osWaitForever);
@@ -166,6 +170,37 @@ void vSubTaskUART(void *argument)
 				/* Communicate with PID component */
 				setPoint = UART_RxBuffer[1] | (UART_RxBuffer[2] << 8);
 				osMessageQueuePut(xFIFO_PIDSetPointHandle, &setPoint, 0U, osNoTimeout);
+			break;
+			case REQUEST_CONST:
+				osTimerStop(xTimer_UARTSendHandle);
+				sendInitBuffer();
+				osTimerStart(xTimer_UARTSendHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
+			break;
+			case REQUEST_KP:
+				if(OK != NVM_Read(KP_PID_BASE_ADDR, &Kp))
+				{
+					Kp = KP_DEFAULT;
+				}
+				sprintf(kpBuf, "P%2.8f", Kp);
+				/* TODO: Make it func */
+				osTimerStop(xTimer_UARTSendHandle);
+				sendInitBuffer();
+				osTimerStart(xTimer_UARTSendHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
+			break;
+			case REQUEST_KI:
+				if(OK != NVM_Read(KI_PID_BASE_ADDR, &Ki))
+				{
+					Ki = KI_DEFAULT;
+				}
+				sprintf(kiBuf, "I%2.8f", Ki);
+			break;
+			case REQUEST_KD:
+				if(OK != NVM_Read(KD_PID_BASE_ADDR, &Kd))
+				{
+					Kd = KD_DEFAULT;
+				}
+				sprintf(kdBuf, "D%2.8f", Kd);
+			break;
 			case NO_MSG_ID:
 			default:
 				/* Do Nothing */
@@ -277,32 +312,55 @@ static void syncComm(void)
  */
 static void sendInitBuffer(void)
 {
-	uint8_t buffer[COM_UART_INIT_NUMBER_FRAMES] = {0}; /* Fixed size following the doc */
+	static char buffer[49] = ""; /* Fixed size following the doc */
 	NVMType32 Kp, Ki, Kd; /* PID constants */
 	uint32_t i = 1; /* Iterator used as index for the buffer filling */
+	static char floatKpBuf[16];
+	static char floatKiBuf[16];
+	static char floatKdBuf[16];
 
-	NVM_Read(KP_PID_BASE_ADDR, &Kp);
-	NVM_Read(KI_PID_BASE_ADDR, &Ki);
-	NVM_Read(KD_PID_BASE_ADDR, &Kd);
+	memset(buffer, '\0', sizeof(buffer));
+	if(OK != NVM_Read(KP_PID_BASE_ADDR, &Kp))
+	{
+		/* Could not read the NVM */
+		Kp.dataFloat = KP_DEFAULT;
+	}
+	else
+	{
+		/* Do Nothing */
+	}
+	if(OK != NVM_Read(KI_PID_BASE_ADDR, &Ki))
+	{
+		/* Could not read the NVM */
+		Ki.dataFloat = KI_DEFAULT;
+	}
+	else
+	{
+		/* Do Nothing */
+	}
+	if(OK != NVM_Read(KD_PID_BASE_ADDR, &Kd))
+	{
+		/* Could not read the NVM */
+		Kd.dataFloat = KD_DEFAULT;
+	}
+	else
+	{
+		/* Do Nothing */
+	}
+
+	/*Parsing the float values*/
+	sprintf(floatKpBuf, "P%2.8f", Kp.dataFloat);
+	sprintf(floatKiBuf, "I%2.8f", Ki.dataFloat);
+	sprintf(floatKdBuf, "D%2.8f", Kd.dataFloat);
 
 	/* Building the buffer transmit */
 	buffer[0] = COM_UART_INIT_FRAME_VALUE;
-	/* Filling Kp */
-	for(uint32_t j = 0; j < sizeof(NVMType32); i++, j++)
-	{
-			buffer[i] = Kp.rawData[j];
-	}
-	/* Filling Ki */
-	for(uint32_t j = 0; j < sizeof(NVMType32); i++, j++)
-	{
-		buffer[i] = Ki.rawData[j];
-	}
-	/* Filling Kd */
-	for(uint32_t j = 0; j < sizeof(NVMType32); i++, j++)
-	{
-		buffer[i] = Kd.rawData[j];
-	}
-	HAL_UART_Transmit_DMA(&huart1, buffer, COM_UART_INIT_NUMBER_FRAMES);
+	strcat(buffer, floatKpBuf);
+	strcat(buffer, floatKiBuf);
+	strcat(buffer, floatKdBuf);
+	strcat(buffer, "!");
+	uint16_t datalen = strlen(buffer);
+	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)buffer, datalen);
 	osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, osWaitForever);
 }
 /**
@@ -510,6 +568,8 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 			/* Do Nothing */
 		}
 		/* TODO Legacy logic, delete when project released */
+
+
 		osSemaphoreRelease(xSemaphore_UARTTxCpltHandle);
 	}
 }
@@ -700,3 +760,4 @@ void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
 		/* TODO: Turn on event flag Avoid Send EEPROM Data*/
 	}
 }
+

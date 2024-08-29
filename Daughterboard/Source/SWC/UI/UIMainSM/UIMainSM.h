@@ -20,6 +20,8 @@
 #include "ugui.h"
 #include "HMI.h"
 #include "MainMenu.h"
+#include "AboutMenu.h"
+#include "ConfigsMenu.h"
 #include "ugui.h"
 
 /*Macro meant to be used with the uGUI BMP type*/

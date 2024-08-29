@@ -90,6 +90,7 @@ void Error_Handler(void);
 #define TOF_XSHUT_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
+#define EOF (int32_t)-1
 #define osNoTimeout 0U
 
 #define ALWAYS_DEV_MODE

@@ -20,6 +20,7 @@ extern osMessageQueueId_t xFIFO_ButtonsHandle;
 extern UG_WINDOW aboutWindow;
 extern UG_WINDOW mainWindow;
 extern UG_WINDOW menuWindow;
+extern UG_WINDOW configsWindow;
 
 extern struct MenuSelectorsGroup MenuSelectorsGroup;
 
@@ -50,11 +51,12 @@ void UIMainSM_InfiniteLoop(void)
 	Buttons btnPress = iNone;
 	static bool isFirstMenuInit = true;
 	osMessageQueueGet(xFIFO_ButtonsHandle, &btnPress, NULL, osNoTimeout);
-	static bool debugInitMenu = true; /* TODO: Debug porpouses */
+	static bool debugInitMenu = false; /* TODO: Debug porpouses */
+
 	if(iMenu == btnPress)
 	{
 		/* Menu Button pressed */
-		Menu_ShowInitImage();
+		//Menu_ShowInitImage();
 		UIMainSM_ChangeMenu(sMenu);
 		isFirstMenuInit = true;
 		btnPress = iNone;
@@ -78,6 +80,7 @@ void UIMainSM_InfiniteLoop(void)
 			Menu_MenuDynamics();
 		break;
 		case sConfigs:
+			ConfigsMenu_Dynamics(btnPress, &isFirstMenuInit);
 		break;
 		case sAbout:
 			AboutMenu_Dynamics(btnPress, &isFirstMenuInit);
@@ -124,7 +127,7 @@ static UG_WINDOW* UIMainSM_SelectWindow(MenuStages menuStageID)
 			window = &menuWindow;
 		break;
 		case sConfigs:
-
+			window = &configsWindow;
 		break;
 		case sAbout:
 			window = &aboutWindow;

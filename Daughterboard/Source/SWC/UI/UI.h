@@ -29,6 +29,7 @@
 #include "UIMainSM.h"
 #include "Anim.h"
 #include "AboutMenu.h"
+#include "ConfigsMenu.h"
 #include "MainMenu.h"
 #include "Menu.h"
 #include "COM.h"
