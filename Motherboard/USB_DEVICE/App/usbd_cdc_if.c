@@ -314,7 +314,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   else
   {
   	/* Regular message that need to be processed by COM */
-    memset(CDC_ResBuffer, '\0', 64); /* Clear the buffer */
+    memset(CDC_ResBuffer, '\0', strlen(CDC_ResBuffer)); /* Clear the buffer */
     uint8_t len = (uint8_t)*Len;
 #ifdef LF_CF_COMPAT
     memcpy(CDC_ResBuffer, Buf, len-1); /* Copy the data to buffer */
@@ -326,9 +326,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
     memset(Buf, '\0', len); /* Clear Buf */
     osEventFlagsSet(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX);
   }
-
 #endif
-
   return result;
   /* USER CODE END 6 */
 }

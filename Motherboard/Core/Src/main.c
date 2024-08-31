@@ -467,7 +467,7 @@ const osEventFlagsAttr_t xEvent_USB_attributes = {
 /* USER CODE BEGIN PV */
 osMemoryPoolId_t MemoryPoolNVM;  /* Memory Pool for NVM data allocation*/
 
-char CDC_ResBuffer[64];
+char CDC_ResBuffer[256];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

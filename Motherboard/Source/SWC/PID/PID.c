@@ -263,6 +263,7 @@ void PID_SetControlGains(float kp, float ki, float kd)
 	PID.Gains.Ki = ki;
 	PID.Gains.Kd = kd;
 	PID_Reset();
+	/* TODO: Write to NVM */
 }
 /**
  * ---------------------------------------------------------

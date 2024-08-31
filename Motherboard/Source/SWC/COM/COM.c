@@ -60,6 +60,7 @@ bool firstInit = true;
 static result_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 static void sendInitBuffer(void);
 static void syncComm(void);
+static result_t sUSB_ParseGains(float *kp, float *ki, float *kd);
 /**
  * ---------------------------------------------------------
  * 					  SOFTWARE COMPONENT MAIN THREAD
@@ -108,7 +109,10 @@ void vTaskCOM(void *argument)
 void vSubTaskUSB(void *argument)
 {
 	char statsBuffer[1024] = {0};
+	char USBBuffer[1024] = {0};
+	char DistanceBuffer[256] = {0};
 	uint32_t usbFlags = 0;
+	float Kp, Ki, Kd;
 
 	for(;;)
 	{
@@ -117,8 +121,9 @@ void vSubTaskUSB(void *argument)
 		if(usbFlags&CDC_FLAG_MESSAGE_RX)
 		{
 			/* An USB message arrived */
-			if(strcmp(CDC_ResBuffer, "CPU") == 0) /* TODO: Instrumented code */
+			if(strcmp(CDC_ResBuffer, COM_CPU_LOAD_USB_MSG) == 0) /* TODO: Instrumented code */
 			{
+				/* Make a CPU load measure - No args*/
 				/* TODO: If decided, implement this code on DiagAppl */
 				result_t result = Error;
 				memset(statsBuffer, '\0', strlen(statsBuffer));
@@ -129,6 +134,37 @@ void vSubTaskUSB(void *argument)
 					{
 						/* The USB it's not busy */
 						result = CDC_Transmit_FS((uint8_t *)statsBuffer, strlen(statsBuffer));
+					}
+					else
+					{
+						/* Wait for the USB to send */
+					}
+				}while(result != OK);
+			}
+			else if(strcmp(CDC_ResBuffer, COM_CONSTANT_USB_MSG) == 0)
+			{
+				/* Change the constants of the PID controller - Args: KP, KI, KD!*/
+				if(OK != sUSB_ParseGains(&Kp, &Ki, &Kd))
+				{
+					/* Errors on the parse request the constants again */
+				}
+				else
+				{
+					/* All Ok, Do Nothing */
+				}
+			}
+			else if(strcmp(CDC_ResBuffer, COM_GET_CONSTANTS_USB_MSG))
+			{
+				/* Request the value of the PID constants - No Args */
+				result_t result = Error;
+				PID_GetControlGains(&Ki, &Kd, &Kp);
+				memset(USBBuffer, '\0', strlen(USBBuffer));
+				sprintf(USBBuffer, "KP:%f!KI:%f!KD:%f!\n", Ki, Kd, Kp);
+				do {
+					if(USBD_OK == CDC_getReady())
+					{
+						/* The USB it's not busy */
+						result = CDC_Transmit_FS((uint8_t *)USBBuffer, strlen(USBBuffer));
 					}
 					else
 					{
@@ -325,6 +361,63 @@ static void sendInitBuffer(void)
 	HAL_UART_Transmit_DMA(&huart1, buffer, COM_UART_INIT_NUMBER_FRAMES);
 	osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, osWaitForever);
 	osSemaphoreRelease(xSemaphore_UARTTxCpltHandle);
+}
+
+/**
+ * @brief  This function parse the Gains and delivers
+ *         as a pointer in order to change the gains
+ * @note   Expected Args: KP, KI, KD
+ * @param  *kp value
+ * @param  *ki value
+ * @param  *kd value
+ * @retval result of the operation
+ */
+static result_t sUSB_ParseGains(float *kp, float *ki, float *kd)
+{
+	char MsgBuffer[sizeof(CDC_ResBuffer)] = "";
+	uint32_t gainsAddr[3] = {(uint32_t)kp, (uint32_t)ki, (uint32_t)kd};
+	uint16_t len = strlen(CDC_ResBuffer);
+	result_t retval = OK;
+	/* Forcing the linked to use contiguous addresses on the buffers */
+	struct ConstBuffers {
+		char KpBuf[32];
+		char KiBuf[32];
+		char KdBuf[32];
+	}ConstBuffers = {
+			.KpBuf = "",
+			.KiBuf = "",
+			.KdBuf = ""
+	};
+
+	memcpy(MsgBuffer, CDC_ResBuffer, len);
+	/* Dividing the strings */
+	for(char **bufPointer = (char **)&ConstBuffers, bufNum = 0, msgBufIndex = 0; bufNum < 3; bufPointer++, bufNum++)
+	{
+		for(uint16_t locBufIndex = 0; locBufIndex < len; msgBufIndex++, locBufIndex++)
+		{
+			if(MsgBuffer[(uint8_t)msgBufIndex] != ',')
+			{
+				/* Can fill the buffer */
+				*bufPointer[locBufIndex] = MsgBuffer[(uint8_t)msgBufIndex];
+			}
+			else
+			{
+				/* End of the constant */
+				msgBufIndex++;
+				break;
+			}
+		}
+	}
+	/* Parsing the strings */
+	for(char **bufPointer = (char **)&ConstBuffers, bufNum = 1; bufNum < 3+1; bufNum++)
+	{
+		if(EOF == sscanf(*bufPointer, "%f", (float*)gainsAddr[(uint8_t)bufNum]) || Error == retval)
+		{
+			/*Parse with errors*/
+			retval = Error;
+		}
+	}
+	return retval;
 }
 /**
  * ---------------------------------------------------------
