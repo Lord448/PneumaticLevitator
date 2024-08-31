@@ -61,6 +61,7 @@ static result_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, 
 static void sendInitBuffer(void);
 static void syncComm(void);
 static result_t sUSB_ParseGains(float *kp, float *ki, float *kd);
+static result_t sCOM_SendUSB(uint8_t *buf, uint16_t len);
 /**
  * ---------------------------------------------------------
  * 					  SOFTWARE COMPONENT MAIN THREAD
@@ -111,8 +112,9 @@ void vSubTaskUSB(void *argument)
 	char statsBuffer[1024] = {0};
 	char USBBuffer[1024] = {0};
 	char DistanceBuffer[256] = {0};
-	uint32_t usbFlags = 0;
 	float Kp, Ki, Kd;
+	uint32_t usbFlags = 0;
+	uint16_t datalen = 0;
 
 	for(;;)
 	{
@@ -125,52 +127,50 @@ void vSubTaskUSB(void *argument)
 			{
 				/* Make a CPU load measure - No args*/
 				/* TODO: If decided, implement this code on DiagAppl */
-				result_t result = Error;
-				memset(statsBuffer, '\0', strlen(statsBuffer));
+				datalen = strlen(statsBuffer);
+				memset(statsBuffer, '\0', datalen);
 				vTaskGetRunTimeStats(statsBuffer);
 				strcat(statsBuffer, "\nend\n"); /* Data specific for CPULoad script */
-				do{
-					if(USBD_OK == CDC_getReady())
-					{
-						/* The USB it's not busy */
-						result = CDC_Transmit_FS((uint8_t *)statsBuffer, strlen(statsBuffer));
-					}
-					else
-					{
-						/* Wait for the USB to send */
-					}
-				}while(result != OK);
+				datalen = strlen(statsBuffer);
+				sCOM_SendUSB((uint8_t *)statsBuffer, datalen);
+				datalen = 0;
 			}
 			else if(strcmp(CDC_ResBuffer, COM_CONSTANT_USB_MSG) == 0)
 			{
 				/* Change the constants of the PID controller - Args: KP, KI, KD!*/
+				osEventFlagsClear(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX);
+				/* Wait for the args */
+				osEventFlagsWait(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX, osFlagsWaitAny, osWaitForever);
 				if(OK != sUSB_ParseGains(&Kp, &Ki, &Kd))
 				{
 					/* Errors on the parse request the constants again */
+					datalen = strlen(USBBuffer);
+					memset(USBBuffer, '\0', datalen);
+					sprintf(USBBuffer, "ERR\n");
+					datalen = strlen(USBBuffer);
+					sCOM_SendUSB((uint8_t *)USBBuffer, datalen);
+					datalen = 0;
 				}
 				else
 				{
-					/* All Ok, Do Nothing */
+					/* All Ok */
+					datalen = strlen(USBBuffer);
+					memset(USBBuffer, '\0', datalen);
+					sprintf(USBBuffer, "OK\n");
+					datalen = strlen(USBBuffer);
+					sCOM_SendUSB((uint8_t *)USBBuffer, datalen);
+					PID_SetControlGains(Kp, Ki, Kd);
 				}
 			}
-			else if(strcmp(CDC_ResBuffer, COM_GET_CONSTANTS_USB_MSG))
+			else if(strcmp(CDC_ResBuffer, COM_GET_CONSTANTS_USB_MSG) == 0)
 			{
 				/* Request the value of the PID constants - No Args */
-				result_t result = Error;
 				PID_GetControlGains(&Ki, &Kd, &Kp);
-				memset(USBBuffer, '\0', strlen(USBBuffer));
-				sprintf(USBBuffer, "KP:%f!KI:%f!KD:%f!\n", Ki, Kd, Kp);
-				do {
-					if(USBD_OK == CDC_getReady())
-					{
-						/* The USB it's not busy */
-						result = CDC_Transmit_FS((uint8_t *)USBBuffer, strlen(USBBuffer));
-					}
-					else
-					{
-						/* Wait for the USB to send */
-					}
-				}while(result != OK);
+				datalen = strlen(USBBuffer);
+				memset(USBBuffer, '\0', datalen);
+				sprintf(USBBuffer, "KP:%f!KI:%f!KD:%f\n", Ki, Kd, Kp);
+				datalen = strlen(USBBuffer);
+				sCOM_SendUSB((uint8_t *)USBBuffer, datalen);
 			}
 			else
 			{
@@ -375,48 +375,120 @@ static void sendInitBuffer(void)
 static result_t sUSB_ParseGains(float *kp, float *ki, float *kd)
 {
 	char MsgBuffer[sizeof(CDC_ResBuffer)] = "";
-	uint32_t gainsAddr[3] = {(uint32_t)kp, (uint32_t)ki, (uint32_t)kd};
 	uint16_t len = strlen(CDC_ResBuffer);
 	result_t retval = OK;
-	/* Forcing the linked to use contiguous addresses on the buffers */
-	struct ConstBuffers {
-		char KpBuf[32];
-		char KiBuf[32];
-		char KdBuf[32];
-	}ConstBuffers = {
-			.KpBuf = "",
-			.KiBuf = "",
-			.KdBuf = ""
-	};
+	uint16_t msgIndex = 0;
+	char KpBuf[32] = "";
+	char KiBuf[32] = "";
+	char KdBuf[32] = "";
 
 	memcpy(MsgBuffer, CDC_ResBuffer, len);
-	/* Dividing the strings */
-	for(char **bufPointer = (char **)&ConstBuffers, bufNum = 0, msgBufIndex = 0; bufNum < 3; bufPointer++, bufNum++)
+	/* Dividing KP */
+	for(uint16_t bufIndex = 0; msgIndex < len; msgIndex++, bufIndex++)
 	{
-		for(uint16_t locBufIndex = 0; locBufIndex < len; msgBufIndex++, locBufIndex++)
+		if(MsgBuffer[msgIndex] != ',')
 		{
-			if(MsgBuffer[(uint8_t)msgBufIndex] != ',')
+			/* Can fill the buffer */
+			KpBuf[bufIndex] = MsgBuffer[msgIndex];
+		}
+		else
+		{
+			/* End of the buffer */
+			msgIndex++;
+			break;
+		}
+	}
+	/* Dividing KI */
+	for(uint16_t bufIndex = 0; msgIndex < len; msgIndex++, bufIndex++)
+		{
+			if(MsgBuffer[msgIndex] != ',')
 			{
 				/* Can fill the buffer */
-				*bufPointer[locBufIndex] = MsgBuffer[(uint8_t)msgBufIndex];
+				KiBuf[bufIndex] = MsgBuffer[msgIndex];
 			}
 			else
 			{
-				/* End of the constant */
-				msgBufIndex++;
+				/* End of the buffer */
+				msgIndex++;
 				break;
 			}
 		}
-	}
-	/* Parsing the strings */
-	for(char **bufPointer = (char **)&ConstBuffers, bufNum = 1; bufNum < 3+1; bufNum++)
-	{
-		if(EOF == sscanf(*bufPointer, "%f", (float*)gainsAddr[(uint8_t)bufNum]) || Error == retval)
+	/* Dividing KD */
+	for(uint16_t bufIndex = 0; msgIndex < len; msgIndex++, bufIndex++)
 		{
-			/*Parse with errors*/
-			retval = Error;
+			if(MsgBuffer[msgIndex] != ',')
+			{
+				/* Can fill the buffer */
+				KdBuf[bufIndex] = MsgBuffer[msgIndex];
+			}
+			else
+			{
+				/* End of the buffer */
+				break;
+			}
 		}
+	/* Parsing the strings */
+	if(EOF == sscanf(KpBuf, "%f", kp))
+	{
+		/* Parse with errors */
+		retval = Error;
 	}
+	if(EOF == sscanf(KiBuf, "%f", ki) || Error == retval)
+	{
+		/* Parse with errors */
+		retval = Error;
+	}
+	if(EOF == sscanf(KdBuf, "%f", kd) || Error == retval)
+	{
+		/* Parse with errors */
+		retval = Error;
+	}
+	return retval;
+}
+
+
+/**
+ * @brief  Sends USB information
+ * @param  buf Buffer that has the information
+ * @param  len Lenght of the message to transmit
+ * @retval result of the operation
+ */
+static result_t sCOM_SendUSB(uint8_t *buf, uint16_t len)
+{
+	const uint16_t maxIntents = 50;
+	uint16_t intents = 0;
+	result_t retval = OK;
+	uint8_t CDC_res;
+	do{
+		/* USB send */
+		if(USBD_OK == CDC_getReady())
+		{
+			/* USB it's free */
+			CDC_res = CDC_Transmit_FS(buf, len);
+			if(CDC_res != USBD_OK)
+			{
+				/* Transmission with errors */
+				retval = Error;
+			}
+			else
+			{
+				/* All OK */
+				retval = OK;
+			}
+		}
+		else
+		{
+			/* Wait for usb to send */
+			intents++;
+		}
+		if(maxIntents < intents)
+		{
+			/* Limit of the intents */
+			retval = Error;
+			break;
+		}
+
+	}while(CDC_res != OK);
 	return retval;
 }
 /**
