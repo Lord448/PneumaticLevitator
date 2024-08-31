@@ -38,6 +38,7 @@ extern osEventFlagsId_t xEvent_FatalErrorHandle;
 extern osEventFlagsId_t xEvent_UARTSendTypeHandle;
 
 uint8_t COM_UARTRxBuffer[COM_UART_INIT_NUMBER_FRAMES] = {0};
+uint8_t UARTRXLocalBuffer[COM_UART_INIT_NUMBER_FRAMES] = {0};
 
 #define firstFrame COM_UARTRxBuffer[0]
 
@@ -46,9 +47,8 @@ uint8_t COM_UARTRxBuffer[COM_UART_INIT_NUMBER_FRAMES] = {0};
  * 					 SOFTWARE COMPONENT LOCAL PROTOYPES
  * ---------------------------------------------------------
  */
-static result_t sCOM_ParseFloatConstants(char *str, float *kp, float *ki, float *kd);
 static result_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
-static void buildFloatFromUART(uint8_t *data, float *number, uint8_t startIndex);
+static float buildFloatFromUART(uint8_t *data, uint8_t startIndex);
 static void reSyncCom(bool *syncComInProcess);
 static void sendCPULoad(char *statsBuffer);
 /**
@@ -67,9 +67,7 @@ void vTaskCOM(void *argument)
 	char statsBuffer[1024] = {0};
 	bool syncComInProcess = false;
 	int16_t distance, rpm, actionControl;
-	static ControlConst controlConst;
-	char UARTRXLocalBuffer[COM_UART_INIT_NUMBER_FRAMES] = {0};
-	uint16_t datalen;
+	ControlConst controlConst;
 
 	do {
 		/* Waiting to receive the init frame of Motherboard */
@@ -93,14 +91,14 @@ void vTaskCOM(void *argument)
 			if(COM_UART_INIT_FRAME_VALUE == firstFrame)
 			{
 				/* The first frame was sent */
-				//buildFloatFromUART(COM_UARTRxBuffer, &kp, 1);
-				//buildFloatFromUART(COM_UARTRxBuffer, &controlConst.ki, 5);
-				//buildFloatFromUART(COM_UARTRxBuffer, &controlConst.kp, 9);
+				controlConst.kp = buildFloatFromUART(COM_UARTRxBuffer, 1);
+				controlConst.ki = buildFloatFromUART(COM_UARTRxBuffer, 5);
+				controlConst.kp = buildFloatFromUART(COM_UARTRxBuffer, 9);
 				osMessageQueuePut(xFIFO_ControlConstantsHandle, &controlConst, 0U, osNoTimeout);
 			}
 			else
 			{
-				/* Do nothing */
+				/* Didn't received the constants */
 			}
 		}
 		else
@@ -122,13 +120,10 @@ void vTaskCOM(void *argument)
 		{
 			case COM_UART_INIT_FRAME_VALUE:
 				/* An initial frame has been received when it's not supposed to */
-				/* Copy the data of the frame */
-				datalen = strlen((char *)COM_UARTRxBuffer);
-				memset(UARTRXLocalBuffer, '\0', sizeof(UARTRXLocalBuffer));
-				memcpy(UARTRXLocalBuffer, COM_UARTRxBuffer, datalen);
-				memset(COM_UARTRxBuffer, 0, sizeof(COM_UARTRxBuffer));
-				if(OK == sCOM_ParseFloatConstants((char *)UARTRXLocalBuffer, &controlConst.kp, &controlConst.ki, &controlConst.kd))
-					osMessageQueuePut(xFIFO_ControlConstantsHandle, &controlConst, 0U, osNoTimeout);
+				controlConst.kp = buildFloatFromUART(UARTRXLocalBuffer, 1);
+				controlConst.ki = buildFloatFromUART(UARTRXLocalBuffer, 5);
+				controlConst.kd = buildFloatFromUART(UARTRXLocalBuffer, 9);
+				osMessageQueuePut(xFIFO_ControlConstantsHandle, &controlConst, 0U, osNoTimeout);
 				syncComInProcess = true;
 				osSemaphoreRelease(xSemaphore_UARTRxCpltHandle);
 				while(syncComInProcess)
@@ -212,182 +207,26 @@ int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType prior
  * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
  * ---------------------------------------------------------
  */
-
-static result_t sCOM_ParseFloatConstants(char *str, float *kp, float *ki, float *kd)
-{
-	const char endOfFrameChar = '!';
-	result_t retval = Error;
-	uint16_t datalen = strlen(str);
-	bool stringIsCorrect = false;
-	bool kpErrorFlag = false, kiErrorFlag = false, kdErrorFlag = false;
-	char kpBuf[16] = "";
-	char kiBuf[16] = "";
-	char kdBuf[16] = "";
-
-	/* Search for end of frame char */
-	for(int16_t i = datalen; i > 0; i--)
-	{
-		if(str[i] == endOfFrameChar)
-		{
-			/* String received correctly */
-			stringIsCorrect = true;
-			break;
-		}
-	}
-	/* Processing the data */
-	if(stringIsCorrect)
-	{
-		/* Can process the data */
-		for(uint16_t i = 0; i < datalen; i++)
-		{
-			/* Searching through all the buffer */
-			if(str[i] == 'P')
-			{
-				/* P constant found */
-				i++;
-				for(uint16_t j = i, bufIndex = 0; j < datalen; j++, bufIndex++)
-				{
-					/* Filling P constant */
-					if(str[j] != 'I')
-					{
-						/* Can fill the buffer */
-						kpBuf[bufIndex] = str[j];
-					}
-					else
-					{
-						/* End of P constant */
-						i = j-1;
-						break;
-					}
-				}
-			}
-			else if(str[i] == 'I')
-			{
-				/* I constant found */
-				i++;
-				for(uint16_t j = i, bufIndex = 0; j < datalen; j++, bufIndex++)
-				{
-					/* Filling I constant */
-					if(str[j] != 'D')
-					{
-						/* Can fill the buffer */
-						kiBuf[bufIndex] = str[j];
-					}
-					else
-					{
-						/* End of I constant */
-						i = j-1;
-						break;
-					}
-				}
-			}
-			else if(str[i] == 'D')
-			{
-				/* D constant found */
-				i++;
-				for(uint16_t j = i, bufIndex = 0; j < datalen; j++, bufIndex++)
-				{
-					/* Filling D constant */
-					if(str[j] != '!')
-					{
-						/* Can fill the buffer */
-						kdBuf[bufIndex] = str[j];
-					}
-					else
-					{
-						/* End of D constant */
-						i = j-1;
-						break;
-					}
-				}
-			}
-			else
-			{
-				/* Do Nothing */
-			}
-		}
-		/* Parse the float numbers */
-		if(EOF == sscanf(kpBuf, "%f", kp))
-		{
-			/* Error on the parse */
-			*kp = (float)EOF;
-			COM_SendMessage(REQUEST_KP, MSG_TYPE_ONDEMAND, PRIORITY_HIGH, 0);
-		}
-		if(EOF == sscanf(kiBuf, "%f", ki))
-		{
-			/* Error on the parse */
-			*ki = (float)EOF;
-			COM_SendMessage(REQUEST_KI, MSG_TYPE_ONDEMAND, PRIORITY_HIGH, 0);
-		}
-		if(EOF != sscanf(kdBuf, "%f", kd))
-		{
-			/* Error on the parse */
-			*kd = (float)EOF;
-			COM_SendMessage(REQUEST_KD, MSG_TYPE_ONDEMAND, PRIORITY_HIGH, 0);
-		}
-		if(kpErrorFlag && kiErrorFlag && kdErrorFlag)
-		{
-			/* Non of the constants were parsed correctly */
-			retval = Error;
-		}
-		else
-		{
-			/* At least one of the constants were parsed correctly */
-			retval = OK;
-		}
-	}
-	else
-	{
-		/* String came with errors, request the init frame */
-		COM_SendMessage(REQUEST_CONST, MSG_TYPE_ONDEMAND, PRIORITY_HIGH, 0);
-		retval = Error;
-	}
-	return retval;
-}
-typedef union COM32Type
-	{
-		float result;
-		uint32_t data32;
-		uint8_t rawData[4];
-	}COM32Type;
 /**
  * @brief
  * @param
  * @retval none
  */
-static void buildFloatFromUART(uint8_t *data, float *number, uint8_t startIndex)
+static float buildFloatFromUART(uint8_t *data, uint8_t startIndex)
 {
 	/* TODO Unscalable code, fix this with PDU handling */
-
-	/*
-	TODO: Old algorithm, it's uncomented due to memory copy issues for the union
-	float res;
-	COM32Type data32type;
-	COM32Type data32type2;
-	for(uint16_t i = 0; i < sizeof(COM32Type); i++, startIndex++)
+	union COM32Type
 	{
-		/* Filling the float data
-		data32type.rawData[i] = data[startIndex];
-	}
-	memcpy((uint8_t *)&res, data32type.rawData, sizeof(float));
+		float result;
+		uint8_t rawData[4];
+	}COM32Type;
 
-	data32type2.result = data32type.result;
-
-	res = (float)data32type.result;
-	//res = (float) 100.32;
-	*number = data32type.result;
-	*/
-	COM32Type data32type;
-	int32_t integerData;
-	int32_t fraccData;
 	for(uint16_t i = 0; i < sizeof(COM32Type); i++, startIndex++)
 	{
 		/* Filling the float data */
-		data32type.rawData[i] = data[startIndex];
+		COM32Type.rawData[i] = data[startIndex];
 	}
-	/* Moving data to res */
-	integerData = (uint32_t) data32type.result;
-	fraccData = (uint32_t) (data32type.result-integerData ) * 1000000;
+	return COM32Type.result;
 }
 
 /**
@@ -604,6 +443,16 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 	else
 	{
 		/* Needs to be handled on COM */
+		if(COM_UART_INIT_FRAME_VALUE == firstFrame)
+		{
+			/* @note
+			 * Can't wait to the thread to process the buffer, copying the
+			 * buffer on another in order to avoid data overrun or overwrite
+			 * on the buffer
+			 */
+			memset(UARTRXLocalBuffer, '\0', sizeof(UARTRXLocalBuffer));
+			memcpy(UARTRXLocalBuffer, COM_UARTRxBuffer, COM_UART_INIT_NUMBER_FRAMES);
+		}
 		osSemaphoreRelease(xSemaphore_UARTRxCpltHandle);
 	}
 	/* Continue expecting receiveing signals */

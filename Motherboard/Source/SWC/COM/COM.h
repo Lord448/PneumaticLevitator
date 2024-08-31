@@ -21,6 +21,7 @@
 #include "cmsis_os2.h"
 #include "usbd_cdc_if.h"
 #include "Signals.h"
+#include "PID.h"
 #include "NVM.h"
 #include "PID.h"
 #include "NVMVariables.h"
@@ -33,7 +34,7 @@
 #define COM_MAX_QUEUE_MESSAGES 16
 
 /* Number of frames of the initial messages (for transmission)*/
-#define COM_UART_INIT_NUMBER_FRAMES     49
+#define COM_UART_INIT_NUMBER_FRAMES     13
 /* Number of frames of the periodic messages (for transmission)*/
 #define COM_UART_PERIODIC_NUMBER_FRAMES_TX 6
 /* Number of frames of the periodic messages (for reception)*/

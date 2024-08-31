@@ -29,7 +29,7 @@
 #define COM_MAX_QUEUE_MESSAGES 16
 
 /* Number of frames of the initial messages (for reception)*/
-#define COM_UART_INIT_NUMBER_FRAMES 49
+#define COM_UART_INIT_NUMBER_FRAMES 13
 /* Number of frames of the periodic messages (for reception)*/
 #define COM_UART_PERIODIC_NUMBER_FRAMES_RX 6
 /* Number of frames of the periodic messages (for transmission) */

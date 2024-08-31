@@ -68,8 +68,8 @@ void UIMainSM_InfiniteLoop(void)
 
 	if(debugInitMenu) /* TODO: Debug porpouses */
 	{
-		UIMainSM_ChangeMenu(sAbout);
-		debugInitMenu = false;
+		//UIMainSM_ChangeMenu(sAbout);
+		//debugInitMenu = false;
 	}
 	switch(menuStage)
 	{

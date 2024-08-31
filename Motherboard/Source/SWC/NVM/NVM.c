@@ -159,7 +159,7 @@ result_t NVM_read32Bit(uint16_t NVMVariable, NVMType32 *data)
  */
 result_t NVM_readFloat(uint16_t NVMVariable, float *data)
 {
-	return OK; /*TODO: Stubbed code*/
+	return Error; /*TODO: Stubbed code*/
 }
 
 /**

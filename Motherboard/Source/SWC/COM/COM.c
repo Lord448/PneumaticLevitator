@@ -155,10 +155,6 @@ void vSubTaskUSB(void *argument)
 void vSubTaskUART(void *argument)
 {
 	int16_t setPoint = 0;
-	float Kp, Ki, Kd;
-	char kpBuf[16] = "";
-	char kiBuf[16] = "";
-	char kdBuf[16] = "";
 	for(;;)
 	{
 		osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, osWaitForever);
@@ -166,40 +162,13 @@ void vSubTaskUART(void *argument)
 		osTimerStart(xTimer_WdgUARTHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
 		switch(UARTfirstFrame)
 		{
+			case COM_UART_INIT_FRAME_VALUE:
+				sendInitBuffer();
+			break;
 			case SET_POINT:
 				/* Communicate with PID component */
 				setPoint = UART_RxBuffer[1] | (UART_RxBuffer[2] << 8);
 				osMessageQueuePut(xFIFO_PIDSetPointHandle, &setPoint, 0U, osNoTimeout);
-			break;
-			case REQUEST_CONST:
-				osTimerStop(xTimer_UARTSendHandle);
-				sendInitBuffer();
-				osTimerStart(xTimer_UARTSendHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
-			break;
-			case REQUEST_KP:
-				if(OK != NVM_Read(KP_PID_BASE_ADDR, &Kp))
-				{
-					Kp = KP_DEFAULT;
-				}
-				sprintf(kpBuf, "P%2.8f", Kp);
-				/* TODO: Make it func */
-				osTimerStop(xTimer_UARTSendHandle);
-				sendInitBuffer();
-				osTimerStart(xTimer_UARTSendHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
-			break;
-			case REQUEST_KI:
-				if(OK != NVM_Read(KI_PID_BASE_ADDR, &Ki))
-				{
-					Ki = KI_DEFAULT;
-				}
-				sprintf(kiBuf, "I%2.8f", Ki);
-			break;
-			case REQUEST_KD:
-				if(OK != NVM_Read(KD_PID_BASE_ADDR, &Kd))
-				{
-					Kd = KD_DEFAULT;
-				}
-				sprintf(kdBuf, "D%2.8f", Kd);
 			break;
 			case NO_MSG_ID:
 			default:
@@ -251,7 +220,6 @@ static result_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, 
     {
         return Error; /* Values out of range */
     }
-
     pdu->fields.messageID = messageID;
     pdu->fields.messageType = type;
     pdu->fields.priority = priority;
@@ -312,56 +280,46 @@ static void syncComm(void)
  */
 static void sendInitBuffer(void)
 {
-	static char buffer[49] = ""; /* Fixed size following the doc */
+	static uint8_t buffer[COM_UART_INIT_NUMBER_FRAMES] = {0}; /* Fixed size following the doc */
 	NVMType32 Kp, Ki, Kd; /* PID constants */
 	uint32_t i = 1; /* Iterator used as index for the buffer filling */
-	static char floatKpBuf[16];
-	static char floatKiBuf[16];
-	static char floatKdBuf[16];
 
-	memset(buffer, '\0', sizeof(buffer));
 	if(OK != NVM_Read(KP_PID_BASE_ADDR, &Kp))
 	{
 		/* Could not read the NVM */
 		Kp.dataFloat = KP_DEFAULT;
-	}
-	else
-	{
-		/* Do Nothing */
 	}
 	if(OK != NVM_Read(KI_PID_BASE_ADDR, &Ki))
 	{
 		/* Could not read the NVM */
 		Ki.dataFloat = KI_DEFAULT;
 	}
-	else
-	{
-		/* Do Nothing */
-	}
 	if(OK != NVM_Read(KD_PID_BASE_ADDR, &Kd))
 	{
 		/* Could not read the NVM */
 		Kd.dataFloat = KD_DEFAULT;
 	}
-	else
-	{
-		/* Do Nothing */
-	}
-
-	/*Parsing the float values*/
-	sprintf(floatKpBuf, "P%2.8f", Kp.dataFloat);
-	sprintf(floatKiBuf, "I%2.8f", Ki.dataFloat);
-	sprintf(floatKdBuf, "D%2.8f", Kd.dataFloat);
 
 	/* Building the buffer transmit */
 	buffer[0] = COM_UART_INIT_FRAME_VALUE;
-	strcat(buffer, floatKpBuf);
-	strcat(buffer, floatKiBuf);
-	strcat(buffer, floatKdBuf);
-	strcat(buffer, "!");
-	uint16_t datalen = strlen(buffer);
-	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)buffer, datalen);
+	/* Filling Kp */
+	for(uint32_t j = 0; j < sizeof(NVMType32); i++, j++)
+	{
+			buffer[i] = Kp.rawData[j];
+	}
+	/* Filling Ki */
+	for(uint32_t j = 0; j < sizeof(NVMType32); i++, j++)
+	{
+		buffer[i] = Ki.rawData[j];
+	}
+	/* Filling Kd */
+	for(uint32_t j = 0; j < sizeof(NVMType32); i++, j++)
+	{
+		buffer[i] = Kd.rawData[j];
+	}
+	HAL_UART_Transmit_DMA(&huart1, buffer, COM_UART_INIT_NUMBER_FRAMES);
 	osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, osWaitForever);
+	osSemaphoreRelease(xSemaphore_UARTTxCpltHandle);
 }
 /**
  * ---------------------------------------------------------
@@ -552,24 +510,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   */
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-	uint8_t firstFrame = huart->pTxBuffPtr[0];
-
 	if(USART1 == huart -> Instance)
 	{
-		/* TODO Legacy logic, delete when project released */
-		/* Communication with the daughterboard */
-		if(COM_UART_INIT_FRAME_VALUE == firstFrame)
-		{
-			/* The first frame (init frame) has been sent */
-			//osSemaphoreRelease(xSemaphore_InitDaughterHandle);
-		}
-		else
-		{
-			/* Do Nothing */
-		}
-		/* TODO Legacy logic, delete when project released */
-
-
 		osSemaphoreRelease(xSemaphore_UARTTxCpltHandle);
 	}
 }
@@ -585,32 +527,15 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
 
 	osSemaphoreRelease(xSemaphore_InitDaughterHandle);
-	if(UART_RxBuffer[0] == COM_UART_INIT_FRAME_VALUE)
+	/* It's a periodic frame */
+	if(NO_MSG_ID != UART_RxBuffer[0])
 	{
-		/* It's an init frame */
-		if(firstInit)
-		{
-			/* The system were waiting for this init */
-			firstInit = false;
-		}
-		else
-		{
-			/* Watchdog timer were triggered on daughterboard */
-			/* TODO: Handle here */
-		}
+		/* Indicating that the component has to process the data */
+		osSemaphoreRelease(xSemaphore_UARTRxCpltHandle);
 	}
 	else
 	{
-		/* It's a periodic frame */
-		if(NO_MSG_ID != UART_RxBuffer[0])
-		{
-			/* Indicating that the component has to process the data */
-			osSemaphoreRelease(xSemaphore_UARTRxCpltHandle);
-		}
-		else
-		{
-			/* Do Nothing, It's just the acknowledge */
-		}
+		/* Do Nothing, It's just the acknowledge */
 	}
 	HAL_UARTEx_ReceiveToIdle_DMA(&huart1, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES_RX);
 }
@@ -626,32 +551,15 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 	osEventFlagsClear(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
 
 	osSemaphoreRelease(xSemaphore_InitDaughterHandle);
-	if(UART_RxBuffer[0] == COM_UART_INIT_FRAME_VALUE)
+	/* It's a periodic frame */
+	if(NO_MSG_ID != UART_RxBuffer[0])
 	{
-		/* It's an init frame */
-		if(firstInit)
-		{
-			/* The system were waiting for this init */
-			firstInit = false;
-		}
-		else
-		{
-			/* Watchdog timer were triggered on daughterboard */
-			/* TODO: Handle here */
-		}
+		/* Indicating that the component has to process the data */
+		osSemaphoreRelease(xSemaphore_UARTRxCpltHandle);
 	}
 	else
 	{
-		/* It's a periodic frame */
-		if(NO_MSG_ID != UART_RxBuffer[0])
-		{
-			/* Indicating that the component has to process the data */
-			osSemaphoreRelease(xSemaphore_UARTRxCpltHandle);
-		}
-		else
-		{
-			/* Do Nothing, It's just the acknowledge */
-		}
+		/* Do Nothing, It's just the acknowledge */
 	}
 	HAL_UARTEx_ReceiveToIdle_DMA(&huart1, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES_RX);
 }
@@ -760,4 +668,3 @@ void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
 		/* TODO: Turn on event flag Avoid Send EEPROM Data*/
 	}
 }
-

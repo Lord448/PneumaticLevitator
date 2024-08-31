@@ -119,15 +119,15 @@
 /* Kp */
 #define TB_KP_INIT             0
 #define TB_KP_Y		             5
-#define TB_KP_CHARS            charslen("KP: 0.00000")
+#define TB_KP_CHARS            charslen("KP: 0.0000000")
 /* Ki */
 #define TB_KI_INIT             TB_KP_INIT
 #define TB_KI_Y		             TB_KP_Y+TEXTBOX_FONT_Y+5
-#define TB_KI_CHARS            charslen("KI: 0.00000")
+#define TB_KI_CHARS            charslen("KI: 0.0000000")
 /* Kd */
 #define TB_KD_INIT             TB_KP_INIT
 #define TB_KD_Y		             TB_KI_Y+TEXTBOX_FONT_Y+5
-#define TB_KD_CHARS            charslen("KD: 0.00000")
+#define TB_KD_CHARS            charslen("KD: 0.0000000")
 
 /**
  * ---------------------------------------------------------

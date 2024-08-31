@@ -233,18 +233,21 @@ void MainMenu_buildObjects(void)
   /* Kp */
   UI_TextboxCreate(&mainWindow, &tbKP, TB_KP_ID,
   		TB_KP_INIT, TB_KP_Y,
-			TB_KP_INIT+(TB_KP_CHARS*TEXTBOX_FONT_X)-60, TB_KP_Y+TEXTBOX_FONT_Y);
-  UG_TextboxSetText(&mainWindow, TB_KP_ID, "KP: 0.00000");
+			TB_KP_INIT+(TB_KP_CHARS*TEXTBOX_FONT_X)-65, TB_KP_Y+TEXTBOX_FONT_Y);
+  UG_TextboxSetText(&mainWindow, TB_KP_ID, "KP: 0.0000000");
+  UG_TextboxSetAlignment(&mainWindow, TB_KP_ID, ALIGN_H_LEFT);
   /* Ki */
   UI_TextboxCreate(&mainWindow, &tbKI, TB_KI_ID,
   		TB_KI_INIT, TB_KI_Y,
-			TB_KI_INIT+(TB_KP_CHARS*TEXTBOX_FONT_X)-60, TB_KI_Y+TEXTBOX_FONT_Y);
-  UG_TextboxSetText(&mainWindow, TB_KI_ID, "KI: 0.00000");
+			TB_KI_INIT+(TB_KP_CHARS*TEXTBOX_FONT_X)-65, TB_KI_Y+TEXTBOX_FONT_Y);
+  UG_TextboxSetText(&mainWindow, TB_KI_ID, "KI: 0.0000000");
+  UG_TextboxSetAlignment(&mainWindow, TB_KI_ID, ALIGN_H_LEFT);
   /* Kd */
   UI_TextboxCreate(&mainWindow, &tbKD, TB_KD_ID,
   		TB_KD_INIT, TB_KD_Y,
-			TB_KD_INIT+(TB_KD_CHARS*TEXTBOX_FONT_X)-60, TB_KD_Y+TEXTBOX_FONT_Y);
-  UG_TextboxSetText(&mainWindow, TB_KD_ID, "KD: 0.00000");
+			TB_KD_INIT+(TB_KD_CHARS*TEXTBOX_FONT_X)-65, TB_KD_Y+TEXTBOX_FONT_Y);
+  UG_TextboxSetText(&mainWindow, TB_KD_ID, "KD: 0.0000000");
+  UG_TextboxSetAlignment(&mainWindow, TB_KD_ID, ALIGN_H_LEFT);
 
   /* CheckBoxes */
   /* Manual */
@@ -270,7 +273,7 @@ result_t MainMenu_setKP(float kp)
 	result_t result = OK;
 	char Buffer[32] = "";
 
-	sprintf(Buffer, "KP: %1.5f", kp);
+	sprintf(Buffer, "KP: %1.8f", kp);
 	result = UG_RESULT_OK == UG_TextboxSetText(&mainWindow, TB_KP_ID, Buffer) ? OK : Error;
 	UG_Update();
 	return result;
@@ -281,7 +284,7 @@ result_t MainMenu_setKI(float ki)
 	result_t result = OK;
 	char Buffer[32] = "";
 
-	sprintf(Buffer, "KI: %1.5f", ki);
+	sprintf(Buffer, "KI: %1.8f", ki);
 	result = UG_RESULT_OK == UG_TextboxSetText(&mainWindow, TB_KI_ID, Buffer) ? OK : Error;
 	UG_Update();
 	return result;
@@ -292,7 +295,7 @@ result_t MainMenu_setKD(float kd)
 	result_t result = OK;
 	char Buffer[32] = "";
 
-	sprintf(Buffer, "KD: %1.5f", kd);
+	sprintf(Buffer, "KD: %1.8f", kd);
 	result = UG_RESULT_OK == UG_TextboxSetText(&mainWindow, TB_KD_ID, Buffer) ? OK : Error;
 	UG_Update();
 	return result;
@@ -401,6 +404,7 @@ static void sMainMenu_ProcessButtonPress(Buttons btnPressed, int16_t *setPoint)
 	{
 		case iOk:
 		case iEncoderSW:
+			/* TODO: Toggle the PID */
 		break;
 		case iUp:
 			*setPoint = *setPoint + 1;
