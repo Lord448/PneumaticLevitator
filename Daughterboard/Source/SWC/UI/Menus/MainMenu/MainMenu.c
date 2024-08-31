@@ -26,6 +26,8 @@ extern osMessageQueueId_t xFIFO_ControlGainsHandle;
 
 UG_WINDOW mainWindow;
 
+float kpCache = 0, kiCache = 0, kdCache = 0;
+
 /**
  * ---------------------------------------------------------
  * 					 SOFTWARE COMPONENT LOCAL PROTOYPES
@@ -51,6 +53,7 @@ void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit)
 		/* First init of the menu */
 		HMI_EnableAllButtons();
 		MainMenu_setSetPoint(setPoint);
+		MainMenu_setControlConstants(kpCache, kiCache, kdCache);
 		*isFirstMenuInit = false;
 	}
 	/* Printing the bars */
@@ -273,9 +276,10 @@ result_t MainMenu_setKP(float kp)
 	result_t result = OK;
 	char Buffer[32] = "";
 
-	sprintf(Buffer, "KP: %1.8f", kp);
+	sprintf(Buffer, "KP: %1.7f", kp);
 	result = UG_RESULT_OK == UG_TextboxSetText(&mainWindow, TB_KP_ID, Buffer) ? OK : Error;
 	UG_Update();
+	kpCache = kp;
 	return result;
 }
 
@@ -284,9 +288,10 @@ result_t MainMenu_setKI(float ki)
 	result_t result = OK;
 	char Buffer[32] = "";
 
-	sprintf(Buffer, "KI: %1.8f", ki);
+	sprintf(Buffer, "KI: %1.7f", ki);
 	result = UG_RESULT_OK == UG_TextboxSetText(&mainWindow, TB_KI_ID, Buffer) ? OK : Error;
 	UG_Update();
+	kiCache = ki;
 	return result;
 }
 
@@ -295,9 +300,10 @@ result_t MainMenu_setKD(float kd)
 	result_t result = OK;
 	char Buffer[32] = "";
 
-	sprintf(Buffer, "KD: %1.8f", kd);
+	sprintf(Buffer, "KD: %1.7f", kd);
 	result = UG_RESULT_OK == UG_TextboxSetText(&mainWindow, TB_KD_ID, Buffer) ? OK : Error;
 	UG_Update();
+	kdCache = kd;
 	return result;
 }
 
@@ -404,7 +410,7 @@ static void sMainMenu_ProcessButtonPress(Buttons btnPressed, int16_t *setPoint)
 	{
 		case iOk:
 		case iEncoderSW:
-			/* TODO: Toggle the PID */
+			COM_SendMessage(TOGGLE_PID, MSG_TYPE_ONDEMAND, PRIORITY_MEDIUM, 0);
 		break;
 		case iUp:
 			*setPoint = *setPoint + 1;

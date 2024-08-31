@@ -155,6 +155,7 @@ void vSubTaskUSB(void *argument)
 void vSubTaskUART(void *argument)
 {
 	int16_t setPoint = 0;
+
 	for(;;)
 	{
 		osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, osWaitForever);
@@ -169,6 +170,9 @@ void vSubTaskUART(void *argument)
 				/* Communicate with PID component */
 				setPoint = UART_RxBuffer[1] | (UART_RxBuffer[2] << 8);
 				osMessageQueuePut(xFIFO_PIDSetPointHandle, &setPoint, 0U, osNoTimeout);
+			break;
+			case TOGGLE_PID:
+				PID_TogglePID();
 			break;
 			case NO_MSG_ID:
 			default:

@@ -19,10 +19,11 @@
 
 #include "COM.h"
 
-
 #define ACK_DATA 1<<7
 
 #define SIGNAL(ID) (ACK_DATA | ID)
+
+#define INIT_FRAME        0xA5
 
 /*Declare here all the signals*/
 #define NO_MSG_ID         SIGNAL(0x00)
@@ -36,6 +37,7 @@
 #define KP_VAL            SIGNAL(0x07)
 #define KI_VAL            SIGNAL(0x08)
 #define KD_VAL            SIGNAL(0x09)
+#define TOGGLE_PID        SIGNAL(0x0A)
 
 #define CPU_LOAD_DAUGHTER SIGNAL(0x7F) /* 7 bit limit */
 

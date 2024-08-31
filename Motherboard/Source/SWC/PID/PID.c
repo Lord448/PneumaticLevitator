@@ -35,6 +35,7 @@ static struct PID {
 	int32_t Past_Error;
 	int32_t Set_Point;
 	int32_t Offset;
+	bool isActive;
 } PID = {
 	.Gains.Kp = KP_DEFAULT,
 	.Gains.Ki = KI_DEFAULT,
@@ -46,7 +47,8 @@ static struct PID {
 	.Error = 0,
 	.Past_Error = 0,
 	.Set_Point = 260,
-	.Offset = 65 /* Need calibration and configuration */
+	.Offset = 65, /* Need calibration and configuration */
+	.isActive = true
 };
 
 /**
@@ -161,12 +163,30 @@ void vTaskPID(void *argument)
 		PID_LimitActionControl(PID.ControlAction);
 		PID.Past_Error = PID.Error;
 
-
 		dataToSend = (int8_t)PID.ControlAction;
 		/* Sending to FAN processed data */
 		/* TODO: Traduce the control action to porcentage */
 		osMessageQueuePut(xFIFO_FANDutyCycleHandle, (int8_t*)&dataToSend, 0U, osNoTimeout);
+		/* Off/On logic */
+		if(!PID.isActive)
+		{
+			/* Disabling PID */
+			PID_Reset();
+			dataToSend = 0;
 
+			while(!PID.isActive)
+			{
+				osMessageQueuePut(xFIFO_FANDutyCycleHandle, (int8_t*)&dataToSend, 0U, osNoTimeout);
+				/* Wait 50 ticks to check if the PID has turned on */
+				osDelay(50);
+			}
+			continue; /* Skip the end of loop delay */
+		}
+		else
+		{
+			/* Do Nothing */
+		}
+		/* End of loop */
 		if(0 < controlSamplingRate)
 		{
 			/* There's a fixed sample rate */
@@ -175,16 +195,47 @@ void vTaskPID(void *argument)
 		}
 		else
 		{
-			/* Free sampling rate Do, nothing*/
+			/* Free sampling rate, Do nothing*/
 		}
 	}
 }
+/**
+ * ---------------------------------------------------------
+ * 					 SOFTWARE COMPONENT GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
+/**
+ * @brief  Turns off or on the PID
+ * @param  none
+ * @retval none
+ */
+void PID_TogglePID(void)
+{
+	PID.isActive = !PID.isActive;
+}
 
+/**
+ * @brief  Reset all the operative values
+ *         of the PID structure like the action
+ *         control
+ * @param  none
+ * @retval none
+ */
+void PID_Reset(void)
+{
+	PID.Error = 0;
+	PID.Past_Error = 0;
+	PID.Control.P = 0;
+	PID.Control.I = 0;
+	PID.Control.D = 0;
+	PID.ControlAction = 0;
+}
 /**
  * ---------------------------------------------------------
  * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
  * ---------------------------------------------------------
  */
+
 /**
  * @brief
  * @param

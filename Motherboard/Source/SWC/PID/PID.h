@@ -62,7 +62,8 @@ typedef struct PIDConfigs{
 	uint8_t Is_Active;
 }PIDConfigs;
 
-void PID_Init(void);
+void PID_TogglePID(void);
+void PID_Reset(void);
 
 void vTaskPID(void *argument);
 
