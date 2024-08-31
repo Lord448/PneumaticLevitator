@@ -109,7 +109,6 @@ void Error_Handler(void);
 #define BtnMenu_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
-#define EOF (int32_t)-1
 #define osNoTimeout 0U
 
 #define FINISH_INIT_ID 0x1U

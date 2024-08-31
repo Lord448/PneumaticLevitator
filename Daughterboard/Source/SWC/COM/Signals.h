@@ -17,15 +17,23 @@
 #ifndef SWC_COM_SIGNALS_H_
 #define SWC_COM_SIGNALS_H_
 
-#include "COM.h"
-
+/**
+ * ---------------------------------------------------------
+ * 					               MACROS
+ * ---------------------------------------------------------
+ */
 #define ACK_DATA 1<<7
 
 #define SIGNAL(ID) (ACK_DATA | ID)
 
+/**
+ * ---------------------------------------------------------
+ * 					               SIGNALS
+ * ---------------------------------------------------------
+ */
+
 #define INIT_FRAME        0xA5
 
-/*Declare here all the signals*/
 #define NO_MSG_ID         SIGNAL(0x00)
 #define PERIODIC_ID       SIGNAL(0x01) /* Only sent by motherboard */
 #define ENTER_DIAGS_ID    SIGNAL(0x02) /* Only sent by motherboard */
@@ -40,5 +48,10 @@
 #define TOGGLE_PID        SIGNAL(0x0A)
 
 #define CPU_LOAD_DAUGHTER SIGNAL(0x7F) /* 7 bit limit */
+/**
+ * ---------------------------------------------------------
+ * 					     TYPEDEFS (COMMAND ARGUMENTS)
+ * ---------------------------------------------------------
+ */
 
 #endif /* SWC_COM_SIGNALS_H_ */

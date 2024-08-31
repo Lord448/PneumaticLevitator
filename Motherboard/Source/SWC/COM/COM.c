@@ -89,6 +89,7 @@ void vTaskCOM(void *argument)
 			osThreadTerminate(TaskSensorHandle);
 			osTimerStart(xTimer_RestartSensorTaskHandle, pdMS_TO_TICKS(COM_TIME_TO_RESET_SENSOR_TASK));
 		}
+		HAL_UARTEx_ReceiveToIdle_DMA(&huart1, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES_RX);
 	}
 }
 /**
@@ -444,10 +445,6 @@ void vTimer_UARTSendCallback(void *argument)
 		status = osMessageQueueGet(xFIFO_COMActionControlHandle, &actionControl, NULL, osNoTimeout);
 		/* If there's no data on the FIFO, the bus will take the last value*/
 		buffer[5] = actionControl;
-	}
-	/* TODO: ON DEMAND MSG PROCESS */
-	{
-
 	}
 	osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, osWaitForever);
 	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)buffer, COM_UART_PERIODIC_NUMBER_FRAMES_TX);

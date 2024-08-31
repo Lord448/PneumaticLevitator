@@ -25,6 +25,14 @@ static VL53L0X_RangingMeasurementData_t RangingData;
 extern osMessageQueueId_t xFIFO_PIDDistanceHandle;
 extern osMessageQueueId_t xFIFO_COMDistanceHandle;
 
+static uint16_t samplingDelay = NO_SAMPLING_DELAY;
+static TickType_t DelayTick = 0;
+
+/**
+ * ---------------------------------------------------------
+ * 					  SOFTWARE COMPONENT MAIN THREAD
+ * ---------------------------------------------------------
+ */
 void vTaskSensor(void *argument)
 {
 	uint32_t refSpadCount;
@@ -32,6 +40,7 @@ void vTaskSensor(void *argument)
 	uint8_t VhvSettings;
 	uint8_t PhaseCal;
 	int16_t distance;
+
 
 	Dev->I2cHandle = &hi2c1;
 	Dev->I2cDevAddr = VL53L0X_ADDR;
@@ -58,6 +67,8 @@ void vTaskSensor(void *argument)
 	VL53L0X_SetMeasurementTimingBudgetMicroSeconds(Dev, 33000);
 	VL53L0X_SetVcselPulsePeriod(Dev, VL53L0X_VCSEL_PERIOD_PRE_RANGE, 18);
 	VL53L0X_SetVcselPulsePeriod(Dev, VL53L0X_VCSEL_PERIOD_FINAL_RANGE, 14);
+
+	DelayTick = osKernelGetTickCount();
 	for(;;)
 	{
 		VL53L0X_PerformSingleRangingMeasurement(Dev, &RangingData);
@@ -72,6 +83,35 @@ void vTaskSensor(void *argument)
 		{
 			/* Do Nothing */
 		}
+
+		if(samplingDelay > 0)
+		{
+			/* Fixed frequency */
+			DelayTick += samplingDelay;
+			osDelayUntil(DelayTick);
+		}
+		else
+		{
+			/* No sampling freq, Do Nothing */
+		}
+	}
+}
+/**
+ * ---------------------------------------------------------
+ * 					 SOFTWARE COMPONENT GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
+void DistanceSensor_SetSamplingFreq(TickType_t ticks)
+{
+	samplingDelay = ticks;
+	if(ticks > 0)
+	{
+		/* Restoring the tick count from kernel */
+		DelayTick = osKernelGetTickCount();
+	}
+	else
+	{
+		/* No sampling freq, Do Nothing */
 	}
 }
 

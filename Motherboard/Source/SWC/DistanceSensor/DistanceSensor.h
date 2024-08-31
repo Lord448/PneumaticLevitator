@@ -27,10 +27,13 @@
 #include <stdio.h>
 #include <string.h>
 
+#define NO_SAMPLING_DELAY 0
+
 #define MAX_DISTANCE 530
 
 #define VL53L0X_ADDR 0x52
 
 void vTaskSensor(void *argument);
+void DistanceSensor_SetSamplingFreq(TickType_t ticks);
 
 #endif /* SWC_DISTANCESENSOR_DISTANCESENSOR_H_ */

@@ -57,6 +57,19 @@
 /* Time to wait to reset the sensor task */
 #define COM_TIME_TO_RESET_SENSOR_TASK 1000 /*MS*/
 
+/**
+ * ---------------------------------------------------------
+ * 					       SUPPORTED USB MESSAGES
+ * ---------------------------------------------------------
+ */
+#define COM_CPU_LOAD_USB_MSG       "CPU"       /* Make a CPU load measure - No args*/
+#define COM_CONSTANT_USB_MSG       "CONST"     /* Change the constants of the PID controller - Args: KP, KI, KD*/
+#define COM_GET_CONSTANTS_USB_MSG  "CONST_GET" /* Request the value of the PID constants - No Args */
+#define COM_CONTROL_ACTION_USB_MSG "ACT"       /* Desired action control (only valid when mode is on slave) - Args: ControlAction 0:100*/
+#define COM_SET_FIXED_FREQ_DIST  	 "FIXED_D_F" /* Set a fixed frequency for distance report - Args: Frequency on HZ */
+#define COM_SET_FIXED_PERIOD_DIST	 "FIXED_D_P" /* Set a fixed period for distance report - Args: period on ms */
+#define COM_SET_FREE_FREQ_DIST   	 "FREE_D_F"  /* Set free sampling frequency on distance sensor - No Args*/
+
 typedef union Data16 {
 	int16_t data;
 	uint8_t rawData[sizeof(int16_t)];

@@ -64,6 +64,7 @@ typedef struct PIDConfigs{
 
 void PID_TogglePID(void);
 void PID_Reset(void);
+void PID_GetConstants(float *kp, float *ki, float *kd);
 
 void vTaskPID(void *argument);
 

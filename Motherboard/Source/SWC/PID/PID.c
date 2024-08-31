@@ -62,8 +62,6 @@ static void sPID_SetConfigs(PIDConfigs *configs, float *restActControl);
  * 					  SOFTWARE COMPONENT MAIN THREAD
  * ---------------------------------------------------------
  */
-float distancePercentage = 0;
-float setPointPercetage = 0;
 void vTaskPID(void *argument)
 {
 	uint32_t distance = 0;
@@ -74,6 +72,8 @@ void vTaskPID(void *argument)
 	float restActControl = 100 - PID.Offset;
 	int8_t dataToSend = 0;
 	int16_t fifoSetPoint = 0;
+	float distancePercentage = 0;
+	float setPointPercetage = 0;
 
 	/* Reading constants from NVM */
 	/* TODO: Check here possible concurrency on EEPROM component with
@@ -167,13 +167,13 @@ void vTaskPID(void *argument)
 		/* Sending to FAN processed data */
 		/* TODO: Traduce the control action to porcentage */
 		osMessageQueuePut(xFIFO_FANDutyCycleHandle, (int8_t*)&dataToSend, 0U, osNoTimeout);
+
 		/* Off/On logic */
 		if(!PID.isActive)
 		{
 			/* Disabling PID */
 			PID_Reset();
 			dataToSend = 0;
-
 			while(!PID.isActive)
 			{
 				osMessageQueuePut(xFIFO_FANDutyCycleHandle, (int8_t*)&dataToSend, 0U, osNoTimeout);
@@ -186,6 +186,7 @@ void vTaskPID(void *argument)
 		{
 			/* Do Nothing */
 		}
+
 		/* End of loop */
 		if(0 < controlSamplingRate)
 		{
@@ -206,6 +207,9 @@ void vTaskPID(void *argument)
  */
 /**
  * @brief  Turns off or on the PID
+ * @note   This function it's meant to be
+ *         accessed from other software
+ *         components
  * @param  none
  * @retval none
  */
@@ -229,6 +233,36 @@ void PID_Reset(void)
 	PID.Control.I = 0;
 	PID.Control.D = 0;
 	PID.ControlAction = 0;
+}
+
+/**
+ * @brief  Get the value of the local gains
+ *         and deliver on the pointers
+ * @param  Kp out constant value
+ * @param  Ki out constant value
+ * @param  Kd out constant value
+ * @retval none
+ */
+void PID_GetControlGains(float *kp, float *ki, float *kd)
+{
+	*kp = PID.Gains.Kp;
+	*ki = PID.Gains.Ki;
+	*kd = PID.Gains.Kd;
+}
+
+/**
+ * @brief  Set the value of the local gains
+ * @param  Kp out constant value
+ * @param  Ki out constant value
+ * @param  Kd out constant value
+ * @retval none
+ */
+void PID_SetControlGains(float kp, float ki, float kd)
+{
+	PID.Gains.Kp = kp;
+	PID.Gains.Ki = ki;
+	PID.Gains.Kd = kd;
+	PID_Reset();
 }
 /**
  * ---------------------------------------------------------
