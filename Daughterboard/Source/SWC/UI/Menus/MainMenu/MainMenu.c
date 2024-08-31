@@ -22,6 +22,7 @@ extern osMessageQueueId_t xFIFO_RPMHandle;
 extern osMessageQueueId_t xFIFO_ButtonsHandle;
 extern osMessageQueueId_t xFIFO_EncoderDataHandle;
 extern osMessageQueueId_t xFIFO_ActionControlHandle;
+extern osMessageQueueId_t xFIFO_ControlGainsHandle;
 
 UG_WINDOW mainWindow;
 
@@ -42,6 +43,8 @@ void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit)
 	int16_t Distance, rpm;
 	int8_t actionControl;
 	EncoderDir encoderDir;
+	ControlConst controlConst;
+	ControlGain Gain;
 
 	if(*isFirstMenuInit)
 	{
@@ -51,12 +54,32 @@ void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit)
 		*isFirstMenuInit = false;
 	}
 	/* Printing the bars */
-	if(osMessageQueueGet(xFIFO_DistanceHandle, &Distance, NULL, 1) == osOK)
+	if(osMessageQueueGet(xFIFO_DistanceHandle, &Distance, NULL, osNoTimeout) == osOK)
 		MainMenu_setDistance(Distance);
-	if(osMessageQueueGet(xFIFO_RPMHandle, &rpm, NULL, 1) == osOK)
+	if(osMessageQueueGet(xFIFO_RPMHandle, &rpm, NULL, osNoTimeout) == osOK)
 		MainMenu_setRPM(rpm);
-	if(osMessageQueueGet(xFIFO_ActionControlHandle, &actionControl, NULL, 1) == osOK)
+	if(osMessageQueueGet(xFIFO_ActionControlHandle, &actionControl, NULL, osNoTimeout) == osOK)
 		MainMenu_setActionControl(actionControl);
+	/*Constants process*/
+	if(osMessageQueueGet(xFIFO_ControlConstantsHandle, &controlConst, NULL, osNoTimeout) == osOK)
+		MainMenu_setControlConstants(controlConst.kp, controlConst.ki, controlConst.kd);
+	if(osMessageQueueGet(xFIFO_ControlGainsHandle, &Gain, NULL, osNoTimeout) == osOK)
+	{
+		switch(Gain.constant)
+		{
+			case KP_VAL:
+				MainMenu_setKP(Gain.value);
+			break;
+			case KI_VAL:
+				MainMenu_setKI(Gain.value);
+			break;
+			case KD_VAL:
+				MainMenu_setKD(Gain.value);
+			break;
+			default:
+			break;
+		}
+	}
 	if(osMessageQueueGet(xFIFO_EncoderDataHandle, &encoderDir, NULL, 1) == osOK)
 	{
 		/* The encoder has been moved */
@@ -258,7 +281,7 @@ result_t MainMenu_setKI(float ki)
 	result_t result = OK;
 	char Buffer[32] = "";
 
-	sprintf(Buffer, "KP: %1.5f", ki);
+	sprintf(Buffer, "KI: %1.5f", ki);
 	result = UG_RESULT_OK == UG_TextboxSetText(&mainWindow, TB_KI_ID, Buffer) ? OK : Error;
 	UG_Update();
 	return result;
@@ -269,7 +292,7 @@ result_t MainMenu_setKD(float kd)
 	result_t result = OK;
 	char Buffer[32] = "";
 
-	sprintf(Buffer, "KP: %1.5f", kd);
+	sprintf(Buffer, "KD: %1.5f", kd);
 	result = UG_RESULT_OK == UG_TextboxSetText(&mainWindow, TB_KD_ID, Buffer) ? OK : Error;
 	UG_Update();
 	return result;

@@ -155,6 +155,11 @@
 
 #define DEFAULT_SET_POINT 260
 
+typedef struct ControlGain {
+	float value;
+	uint8_t constant;
+}ControlGain;
+
 void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit);
 void MainMenu_buildObjects(void);
 

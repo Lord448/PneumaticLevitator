@@ -220,6 +220,11 @@ osMessageQueueId_t xFIFO_ActionControlHandle;
 const osMessageQueueAttr_t xFIFO_ActionControl_attributes = {
   .name = "xFIFO_ActionControl"
 };
+/* Definitions for xFIFO_ControlGains */
+osMessageQueueId_t xFIFO_ControlGainsHandle;
+const osMessageQueueAttr_t xFIFO_ControlGains_attributes = {
+  .name = "xFIFO_ControlGains"
+};
 /* Definitions for xSemaphoreDMACplt3 */
 osSemaphoreId_t xSemaphoreDMACplt3Handle;
 osStaticSemaphoreDef_t xSemaphoreDMACplt3ControlBlock;
@@ -465,6 +470,9 @@ int main(void)
 
   /* creation of xFIFO_ActionControl */
   xFIFO_ActionControlHandle = osMessageQueueNew (32, sizeof(int16_t), &xFIFO_ActionControl_attributes);
+
+  /* creation of xFIFO_ControlGains */
+  xFIFO_ControlGainsHandle = osMessageQueueNew (16, sizeof(ControlGain), &xFIFO_ControlGains_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
