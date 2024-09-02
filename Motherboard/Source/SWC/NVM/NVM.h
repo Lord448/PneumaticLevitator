@@ -31,13 +31,15 @@
 #include "usbd_cdc_if.h"
 #endif
 
-#define EEPROM_ADDR 0b1010000
+#define EEPROM_ADDR 0xA0
 #define EEPROM_SIZE 512
 #define EEPROM_INIT_ADDR 0
 #define EEPROM_END_ADDR  512
 
 #define MEMORY_POOL_USED_FLAG 1
 #define EEPROM_USED_FLAG      2
+
+#define Enable_EEPROM() HAL_GPIO_WritePin(WP_GPIO_Port, WP_Pin, 1)
 
 /**
  * @brief Union for the 32 bit data handling

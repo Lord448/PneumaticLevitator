@@ -1,3 +1,10 @@
+##########################################################
+##    Author: Pedro Rojo - pedroeroca@outlook.com       ##
+##            File: ControlGains.py                     ##
+##    This program ask you for the constants that       ##
+##    you want to program on the internal PID           ##
+##                 controlller                          ##
+##########################################################
 import serial, usb
 import serial.tools.list_ports
 import atexit, signal
@@ -130,6 +137,7 @@ if __name__ == "__main__":
             stopbits=STOP_BITS,
             bytesize=BYTE_SIZE
         )
+        print(ser)
         portOpened = True
         #Print the current constants
         ser.write(str.encode("CONST_GET"))
@@ -161,9 +169,6 @@ if __name__ == "__main__":
                 time.sleep(1e-3) #Wait 1 ms
                 ser.write(str.encode(dataToSend))
                 stringRx = ser.readline().decode()
-                #DEBUG
-                print(stringRx[:2])
-                #DEBUG
                 if stringRx[:2] == "ER":
                     print("")
                     print("No se pudieron escribir las constantes")
@@ -178,5 +183,7 @@ if __name__ == "__main__":
                 pass
             else:
                 break
+        ser.close()
+        portOpened = False
     else:
         print("Pneumatic levitator no conectado")

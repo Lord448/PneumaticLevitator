@@ -45,7 +45,7 @@ static void readDefaultValues(void);
 void NVM_Init(void)
 {
 	osSemaphoreRelease(xSemaphore_MemoryPoolUsedHandle);
-
+	Enable_EEPROM();
 #ifdef MAKE_HARD_CODED_TEST
 	/* Hard coded test of the component */
 	NVM_loadDefaultValues();

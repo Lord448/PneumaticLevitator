@@ -1,3 +1,9 @@
+##########################################################
+##    Author: Pedro Rojo - pedroeroca@outlook.com       ##
+##            File: ControlGains.py                     ##
+##    This program prints the the CPU load measure      ##
+##            gaved by the freeRTOS kernel              ##
+##########################################################
 import serial, usb
 import serial.tools.list_ports
 import atexit, signal
