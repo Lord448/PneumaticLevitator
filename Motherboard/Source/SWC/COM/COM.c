@@ -172,6 +172,37 @@ void vSubTaskUSB(void *argument)
 				datalen = strlen(USBBuffer);
 				sCOM_SendUSB((uint8_t *)USBBuffer, datalen);
 			}
+			else if(strcmp(CDC_ResBuffer, COM_SET_NVM_DEFAULT) == 0)
+			{
+				/* Set the default values of the EEPROM variables - No Args */
+				datalen = strlen(USBBuffer);
+				memset(USBBuffer, '\0', datalen);
+				if(OK == NVM_loadDefaultValues())
+				{
+					/* Loaded correctly */
+
+					sprintf(USBBuffer, "OK\n");
+					datalen = strlen(USBBuffer);
+					sCOM_SendUSB((uint8_t *)USBBuffer, datalen);
+				}
+				else
+				{
+					/* Errors on the write */
+					sprintf(USBBuffer, "ERR\n");
+					datalen = strlen(USBBuffer);
+					sCOM_SendUSB((uint8_t *)USBBuffer, datalen);
+				}
+			}
+			else if(strcmp(CDC_ResBuffer, COM_SET_NVM_DUMP) == 0)
+			{
+				/* Make a memory dump of the EEPROM data - No Args*/
+				char *bufPointer = (char *)NVM_memoryDump(osWaitForever); /*TODO: Test here*/
+				datalen = strlen(USBBuffer);
+				memset(USBBuffer, '\0', datalen);
+				memcpy(USBBuffer, bufPointer, EEPROM_SIZE);
+				datalen = strlen(USBBuffer);
+				sCOM_SendUSB((uint8_t *)USBBuffer, datalen);
+			}
 			else
 			{
 				/* Unknown message, do nothing */
@@ -325,17 +356,23 @@ static void sendInitBuffer(void)
 	NVMType32 Kp, Ki, Kd; /* PID constants */
 	uint32_t i = 1; /* Iterator used as index for the buffer filling */
 
+#ifdef ENABLE_EEPROM
 	if(OK != NVM_Read(KP_PID_BASE_ADDR, &Kp))
+#endif
 	{
 		/* Could not read the NVM */
 		Kp.dataFloat = KP_DEFAULT;
 	}
+#ifdef ENABLE_EEPROM
 	if(OK != NVM_Read(KI_PID_BASE_ADDR, &Ki))
+#endif
 	{
 		/* Could not read the NVM */
 		Ki.dataFloat = KI_DEFAULT;
 	}
+#ifdef ENABLE_EEPROM
 	if(OK != NVM_Read(KD_PID_BASE_ADDR, &Kd))
+#endif
 	{
 		/* Could not read the NVM */
 		Kd.dataFloat = KD_DEFAULT;

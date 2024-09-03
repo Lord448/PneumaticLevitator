@@ -24,6 +24,7 @@
 #include "DistanceSensor.h"
 #include "cmsis_os2.h"
 #include "COM.h"
+#include "NVM.h"
 
 #define HZToMS(x) (1/x)*1000
 #define FtoT(x) HZToMS(x)

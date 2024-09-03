@@ -35,6 +35,7 @@
 typedef StaticTask_t osStaticThreadDef_t;
 typedef StaticQueue_t osStaticMessageQDef_t;
 typedef StaticTimer_t osStaticTimerDef_t;
+typedef StaticSemaphore_t osStaticMutexDef_t;
 typedef StaticSemaphore_t osStaticSemaphoreDef_t;
 typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* USER CODE BEGIN PTD */
@@ -352,6 +353,14 @@ const osTimerAttr_t xTimer_RestartSensorTask_attributes = {
   .cb_mem = &xTimer_RestartSensorTaskControlBlock,
   .cb_size = sizeof(xTimer_RestartSensorTaskControlBlock),
 };
+/* Definitions for xMutex_EEPROM */
+osMutexId_t xMutex_EEPROMHandle;
+osStaticMutexDef_t xMutex_EEPROMControlBlock;
+const osMutexAttr_t xMutex_EEPROM_attributes = {
+  .name = "xMutex_EEPROM",
+  .cb_mem = &xMutex_EEPROMControlBlock,
+  .cb_size = sizeof(xMutex_EEPROMControlBlock),
+};
 /* Definitions for xSemaphore_PID */
 osSemaphoreId_t xSemaphore_PIDHandle;
 osStaticSemaphoreDef_t xSemaphore_PIDControlBlock;
@@ -552,6 +561,9 @@ int main(void)
 
   /* Init scheduler */
   osKernelInitialize();
+  /* Create the mutex(es) */
+  /* creation of xMutex_EEPROM */
+  xMutex_EEPROMHandle = osMutexNew(&xMutex_EEPROM_attributes);
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -679,7 +691,6 @@ int main(void)
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
-  /* Create the event(s) */
   /* creation of xEvent_FatalError */
   xEvent_FatalErrorHandle = osEventFlagsNew(&xEvent_FatalError_attributes);
 

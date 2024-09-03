@@ -21,6 +21,7 @@
 #include "cmsis_os.h"
 #include "NVMVariables.h"
 #include "ModeManager.h"
+#include "PID.h"
 
 #define MAKE_HARD_CODED_TEST
 
@@ -39,7 +40,10 @@
 #define MEMORY_POOL_USED_FLAG 1
 #define EEPROM_USED_FLAG      2
 
-#define Enable_EEPROM() HAL_GPIO_WritePin(WP_GPIO_Port, WP_Pin, 1)
+#define Enable_EEPROM() HAL_GPIO_WritePin(WP_GPIO_Port, WP_Pin, 0)
+#define Disable_EEPROM() HAL_GPIO_WritePin(WP_GPIO_Port, WP_Pin, 1)
+
+//#define ENABLE_EEPROM
 
 /**
  * @brief Union for the 32 bit data handling

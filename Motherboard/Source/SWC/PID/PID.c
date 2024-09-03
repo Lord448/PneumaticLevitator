@@ -35,6 +35,7 @@ static struct PID {
 	int32_t Past_Error;
 	int32_t Set_Point;
 	int32_t Offset;
+	uint32_t SamplingRate;
 	bool isActive;
 } PID = {
 	.Gains.Kp = KP_DEFAULT,
@@ -47,6 +48,7 @@ static struct PID {
 	.Error = 0,
 	.Past_Error = 0,
 	.Set_Point = 260,
+	.SamplingRate = 1,
 	.Offset = 65, /* Need calibration and configuration */
 	.isActive = true
 };
@@ -65,8 +67,6 @@ static void sPID_SetConfigs(PIDConfigs *configs, float *restActControl);
 void vTaskPID(void *argument)
 {
 	uint32_t distance = 0;
-	//uint32_t controlSamplingRate = HZToMS(DEFAULT_CONTROL_SAMPLING_RATE);
-	uint32_t controlSamplingRate = 1; /* TODO: Adjust no freq limits, using preemption */
 	PIDConfigs FIFOConfigs;
 	TickType_t ticks = 0;
 	float restActControl = 100 - PID.Offset;
@@ -87,17 +87,23 @@ void vTaskPID(void *argument)
 	 * At the moment it won't happen anything since the functions are
 	 * not implemented yet
 	 */
-  //if(OK != NVM_Read(KP_PID_BASE_ADDR, &PID.Gains.Kp))
+#ifdef ENABLE_EEPROM
+  if(OK != NVM_Read(KP_PID_BASE_ADDR, &PID.Gains.Kp))
+#endif
   {
   	/* Could not read the value */
   	PID.Gains.Kp = KP_DEFAULT;
   }
-  //if(OK != NVM_Read(KI_PID_BASE_ADDR, &PID.Gains.Ki))
+#ifdef ENABLE_EEPROM
+  if(OK != NVM_Read(KI_PID_BASE_ADDR, &PID.Gains.Ki))
+#endif
   {
   	/* Could not read the value */
   	PID.Gains.Ki = KI_DEFAULT;
   }
-  //if(OK != NVM_Read(KD_PID_BASE_ADDR, &PID.Gains.Kd))
+#ifdef ENABLE_EEPROM
+  if(OK != NVM_Read(KD_PID_BASE_ADDR, &PID.Gains.Kd))
+#endif
   {
   	/* Could not read the value */
   	PID.Gains.Kd = KD_DEFAULT;
@@ -188,10 +194,10 @@ void vTaskPID(void *argument)
 		}
 
 		/* End of loop */
-		if(0 < controlSamplingRate)
+		if(0 < PID.SamplingRate)
 		{
 			/* There's a fixed sample rate */
-			ticks += controlSamplingRate;
+			ticks += PID.SamplingRate;
 			osDelayUntil(ticks);
 		}
 		else
@@ -262,8 +268,10 @@ void PID_SetControlGains(float kp, float ki, float kd)
 	PID.Gains.Kp = kp;
 	PID.Gains.Ki = ki;
 	PID.Gains.Kd = kd;
+	NVM_Save(KP_PID_BASE_ADDR, kp);
+	NVM_Save(KI_PID_BASE_ADDR, ki);
+	NVM_Save(KD_PID_BASE_ADDR, kd);
 	PID_Reset();
-	/* TODO: Write to NVM */
 }
 /**
  * ---------------------------------------------------------
@@ -298,7 +306,7 @@ static void sPID_SetConfigs(PIDConfigs *configs, float *restActControl)
  * @param
  * @retval
  */
-static int8_t sPID_Round(float ControlAction)
-{
+//static int8_t sPID_Round(float ControlAction)
+//{
 
-}
+//}

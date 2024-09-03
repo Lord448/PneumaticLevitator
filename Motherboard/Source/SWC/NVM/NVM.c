@@ -17,9 +17,15 @@
 #include "NVM.h"
 
 extern I2C_HandleTypeDef hi2c2;
+extern IWDG_HandleTypeDef hiwdg;
+
 extern osEventFlagsId_t xEvent_FatalErrorHandle;
+
 extern osSemaphoreId_t xSemaphore_DMA_TransferCpltHandle;
 extern osSemaphoreId_t xSemaphore_MemoryPoolUsedHandle;
+
+extern osMutexId_t xMutex_EEPROMHandle;
+
 extern osMemoryPoolId_t MemoryPoolNVM; /* Memory Pool for NVM data allocation*/
 
 /**
@@ -44,10 +50,14 @@ static void readDefaultValues(void);
  */
 void NVM_Init(void)
 {
+#ifdef ENABLE_EEPROM
 	osSemaphoreRelease(xSemaphore_MemoryPoolUsedHandle);
 	Enable_EEPROM();
-#ifdef MAKE_HARD_CODED_TEST
+	HAL_IWDG_Refresh(&hiwdg);
+#endif
+#if  defined(MAKE_HARD_CODED_TEST) && defined(ENABLE_EEPROM)
 	/* Hard coded test of the component */
+	NVM_clear();
 	NVM_loadDefaultValues();
 	readDefaultValues();
 #endif
@@ -68,7 +78,7 @@ void NVM_Init(void)
  */
 result_t NVM_save8Bit(uint16_t NVMVariable, uint8_t value)
 {
-	return OK; /*TODO: Stubbed code*/
+	return EEPROM_Write(NVMVariable, &value, sizeof(uint8_t), 100);
 }
 
 /**
@@ -80,7 +90,7 @@ result_t NVM_save8Bit(uint16_t NVMVariable, uint8_t value)
  */
 result_t NVM_save16Bit(uint16_t NVMVariable, NVMType16 value)
 {
-	return OK; /*TODO: Stubbed code*/
+	return EEPROM_Write(NVMVariable, value.rawData, sizeof(uint16_t), 100);
 }
 
 /**
@@ -92,7 +102,7 @@ result_t NVM_save16Bit(uint16_t NVMVariable, NVMType16 value)
  */
 result_t NVM_save32Bit(uint16_t NVMVariable, NVMType32 value)
 {
-	return OK; /*TODO: Stubbed code*/
+	return EEPROM_Write(NVMVariable, value.rawData, sizeof(uint32_t), 100);
 }
 
 /**
@@ -104,7 +114,8 @@ result_t NVM_save32Bit(uint16_t NVMVariable, NVMType32 value)
  */
 result_t NVM_saveFloat(uint16_t NVMVariable, float value)
 {
-	return OK; /*TODO: Stubbed code*/
+	NVMType32 data = {.dataFloat = value};
+	return EEPROM_Write(NVMVariable, data.rawData, sizeof(uint32_t), 100);
 }
 
 /**
@@ -122,7 +133,7 @@ result_t NVM_saveFloat(uint16_t NVMVariable, float value)
  */
 result_t NVM_read8Bit(uint16_t NVMVariable, uint8_t *data)
 {
-	return OK; /*TODO: Stubbed code*/
+	return EEPROM_Read(NVMVariable, data, sizeof(uint8_t), 100);
 }
 
 /**
@@ -134,7 +145,7 @@ result_t NVM_read8Bit(uint16_t NVMVariable, uint8_t *data)
  */
 result_t NVM_read16Bit(uint16_t NVMVariable, NVMType16 *data)
 {
-	return OK; /*TODO: Stubbed code*/
+	return EEPROM_Read(NVMVariable, data->rawData, sizeof(uint16_t), 100);
 }
 
 /**
@@ -146,8 +157,7 @@ result_t NVM_read16Bit(uint16_t NVMVariable, NVMType16 *data)
  */
 result_t NVM_read32Bit(uint16_t NVMVariable, NVMType32 *data)
 {
-	data -> data32 = ~0;
-	return Error;/*TODO: Stubbed code*/
+	return EEPROM_Read(NVMVariable, data->rawData, sizeof(uint32_t), 100);
 }
 
 /**
@@ -159,7 +169,11 @@ result_t NVM_read32Bit(uint16_t NVMVariable, NVMType32 *data)
  */
 result_t NVM_readFloat(uint16_t NVMVariable, float *data)
 {
-	return Error; /*TODO: Stubbed code*/
+	NVMType32 rxVal = {.dataFloat = 0};
+	result_t retval = OK;
+	retval = EEPROM_Read(NVMVariable, rxVal.rawData, sizeof(uint32_t), 100);
+	*data = rxVal.dataFloat;
+	return retval;
 }
 
 /**
@@ -277,7 +291,11 @@ result_t NVM_freeMemoryPool(uint8_t *blockPointer)
  */
 result_t NVM_clear(void)
 {
-	return OK; /*TODO: Stubbed code*/
+	static uint8_t zeroes = 0;
+	osMutexAcquire(xMutex_EEPROMHandle, osWaitForever);
+	HAL_I2C_Mem_Write(&hi2c2, EEPROM_ADDR, 0x0, sizeof(uint8_t), &zeroes, EEPROM_SIZE, 1000);
+	osMutexRelease(xMutex_EEPROMHandle);
+	return OK;
 }
 
 /**
@@ -291,9 +309,9 @@ result_t NVM_loadDefaultValues(void)
 	const bool FabricConfigDefaultVal = true;
 	const ControlModes ModeDefaultVal = AutoPID;
 	/*PID region*/
-	const NVMType32 KpDefaultVal = {.dataFloat = 0};
-	const NVMType32 KiDefaultVal = {.dataFloat = 0};
-	const NVMType32 KdDefaultVal = {.dataFloat = 0};
+	const NVMType32 KpDefaultVal = {.dataFloat = KP_DEFAULT};
+	const NVMType32 KiDefaultVal = {.dataFloat = KI_DEFAULT};
+	const NVMType32 KdDefaultVal = {.dataFloat = KD_DEFAULT};
 	const NVMType32 PlimitDefaultVal = {.data32 = 0};
 	const NVMType32 IlimitDefaultVal = {.data32 = 0};
 	const NVMType32 DlimitDefaultVal = {.data32 = 0};
@@ -409,6 +427,9 @@ static result_t EEPROM_Write(uint16_t MemAddress, uint8_t *pData, uint16_t Size,
 	result_t retval = OK;
 	TickType_t limitTick;
 	uint32_t flags;
+
+	/* Wait for the resource to bee free */
+	osMutexAcquire(xMutex_EEPROMHandle, osWaitForever);
 	/* Calling the save of the function */
 	HAL_StatusTypeDef result = HAL_I2C_Mem_Write(&hi2c2, EEPROM_ADDR, MemAddress, sizeof(uint8_t), pData, Size, timeout);
 
@@ -434,7 +455,7 @@ static result_t EEPROM_Write(uint16_t MemAddress, uint8_t *pData, uint16_t Size,
 					/* Do Nothing */
 				}
 			}while(HAL_LOCKED == hi2c2.Lock);
-
+			osMutexRelease(xMutex_EEPROMHandle);
 			/* Making second attempt */
 			return EEPROM_Write(MemAddress, pData, Size, timeout);
 		break;
@@ -456,6 +477,7 @@ static result_t EEPROM_Write(uint16_t MemAddress, uint8_t *pData, uint16_t Size,
 			/* Do Nothing */
 		break;
 	}
+	osMutexRelease(xMutex_EEPROMHandle);
 	return retval;
 }
 
@@ -464,6 +486,8 @@ static result_t EEPROM_Read(uint16_t MemAddress, uint8_t *pData, uint16_t Size, 
 	result_t retval = OK;
 	TickType_t limitTick;
 	uint32_t flags;
+	/* Wait for the resource to bee free */
+	osMutexAcquire(xMutex_EEPROMHandle, osWaitForever);
 	/* Calling the save of the function */
 	HAL_StatusTypeDef result = HAL_I2C_Mem_Read(&hi2c2, EEPROM_ADDR, MemAddress, sizeof(uint8_t), pData, Size, timeout);
 
@@ -512,6 +536,7 @@ static result_t EEPROM_Read(uint16_t MemAddress, uint8_t *pData, uint16_t Size, 
 			/* Do Nothing */
 		break;
 	}
+	osMutexRelease(xMutex_EEPROMHandle);
 	return retval;
 }
 
@@ -565,16 +590,14 @@ static void readDefaultValues(void)
 	EEPROM_Read(ILIMIT_PID_BASE_ADDR, (uint8_t *)Ilimit.rawData, sizeof(NVMType32), 100);
 	EEPROM_Read(DLIMIT_PID_BASE_ADDR, (uint8_t *)Dlimit.rawData, sizeof(NVMType32), 100);
 	EEPROM_Read(SETPOINT_PID_BASE_ADDR, (uint8_t *)setpoint.rawData, sizeof(NVMType32), 100);
-	SendUSB("FabricConfig: %d", FabricConfig);
-	SendUSB("Mode: %d", mode);
-	SendUSB("Kp = %d", kp.data32);
-	SendUSB("Ki = %d", ki.data32);
-	SendUSB("Kd = %d", kd.data32);
-	SendUSB("Plimit = %d", Plimit.data32);
-	SendUSB("Ilimit = %d", Ilimit.data32);
-	SendUSB("Dlimit = %d", Dlimit.data32);
-	SendUSB("Set point = %d", setpoint.data32);
+	SendUSB("FabricConfig: %d\n", FabricConfig);
+	SendUSB("Mode: %d\n", mode);
+	SendUSB("Kp = %f\n", kp.data32);
+	SendUSB("Ki = %f\n", ki.data32);
+	SendUSB("Kd = %f\n", kd.data32);
+	SendUSB("Plimit = %d\n", Plimit.data32);
+	SendUSB("Ilimit = %d\n", Ilimit.data32);
+	SendUSB("Dlimit = %d\n", Dlimit.data32);
+	SendUSB("Set point = %d\n", setpoint.data32);
 }
-
-
 #endif
