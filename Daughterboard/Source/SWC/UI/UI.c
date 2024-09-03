@@ -30,6 +30,7 @@ extern osMessageQueueId_t xFIFO_RPMHandle;
 
 extern osEventFlagsId_t xEventFinishedInitHandle;
 extern osEventFlagsId_t xEvent_UIConfigsHandle;
+extern osEventFlagsId_t xEvent_CurrentControlModeHandle;
 
 extern osSemaphoreId_t xSemaphoreDMACompleteHandle;
 extern osSemaphoreId_t xSemaphoreCOMReadyHandle;
@@ -58,6 +59,7 @@ void vTaskUI(void *argument)
 #endif
 	/* Creating and loading all the graphical resources */
 	loadGraphicalResources();
+	osEventFlagsSet(xEvent_CurrentControlModeHandle, MODE_PID_FLAG);
 	waitForConstants();
 #ifndef SKIP_INTRO_ANIM
 	StringFadeOut();

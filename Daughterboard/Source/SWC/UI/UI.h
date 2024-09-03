@@ -31,6 +31,7 @@
 #include "AboutMenu.h"
 #include "ConfigsMenu.h"
 #include "MainMenu.h"
+#include "ControlModeMenu.h"
 #include "Menu.h"
 #include "COM.h"
 #include "stm32f4xx_hal_dma.h"

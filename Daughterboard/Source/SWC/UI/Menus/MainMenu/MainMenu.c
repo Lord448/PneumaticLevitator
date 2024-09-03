@@ -24,7 +24,11 @@ extern osMessageQueueId_t xFIFO_EncoderDataHandle;
 extern osMessageQueueId_t xFIFO_ActionControlHandle;
 extern osMessageQueueId_t xFIFO_ControlGainsHandle;
 
+extern osEventFlagsId_t xEvent_CurrentControlModeHandle;
+
 UG_WINDOW mainWindow;
+
+bool MainMenu_firstChangeMode = true;
 
 float kpCache = 0, kiCache = 0, kdCache = 0;
 
@@ -33,7 +37,8 @@ float kpCache = 0, kiCache = 0, kdCache = 0;
  * 					 SOFTWARE COMPONENT LOCAL PROTOYPES
  * ---------------------------------------------------------
  */
-static void sMainMenu_ProcessButtonPress(Buttons btnPressed, int16_t *setPoint);
+static void sMainMenu_ProcessButtonPressSetPoint(Buttons btnPressed, int16_t *setPoint);
+static void sMainMenu_ProcessButtonPressCtrlAct(Buttons btnPressed, int8_t *actCtrl);
 /**
  * ---------------------------------------------------------
  * 					 SOFTWARE COMPONENT GLOBAL FUNCTIONS
@@ -42,6 +47,8 @@ static void sMainMenu_ProcessButtonPress(Buttons btnPressed, int16_t *setPoint);
 void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit)
 {
 	static int16_t setPoint = DEFAULT_SET_POINT;
+	static int8_t actionCtrl = 0;
+	uint32_t flags = 0;
 	int16_t Distance, rpm;
 	int8_t actionControl;
 	EncoderDir encoderDir;
@@ -57,17 +64,16 @@ void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit)
 		*isFirstMenuInit = false;
 	}
 	/* Printing the bars */
-	if(osMessageQueueGet(xFIFO_DistanceHandle, &Distance, NULL, osNoTimeout) == osOK)
+	if(osMessageQueueGet(xFIFO_DistanceHandle, &Distance, NULL, osNoTimeout) == osOK) /* Distance Check */
 		MainMenu_setDistance(Distance);
-	if(osMessageQueueGet(xFIFO_RPMHandle, &rpm, NULL, osNoTimeout) == osOK)
+	if(osMessageQueueGet(xFIFO_RPMHandle, &rpm, NULL, osNoTimeout) == osOK) /* RPM Check */
 		MainMenu_setRPM(rpm);
-	if(osMessageQueueGet(xFIFO_ActionControlHandle, &actionControl, NULL, osNoTimeout) == osOK)
-		MainMenu_setActionControl(actionControl);
 	/*Constants process*/
-	if(osMessageQueueGet(xFIFO_ControlConstantsHandle, &controlConst, NULL, osNoTimeout) == osOK)
+	if(osMessageQueueGet(xFIFO_ControlConstantsHandle, &controlConst, NULL, osNoTimeout) == osOK) /* Constants Check */
 		MainMenu_setControlConstants(controlConst.kp, controlConst.ki, controlConst.kd);
 	if(osMessageQueueGet(xFIFO_ControlGainsHandle, &Gain, NULL, osNoTimeout) == osOK)
 	{
+		/* Specific control Gains selection */
 		switch(Gain.constant)
 		{
 			case KP_VAL:
@@ -83,25 +89,86 @@ void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit)
 			break;
 		}
 	}
-	if(osMessageQueueGet(xFIFO_EncoderDataHandle, &encoderDir, NULL, 1) == osOK)
+	/* Buttons dynamics */
+	flags = osEventFlagsGet(xEvent_CurrentControlModeHandle);
+	if(flags&MODE_MANUAL_FLAG)
 	{
-		/* The encoder has been moved */
-		switch(encoderDir)
+		/* Selected manual mode */
+		if(MainMenu_firstChangeMode)
 		{
-			case Plus:
-				setPoint+=15;
-				if(MAX_DISTANCE < setPoint)
-					setPoint = MAX_DISTANCE;
-			break;
-			case Minus:
-				setPoint-=15;
-				if(0 > setPoint)
-					setPoint = 0;
-			break;
+			/* Need to establish init conditions */
+			MainMenu_setSetPoint(0);
+			MainMenu_setActionControl(0);
+			MainMenu_firstChangeMode = false;
 		}
-		MainMenu_setSetPoint(setPoint);
+		if(osMessageQueueGet(xFIFO_EncoderDataHandle, &encoderDir, NULL, 1) == osOK)
+		{
+			/* The encoder has been moved */
+			switch(encoderDir)
+			{
+				case Plus:
+					actionCtrl+=5;
+					if(100 < actionCtrl)
+						actionCtrl = 100;
+				break;
+				case Minus:
+					actionCtrl-=5;
+					if(0 > actionCtrl)
+						actionCtrl = 0;
+				break;
+			}
+			MainMenu_setActionControl(actionCtrl);
+		}
+		sMainMenu_ProcessButtonPressCtrlAct(btnPressed, &actionCtrl);
 	}
-	sMainMenu_ProcessButtonPress(btnPressed, &setPoint);
+	if(flags&(MODE_PID_FLAG|MODE_USB_FLAG))
+	{
+		/* Selected PID mode or USB mode*/
+		if(MainMenu_firstChangeMode)
+		{
+			/* Need to establish init conditions */
+			if(flags&MODE_PID_FLAG)
+			{
+				/* Selected PID mode */
+				MainMenu_setSetPoint(260);
+			}
+			if(flags&MODE_USB_FLAG)
+			{
+				/* Selected USB flag */
+				MainMenu_setSetPoint(0);
+			}
+			MainMenu_firstChangeMode = false;
+		}
+		if(osMessageQueueGet(xFIFO_ActionControlHandle, &actionControl, NULL, osNoTimeout) == osOK)
+			MainMenu_setActionControl(actionControl);
+		if(osMessageQueueGet(xFIFO_EncoderDataHandle, &encoderDir, NULL, 1) == osOK)
+		{
+			/* The encoder has been moved */
+			switch(encoderDir)
+			{
+				case Plus:
+					setPoint+=15;
+					if(MAX_DISTANCE < setPoint)
+						setPoint = MAX_DISTANCE;
+				break;
+				case Minus:
+					setPoint-=15;
+					if(0 > setPoint)
+						setPoint = 0;
+				break;
+			}
+			if(flags&MODE_PID_FLAG)
+			{
+				/* Selected PID mode */
+				MainMenu_setSetPoint(setPoint);
+			}
+		}
+		if(flags&MODE_PID_FLAG)
+		{
+			/* Selected PID mode */
+			sMainMenu_ProcessButtonPressSetPoint(btnPressed, &setPoint);
+		}
+	}
 }
 
 void MainMenu_buildObjects(void)
@@ -340,6 +407,7 @@ result_t MainMenu_setDistance(int16_t distance)
 
 result_t MainMenu_setSetPoint(uint16_t setPoint)
 {
+	uint32_t flags = 0;
 	UG_U8 progress = 0;
 	char Buffer[8] = "";
 
@@ -352,7 +420,17 @@ result_t MainMenu_setSetPoint(uint16_t setPoint)
 	if(UG_RESULT_OK != UG_ProgressSetProgress(&mainWindow, PROGRESS_BAR_SET_POINT_ID, progress))
 		return Error;
 	/* Send to COM */
-	COM_SendMessage(SET_POINT, MSG_TYPE_ONDEMAND, PRIORITY_HIGH, setPoint);
+	flags = osEventFlagsGet(xEvent_CurrentControlModeHandle);
+	if(flags&MODE_PID_FLAG)
+	{
+		/* Manual Mode selected */
+		COM_SendMessage(SET_POINT, MSG_TYPE_ONDEMAND, PRIORITY_HIGH, setPoint);
+	}
+	else
+	{
+		/* Do Nothing */
+	}
+
 	UG_Update();
 	return OK;
 }
@@ -378,6 +456,7 @@ result_t MainMenu_setRPM(int16_t rpm)
 
 result_t MainMenu_setActionControl(int8_t actionControl)
 {
+	uint32_t flags = 0;
 	char Buffer[8] = "";
 
 	if(COM_MSG_ERROR_CODE == actionControl)
@@ -388,8 +467,42 @@ result_t MainMenu_setActionControl(int8_t actionControl)
 	/* Changing the Progress bar */
 	if(UG_RESULT_OK != UG_ProgressSetProgress(&mainWindow, PROGRESS_BAR_ACTION_CONTROL_ID, actionControl))
 		return Error;
+	flags = osEventFlagsGet(xEvent_CurrentControlModeHandle);
+	if(flags&MODE_MANUAL_FLAG)
+	{
+		/* Manual Mode selected */
+		COM_SendMessage(ACTION_CTRL, MSG_TYPE_ONDEMAND, PRIORITY_HIGH, actionControl);
+	}
+	else
+	{
+		/* Do Nothing */
+	}
 	UG_Update();
 	return OK;
+}
+
+result_t MainMenu_setManualChecked(bool state)
+{
+	if(OK == UG_CheckboxSetChecked(&mainWindow, CB_MANUAL_ID, state))
+		return OK;
+	else
+		return Error;
+}
+
+result_t MainMenu_setPIDChecked(bool state)
+{
+	if(OK == UG_CheckboxSetChecked(&mainWindow, CB_PID_ID, state))
+		return OK;
+	else
+		return Error;
+}
+
+result_t MainMenu_setUSBChecked(bool state)
+{
+	if(OK == UG_CheckboxSetChecked(&mainWindow, CB_USB_ID, state))
+		return OK;
+	else
+		return Error;
 }
 
 result_t MainMenu_preCheck(uint16_t ID)
@@ -404,7 +517,38 @@ result_t MainMenu_preCheck(uint16_t ID)
  * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
  * ---------------------------------------------------------
  */
-static void sMainMenu_ProcessButtonPress(Buttons btnPressed, int16_t *setPoint)
+static void sMainMenu_ProcessButtonPressCtrlAct(Buttons btnPressed, int8_t *actCtrl)
+{
+	switch(btnPressed)
+	{
+		case iUp:
+			*actCtrl = *actCtrl + 1;
+			if(100 < *actCtrl)
+				*actCtrl = 100;
+			MainMenu_setActionControl(*actCtrl);
+		break;
+		case iDown:
+			*actCtrl = *actCtrl - 1;
+			if(0 > *actCtrl)
+				*actCtrl = 0;
+			MainMenu_setActionControl(*actCtrl);
+		break;
+		case iLeft:
+		break;
+		case iRight:
+		break;
+		case iOk:
+		case iEncoderSW:
+		case iMenu:
+		case iNone:
+		case iEncoder:
+		case Reset:
+		default:
+		break;
+	}
+}
+
+static void sMainMenu_ProcessButtonPressSetPoint(Buttons btnPressed, int16_t *setPoint)
 {
 	switch(btnPressed)
 	{

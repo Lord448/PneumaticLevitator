@@ -231,6 +231,16 @@ static bool sMenu_ProcessButtonPress(Buttons btn)
 			/* We are inside of the bounds */
 			currentMenu--;
 		}
+		/* TODO: Disabling beta menus */
+		if(sPlantAnalysis == currentMenu->menuStage)
+		{
+			/* Skip */
+			currentMenu = &MenuSelectorsGroup.mSelAbout;
+		}
+		else
+		{
+			/* Do Nothing */
+		}
 	}
 	else if(iRight == btn)
 	{
@@ -244,6 +254,16 @@ static bool sMenu_ProcessButtonPress(Buttons btn)
 		{
 			/* We are inside of the bounds */
 			currentMenu++;
+		}
+		/* TODO: Disabling beta menus */
+		if(sPlot == currentMenu->menuStage)
+		{
+			/* Skip */
+			currentMenu = &MenuSelectorsGroup.mSelMainLobby;
+		}
+		else
+		{
+			/* Do Nothing */
 		}
 	}
 	else if(iOk == btn || iEncoderSW == btn)

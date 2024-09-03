@@ -323,6 +323,11 @@ osEventFlagsId_t xEvent_UIConfigsHandle;
 const osEventFlagsAttr_t xEvent_UIConfigs_attributes = {
   .name = "xEvent_UIConfigs"
 };
+/* Definitions for xEvent_CurrentControlMode */
+osEventFlagsId_t xEvent_CurrentControlModeHandle;
+const osEventFlagsAttr_t xEvent_CurrentControlMode_attributes = {
+  .name = "xEvent_CurrentControlMode"
+};
 /* USER CODE BEGIN PV */
 osMemoryPoolId_t MemoryPool8;  /*Generic Memory Pool designed for members of 1 Byte size*/
 osMemoryPoolId_t MemoryPool16; /*Generic Memory Pool designed for members of 2 Byte size*/
@@ -534,6 +539,9 @@ int main(void)
 
   /* creation of xEvent_UIConfigs */
   xEvent_UIConfigsHandle = osEventFlagsNew(&xEvent_UIConfigs_attributes);
+
+  /* creation of xEvent_CurrentControlMode */
+  xEvent_CurrentControlModeHandle = osEventFlagsNew(&xEvent_CurrentControlMode_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
 

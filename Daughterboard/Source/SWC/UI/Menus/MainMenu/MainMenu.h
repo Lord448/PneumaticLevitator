@@ -171,6 +171,9 @@ result_t MainMenu_setDistance(int16_t distance);
 result_t MainMenu_setSetPoint(uint16_t setPoint);
 result_t MainMenu_setRPM(int16_t rpm);
 result_t MainMenu_setActionControl(int8_t actionControl);
+result_t MainMenu_setManualChecked(bool state);
+result_t MainMenu_setPIDChecked(bool state);
+result_t MainMenu_setUSBChecked(bool state);
 result_t MainMenu_preCheck(uint16_t ID);
 
 #endif /* SWC_UI_MENUS_MAINMENU_H_ */

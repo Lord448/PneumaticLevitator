@@ -39,4 +39,5 @@ extern UG_BMP About;
 extern UG_BMP Plot;
 extern UG_BMP USBConfig;
 extern UG_BMP PlantAnalysis;
+extern UG_BMP MatlabLogo;
 #endif /* UI_BITMAPS_BITMAPS_H_ */

@@ -46,6 +46,8 @@
 #define KI_VAL            SIGNAL(0x08)
 #define KD_VAL            SIGNAL(0x09)
 #define TOGGLE_PID        SIGNAL(0x0A)
+#define MODE_SELECTION    SIGNAL(0x0B)
+#define ACTION_CTRL       SIGNAL(0x0C)
 
 #define CPU_LOAD_DAUGHTER SIGNAL(0x7F) /* 7 bit limit */
 /**

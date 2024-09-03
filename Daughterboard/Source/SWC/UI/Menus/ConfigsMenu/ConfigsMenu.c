@@ -18,10 +18,15 @@
 
 UG_WINDOW configsWindow;
 
+extern UG_WINDOW controlModesWindow;
+
 typedef enum LocalMenuStages {
 	sChangeConst,
 	sChangeMode
 }LocalMenuStages;
+
+LocalMenuStages menuOnDisplay = sChangeConst;
+bool menuDisplayed = false;
 
 typedef struct MenuSelector {
 	LocalMenuStages menuStage;
@@ -37,13 +42,13 @@ struct MenuSelectorsGroup {
 }static MenuSelectorsGroup = {
 	.mChangeConstants = {
 		.menuStage = sChangeConst,
-		.idImage = 0, /* TODO Complete here */
+		.idImage = PID_CONST_IMG_ID,
 		.idTextbox = TB_CHANGE_CONS_ID,
-		.isOnDevelopment = false
+		.isOnDevelopment = true
 	},
 	.mChangeMode = {
 		.menuStage = sChangeMode,
-		.idImage = 0, /* TODO Complete here */
+		.idImage = MATLAB_LOGO_IMG_ID,
 		.idTextbox = TB_CHANGE_MODE_ID,
 		.isOnDevelopment = false
 	}
@@ -71,6 +76,7 @@ void ConfigsMenu_Dynamics(Buttons btnPress, bool *isFirstInit)
 		Init,
 		Periodic
 	}static stateHandler = Init;
+	static bool subMenuFirstInit = true;
 
 	if(*isFirstInit)
 	{
@@ -88,16 +94,41 @@ void ConfigsMenu_Dynamics(Buttons btnPress, bool *isFirstInit)
 		case Init:
 			HMI_EnableButtons(iMenu | iLeft | iRight | iOk | iEncoderSW);
 			stateHandler = Periodic;
+			menuDisplayed = false;
+			subMenuFirstInit = true;
 		break;
 		case Periodic:
+			if(menuDisplayed)
+			{
+				/* Need to render a submenu */
+				switch(menuOnDisplay)
+				{
+					case sChangeConst:
+						/* TODO: Implement when menu ready */
+					break;
+					case sChangeMode:
+						ControlModeMenu_Dynamics(btnPress, &subMenuFirstInit);
+					break;
+				}
+				return; /* Early exit of the function */
+			}
+			else
+			{
+				/* Do Nothing */
+			}
 			if(iNone != btnPress)
 			{
+				/* There is a press */
 				sConfigsMenu_MakeArrowPressAnim(btnPress);
 				if(true == sConfigsMenu_ProcessButtonPress(btnPress))
 				{
 					/* Registered an option selection */
-					stateHandler = Init;
+					//stateHandler = Init;
 				}
+			}
+			else
+			{
+				/* Do Nothing */
 			}
 		break;
 	}
@@ -111,11 +142,12 @@ void ConfigsMenu_buildObjects(void)
 	static UG_IMAGE   PressedLeftArrowImage;
 	static UG_IMAGE   RightArrowImage;
 	static UG_IMAGE   PressedRightArrowImage;
-	//static UG_IMAGE   ConstantsImage;
-	//static UG_IMAGE   ModesImage;
+	static UG_IMAGE   ConstantsImage;
+	static UG_IMAGE   ModesImage;
 	/* Textboxes */
 	static UG_TEXTBOX tbChangeConstants;
 	static UG_TEXTBOX tbChangeMode;
+	static UG_TEXTBOX tbOnDev;
 
 	UG_WindowCreate(&configsWindow, ObjWinBuf, 32, NULL);
 	/* Set window characteristics */
@@ -132,10 +164,13 @@ void ConfigsMenu_buildObjects(void)
   UI_CreateImage(&configsWindow, &PressedLeftArrowImage, PRESSED_LEFT_ARROW_IMG_ID, &PressedLeftArrow, false, LEFT_ARROW_X_POS, LEFT_ARROW_Y_POS);
   UI_CreateImage(&configsWindow, &RightArrowImage, RIGHT_ARROW_IMG_ID, &RightArrow, true, RIGHT_ARROW_X_POS, RIGHT_ARROW_Y_POS);
   UI_CreateImage(&configsWindow, &PressedRightArrowImage, PRESSED_RIGHT_ARROW_IMG_ID, &PressedRightArrow, false, RIGHT_ARROW_X_POS, RIGHT_ARROW_Y_POS);
-  /* TODO: Add Images here */
+  UI_CreateImage(&configsWindow, &ConstantsImage, PID_CONST_IMG_ID, &PlantAnalysis, true, ICON_X_POS, ICON_Y_POS);
+  UI_CreateImage(&configsWindow, &ModesImage, MATLAB_LOGO_IMG_ID, &MatlabLogo, false, ICON_X_POS, ICON_Y_POS);
   /* Building the textboxes */
   sConfigsMenu_CreateTextbox(&tbChangeConstants, TB_CHANGE_CONS_ID, "Cambiar constantes PID", true, TB_CHANG_CONS_X_POS, MENU_TEXTBOX_Y_POS);
   sConfigsMenu_CreateTextbox(&tbChangeMode, TB_CHANGE_MODE_ID, "Cambiar modo de control", false, TB_CHANG_MODE_X_POS, MENU_TEXTBOX_Y_POS);
+  sConfigsMenu_CreateTextbox(&tbOnDev, TB_VER_PROMPT_ID, "En desarrollo", true, TB_VER_PROMPT_X_POS, TB_VER_PROMPT_Y_POS);
+  ControlModeMenu_buildObjects();
 }
 /**
  * ---------------------------------------------------------
@@ -202,7 +237,8 @@ static bool sConfigsMenu_ProcessButtonPress(Buttons btnPress)
 	}
 	else
 	{
-		/* Do Nothing */
+		/* Hide the textbox */
+		UG_TextboxHide(&configsWindow, TB_VER_PROMPT_ID);
 	}
 	UG_Update();
 	return false;
@@ -210,7 +246,22 @@ static bool sConfigsMenu_ProcessButtonPress(Buttons btnPress)
 
 static void sConfigsMenu_ChangeMenu(LocalMenuStages menuStage)
 {
-
+	UG_WINDOW *window;
+	if(sChangeConst == menuStage)
+	{
+		menuOnDisplay = sChangeConst;
+		return; /* TODO: Implement when menu constants it's finished */
+	}
+	else if(sChangeMode == menuStage)
+	{
+		/* Selecting change mode */
+		window = &controlModesWindow;
+		menuOnDisplay = sChangeMode;
+	}
+	menuDisplayed = true;
+	UG_WindowHide(&configsWindow);
+	UG_WindowShow(window);
+	UG_Update();
 }
 
 static void sConfigsMenu_MakeArrowPressAnim(Buttons btnPress)

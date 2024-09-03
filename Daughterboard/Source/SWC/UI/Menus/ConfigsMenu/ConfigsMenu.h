@@ -18,6 +18,7 @@
 
 #include "UI.h"
 #include "ugui.h"
+#include "ControlModeMenu.h"
 
 /**
  * ---------------------------------------------------------
@@ -28,6 +29,8 @@
 #define PRESSED_LEFT_ARROW_IMG_ID  IMG_ID_1
 #define RIGHT_ARROW_IMG_ID         IMG_ID_2
 #define PRESSED_RIGHT_ARROW_IMG_ID IMG_ID_3
+#define PID_CONST_IMG_ID           IMG_ID_4
+#define MATLAB_LOGO_IMG_ID         IMG_ID_5
 /**
  * ---------------------------------------------------------
  * 					          IMAGE POSITION SYMBOLS

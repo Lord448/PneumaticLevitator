@@ -72,6 +72,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Daughterboard/Source/SWC/UI/Menus/AboutMenu}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Daughterboard/Source/SWC/UI/Menus/ConfigsMenu}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Daughterboard/Source/SWC/UI/Menus/PlantAnalysisMenu}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Daughterboard/Source/SWC/UI/Menus/ConfigsMenu/ControlModeMenu}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.893277119" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
