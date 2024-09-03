@@ -61,6 +61,7 @@ void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit)
 		HMI_EnableAllButtons();
 		MainMenu_setSetPoint(setPoint);
 		MainMenu_setControlConstants(kpCache, kiCache, kdCache);
+		actionControl = 0;
 		*isFirstMenuInit = false;
 	}
 	/* Printing the bars */

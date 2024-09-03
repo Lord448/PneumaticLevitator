@@ -180,9 +180,9 @@ void vTaskPID(void *argument)
 			/* Disabling PID */
 			PID_Reset();
 			dataToSend = 0;
+			osMessageQueuePut(xFIFO_FANDutyCycleHandle, (int8_t*)&dataToSend, 0U, osNoTimeout);
 			while(!PID.isActive)
 			{
-				osMessageQueuePut(xFIFO_FANDutyCycleHandle, (int8_t*)&dataToSend, 0U, osNoTimeout);
 				/* Wait 50 ticks to check if the PID has turned on */
 				osDelay(50);
 			}
@@ -222,6 +222,30 @@ void vTaskPID(void *argument)
 void PID_TogglePID(void)
 {
 	PID.isActive = !PID.isActive;
+	PID_Reset();
+}
+
+/**
+ * @brief  Turns on the PID
+ *         components
+ * @param  none
+ * @retval none
+ */
+void PID_TurnOn(void)
+{
+	PID.isActive = true;
+	PID_Reset();
+}
+
+/**
+ * @brief  Turns off the PID
+ *         components
+ * @param  none
+ * @retval none
+ */
+void PID_TurnOff(void)
+{
+	PID.isActive = false;
 }
 
 /**
@@ -240,6 +264,17 @@ void PID_Reset(void)
 	PID.Control.D = 0;
 	PID.ControlAction = 0;
 }
+
+/**
+ * @brief  Delivers the state of the PID
+ * @param  none
+ * @retval The state of the PID
+ */
+bool PID_isActive(void)
+{
+	return PID.isActive;
+}
+
 
 /**
  * @brief  Get the value of the local gains

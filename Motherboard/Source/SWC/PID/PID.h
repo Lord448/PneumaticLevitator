@@ -64,7 +64,10 @@ typedef struct PIDConfigs{
 }PIDConfigs;
 
 void PID_TogglePID(void);
+void PID_TurnOn(void);
+void PID_TurnOff(void);
 void PID_Reset(void);
+bool PID_isActive(void);
 void PID_GetControlGains(float *kp, float *ki, float *kd);
 void PID_SetControlGains(float kp, float ki, float kd);
 

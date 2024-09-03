@@ -34,6 +34,7 @@ void vTaskModeManager(void *argument)
 	ControlModes currentMode = AutoPID;
 	uint32_t eventFlags = 0;
 
+	osThreadSuspend(TaskModeManagerHandle); /* TODO: Disabling the task */
 	for(;;)
 	{
 		/* Search for new request modes */
@@ -59,7 +60,7 @@ void vTaskModeManager(void *argument)
 			break;
 		}
 		/* Clear the flags */
-		osEventFlagsClear(xEvent_ControlModesHandle, eventFlags);
+		//osEventFlagsClear(xEvent_ControlModesHandle, eventFlags);
 	}
 }
 

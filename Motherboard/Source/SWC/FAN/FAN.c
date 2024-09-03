@@ -52,6 +52,7 @@ void vTaskFAN(void *argument)
 #ifndef HARD_CODED_TEST
 		osMessageQueueGet(xFIFO_FANDutyCycleHandle, &dutyCycle, NULL, osWaitForever); /* Receiving data from the OS */
 		setPWM_FAN(dutyCycle);
+		/* TODO: Check if need to ask for flags an implement the logic to omit send msg when Mode manual is active */
 		osMessageQueuePut(xFIFO_COMActionControlHandle, &dutyCycle, 0U, osNoTimeout); /* Sending to COM as a periodic signal */
 #else
 		if(timeCounter > 10) /* Each 100ms */

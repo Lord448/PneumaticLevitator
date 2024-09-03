@@ -29,6 +29,7 @@ extern osMessageQueueId_t xFIFO_COMDistanceHandle;
 extern osMessageQueueId_t xFIFO_COMRPMHandle;
 extern osMessageQueueId_t xFIFO_COMActionControlHandle;
 extern osMessageQueueId_t xFIFO_PIDSetPointHandle;
+extern osMessageQueueId_t xFIFO_FANDutyCycleHandle;
 
 extern osTimerId_t xTimer_UARTSendHandle;
 extern osTimerId_t xTimer_WdgUARTHandle;
@@ -44,6 +45,7 @@ extern osSemaphoreId_t xSemaphore_UARTTxCpltHandle;
 
 extern osEventFlagsId_t xEvent_USBHandle;
 extern osEventFlagsId_t xEvent_FatalErrorHandle;
+extern osEventFlagsId_t xEvent_ControlModesHandle;
 
 extern char CDC_ResBuffer[64];
 
@@ -57,11 +59,11 @@ bool firstInit = true;
  * 					 SOFTWARE COMPONENT LOCAL PROTOYPES
  * ---------------------------------------------------------
  */
-static result_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 static void sendInitBuffer(void);
 static void syncComm(void);
 static result_t sUSB_ParseGains(float *kp, float *ki, float *kd);
 static result_t sCOM_SendUSB(uint8_t *buf, uint16_t len);
+static result_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 /**
  * ---------------------------------------------------------
  * 					  SOFTWARE COMPONENT MAIN THREAD
@@ -74,22 +76,57 @@ static result_t sCOM_SendUSB(uint8_t *buf, uint16_t len);
 */
 void vTaskCOM(void *argument)
 {
-	uint32_t flags = 0;
+	uint32_t ErrFlags = 0;
+	uint32_t modeFlags = 0;
+	int16_t distance = 0;
+	uint16_t datalen = 0;
+	char distBuff[32] = "";
+
 	syncComm();
 	for(;;)
 	{
-		flags = osEventFlagsGet(xEvent_FatalErrorHandle);
-		if(flags&FATAL_ERROR_GPU)
+		ErrFlags = osEventFlagsGet(xEvent_FatalErrorHandle);
+		if(ErrFlags&FATAL_ERROR_GPU)
 		{
 			/* Handling the fatal error */
 			syncComm();
 		}
-		/* Searching if there are errors on the sensor VL53L0X TODO: Move this to ModeManager*/
-		if(osOK == osSemaphoreAcquire(xSemaphore_SensorErrorHandle, 100))
+		/* Send distance to USB logic */
+		modeFlags = osEventFlagsGet(xEvent_ControlModesHandle);
+		if(modeFlags&SLAVE_FLAG)
 		{
-			/* Errors on the VL53L0X communication */
-			osThreadTerminate(TaskSensorHandle);
-			osTimerStart(xTimer_RestartSensorTaskHandle, pdMS_TO_TICKS(COM_TIME_TO_RESET_SENSOR_TASK));
+			/* Need to send distance */
+			if(osOK == osMessageQueueGet(xFIFO_COMDistanceHandle, &distance, NULL, 10))
+			{
+				/* There is a distance message */
+				datalen = strlen(distBuff);
+				memset(distBuff, '\0', datalen);
+				sprintf(distBuff, COM_DISTANCE_SEND_FORMAT, distance);
+				datalen = strlen(distBuff);
+				sCOM_SendUSB((uint8_t *)distBuff, datalen);
+			}
+			else
+			{
+				/* Do Nothing */
+			}
+			/* Searching if there are errors on the sensor VL53L0X TODO: Move this to ModeManager*/
+			if(osOK == osSemaphoreAcquire(xSemaphore_SensorErrorHandle, osNoTimeout))
+			{
+				/* Errors on the VL53L0X communication */
+				osThreadTerminate(TaskSensorHandle);
+				osTimerStart(xTimer_RestartSensorTaskHandle, pdMS_TO_TICKS(COM_TIME_TO_RESET_SENSOR_TASK));
+			}
+		}
+		else
+		{
+			/* Other mode it's selected */
+			/* Searching if there are errors on the sensor VL53L0X TODO: Move this to ModeManager*/
+			if(osOK == osSemaphoreAcquire(xSemaphore_SensorErrorHandle, 10))
+			{
+				/* Errors on the VL53L0X communication */
+				osThreadTerminate(TaskSensorHandle);
+				osTimerStart(xTimer_RestartSensorTaskHandle, pdMS_TO_TICKS(COM_TIME_TO_RESET_SENSOR_TASK));
+			}
 		}
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart1, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES_RX);
 	}
@@ -223,10 +260,15 @@ void vSubTaskUSB(void *argument)
 void vSubTaskUART(void *argument)
 {
 	int16_t setPoint = 0;
+	int8_t controlAction = 0;
+	ControlModes mode = AutoPID;
+	uint32_t flags = 0;
+	char bufferCache[COM_UART_PERIODIC_NUMBER_FRAMES_RX];
 
 	for(;;)
 	{
 		osSemaphoreAcquire(xSemaphore_UARTRxCpltHandle, osWaitForever);
+		memcpy(bufferCache, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES_RX);
 		/* Reseting the Watch dog timer for UART */
 		osTimerStart(xTimer_WdgUARTHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
 		switch(UARTfirstFrame)
@@ -242,11 +284,57 @@ void vSubTaskUART(void *argument)
 			case TOGGLE_PID:
 				PID_TogglePID();
 			break;
+			case MODE_SELECTION:
+				mode = UART_RxBuffer[1]; /* Directly compatible from Daughterboard */
+				osEventFlagsClear(xEvent_ControlModesHandle, AUTO_PID_FLAG | SLAVE_FLAG | MANUAL_FLAG);
+				switch(mode)
+				{
+					case Manual:
+						if(PID_isActive())
+						{
+							/* Need to turn off */
+							PID_TurnOff();
+						}
+						osEventFlagsSet(xEvent_ControlModesHandle, MANUAL_FLAG);
+					break;
+					case AutoPID:
+						if(!PID_isActive())
+						{
+							/* Need to turn on */
+							PID_TurnOn();
+						}
+						osEventFlagsSet(xEvent_ControlModesHandle, AUTO_PID_FLAG);
+					break;
+					case Slave:
+						if(PID_isActive())
+						{
+							/* Need to turn off */
+							PID_TurnOff();
+						}
+						osEventFlagsSet(xEvent_ControlModesHandle, SLAVE_FLAG);
+					break;
+				}
+			break;
+			case ACTION_CTRL:
+				flags = osEventFlagsGet(xEvent_ControlModesHandle);
+				if(flags&MANUAL_FLAG)
+				{
+					/* Only in this case the message is valid */
+					controlAction = bufferCache[1];
+					osMessageQueuePut(xFIFO_FANDutyCycleHandle, &controlAction, 0U, osNoTimeout);
+				}
+				else
+				{
+					/* Message invalid */
+				}
+
+			break;
 			case NO_MSG_ID:
 			default:
 				/* Do Nothing */
 			break;
 		}
+
 	}
 }
 /**
@@ -313,7 +401,7 @@ static void syncComm(void)
 	bool errorFlagWereSet = false;
 
 	do {
-		HAL_UART_Receive_DMA(&huart1, UART_RxBuffer, sizeof(uint8_t)); /* Jump the ISR when first arrived to receive the data */
+		HAL_UARTEx_ReceiveToIdle_DMA(&huart1, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES_RX); /* Jump the ISR when first arrived to receive the data */
 		/* Send initial buffer */
 		sendInitBuffer();
 		/* Wait for the UART to receive the init message of Daughter */
@@ -650,7 +738,6 @@ void vTimer_UARTSendCallback(void *argument)
 	}
 	osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, osWaitForever);
 	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)buffer, COM_UART_PERIODIC_NUMBER_FRAMES_TX);
-	bytePointer = (uint8_t *)&RPM; /* TODO: Stubbed code */
 }
 
 /**
@@ -738,7 +825,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	}
 	else
 	{
-		/* Do Nothing, It's just the acknowledge */
+		/* It's just the acknowledge */
 	}
 	HAL_UARTEx_ReceiveToIdle_DMA(&huart1, UART_RxBuffer, COM_UART_PERIODIC_NUMBER_FRAMES_RX);
 }

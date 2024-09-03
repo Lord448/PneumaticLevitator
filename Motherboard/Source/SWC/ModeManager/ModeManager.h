@@ -31,9 +31,9 @@
 #define THREAD_FLAG_ENABLE_PID  1U << 1
 
 typedef enum ControlModes{
+	Manual,
 	AutoPID,
-	Slave,
-	Manual
+	Slave
 }ControlModes;
 
 void vTaskModeManager(void *argument);

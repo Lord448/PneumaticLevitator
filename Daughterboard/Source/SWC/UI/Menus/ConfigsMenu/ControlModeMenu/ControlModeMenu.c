@@ -35,6 +35,7 @@ typedef struct BtnCoordinates {
 	uint8_t ye;
 }BtnCoordinates;
 
+/* Must be the same that Motherboard/ModeManager.h typedef */
 typedef enum btnSelect {
 	ManualBtnSel = BTN_MANUAL_MODE,
 	PIDBtnSel = BTN_AUTO_PID_MODE,

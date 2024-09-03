@@ -26,6 +26,7 @@
 #include "PID.h"
 #include "NVMVariables.h"
 #include "FreeRTOS.h"
+#include "ModeManager.h"
 #include "task.h"
 #include <stdio.h>
 #include <string.h>
@@ -72,6 +73,8 @@
 #define COM_SET_NVM_DEFAULT        "NVM_DEF"   /* Set the default values of the EEPROM variables - No Args */
 #define COM_SET_NVM_DUMP           "NVM_DUMP"  /* Make a memory dump of the EEPROM data - No Args*/
 #define COM_SET_NVM_DUMP_ADDR      "NVM_ADDR"  /* Make a memory dump of with selected addresses - Args: InitAddr, LastAddr */
+
+#define COM_DISTANCE_SEND_FORMAT   "DIST: %d"  /* Format for the distance send to the usb */
 
 typedef union Data16 {
 	int16_t data;
