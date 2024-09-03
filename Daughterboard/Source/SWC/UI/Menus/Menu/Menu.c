@@ -86,6 +86,8 @@ struct MenuSelectorsGroup {
 		}
 };
 
+static MenuSelector *currentMenu = &MenuSelectorsGroup.mSelMainLobby;
+
 /**
  * ---------------------------------------------------------
  * 					 SOFTWARE COMPONENT LOCAL PROTOYPES
@@ -119,6 +121,8 @@ void Menu_MenuDynamics(void)
 	{
 		case Init:
 			HMI_EnableButtons(iLeft | iRight | iEncoderSW | iOk | iMenu);
+			UG_ImageShow(&menuWindow, currentMenu->idImage);
+			UG_Update();
 			stateHandler = Periodic;
 		break;
 		case Periodic:
@@ -216,7 +220,6 @@ static bool sMenu_ProcessButtonPress(Buttons btn)
 {
 	MenuSelector *firstMenu = &MenuSelectorsGroup.mSelMainLobby;
 	MenuSelector *lastMenu = &MenuSelectorsGroup.mSelPlantAnalysis;
-	static MenuSelector *currentMenu = &MenuSelectorsGroup.mSelMainLobby;
 
 	if(iLeft == btn)
 	{

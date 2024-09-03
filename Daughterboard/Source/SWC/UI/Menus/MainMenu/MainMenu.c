@@ -61,7 +61,7 @@ void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit)
 		HMI_EnableAllButtons();
 		MainMenu_setSetPoint(setPoint);
 		MainMenu_setControlConstants(kpCache, kiCache, kdCache);
-		actionControl = 0;
+		MainMenu_setActionControl(actionCtrl);
 		*isFirstMenuInit = false;
 	}
 	/* Printing the bars */
@@ -99,7 +99,7 @@ void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit)
 		{
 			/* Need to establish init conditions */
 			MainMenu_setSetPoint(0);
-			MainMenu_setActionControl(0);
+			//MainMenu_setActionControl(0);
 			MainMenu_firstChangeMode = false;
 		}
 		if(osMessageQueueGet(xFIFO_EncoderDataHandle, &encoderDir, NULL, 1) == osOK)
