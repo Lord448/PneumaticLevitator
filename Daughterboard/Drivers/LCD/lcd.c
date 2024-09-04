@@ -736,10 +736,10 @@ void LCD_Test(void)
   UG_FillScreen(C_BLACK);
   LCD_PutStr(10, 5, "Font", DEFAULT_FONT, C_RED, C_BLACK);
   clearTime();
-  LCD_PutStr(10, 35, "Hello Steve!", DEFAULT_FONT, C_CYAN, C_BLACK);
-  LCD_PutStr(10, 55, "Hello Steve!", DEFAULT_FONT, C_ORANGE_RED, C_BLACK);
-  LCD_PutStr(10, 75, "Hello Steve!", DEFAULT_FONT, C_LIME_GREEN, C_BLACK);
-  LCD_PutStr(10, 95, "Hello Steve!", DEFAULT_FONT, C_HOT_PINK, C_BLACK);
+  LCD_PutStr(10, 35, "Hello Pedro!", DEFAULT_FONT, C_CYAN, C_BLACK);
+  LCD_PutStr(10, 55, "Hello Pedro!", DEFAULT_FONT, C_ORANGE_RED, C_BLACK);
+  LCD_PutStr(10, 75, "Hello Pedro!", DEFAULT_FONT, C_LIME_GREEN, C_BLACK);
+  LCD_PutStr(10, 95, "Hello Pedro!", DEFAULT_FONT, C_HOT_PINK, C_BLACK);
   UG_Update();
   printTime();
   HAL_Delay(1000);
@@ -749,7 +749,7 @@ void LCD_Test(void)
   LCD_PutStr(10, 5, "Big font", DEFAULT_FONT, C_RED, C_BLACK);
   clearTime();
   LCD_PutStr(10, 35, "Hello", FONT_arial_49X57, C_CYAN, C_BLACK);
-  LCD_PutStr(10, 80, "Steve!", FONT_arial_49X57, C_CYAN, C_BLACK);
+  LCD_PutStr(10, 80, "Pedro!", FONT_arial_49X57, C_CYAN, C_BLACK);
   UG_Update();
   printTime();
   HAL_Delay(1000);
@@ -851,8 +851,8 @@ void LCD_Test(void)
   UG_TextboxSetAlignment(&window_1, TXB_ID_0, ALIGN_CENTER);
 
   // Create progress bar
-  UG_ProgressCreate(&window_1, &pgb, PGB_ID_0, 10, 72, LCD_WIDTH-20, 85);
-  UG_ProgressSetForeColor(&window_1, PGB_ID_0, C_ROYAL_BLUE);
+  UG_ProgressCreate(&window_1, &pgb, PGB_ID_0, 10, 72, 50, 200);
+  UG_ProgressSetForeColor(&window_1, PGB_ID_0, C_CYAN);
 
   UG_WindowShow(&window_1);
   UG_Update();

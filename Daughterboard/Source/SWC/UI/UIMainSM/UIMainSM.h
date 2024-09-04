@@ -32,6 +32,7 @@ typedef enum MenuStages {
 	sMenu,
 	sConfigs,
 	sAbout,
+	sLCDTest,
 	sPlot,
 	sUSBConfig,
 	sPlantAnalysis,

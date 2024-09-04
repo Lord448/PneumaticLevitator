@@ -45,6 +45,7 @@
 #define UI_STARTED_THREAD_FLAG (uint32_t) 1U << 0
 
 //#define SKIP_INTRO_ANIM
+//#define SEE_TEXTBOX_CAGE
 
 /**
  * ---------------------------------------------------------

@@ -36,10 +36,11 @@
 
 #define MAIN_LOBBY_MENU_IMG_ID     IMG_ID_4
 #define CONFIG_MENU_IMG_ID         IMG_ID_5
-#define ABOUT_MENU_IMG_ID          IMG_ID_6
-#define PLOT_MENU_IMG_ID           IMG_ID_7
-#define USB_CONFIG_MENU_IMG_ID     IMG_ID_8
-#define PLANT_MENU_IMG_ID          IMG_ID_9
+#define LCD_TEST_IMG_ID						 IMG_ID_6
+#define ABOUT_MENU_IMG_ID          IMG_ID_7
+#define PLOT_MENU_IMG_ID           IMG_ID_8
+#define USB_CONFIG_MENU_IMG_ID     IMG_ID_9
+#define PLANT_MENU_IMG_ID          IMG_ID_10
 
 /**
  * ---------------------------------------------------------
@@ -64,11 +65,12 @@
 
 #define TB_MAIN_LOBBY_ID    TXB_ID_0
 #define TB_CONFIG_ID        TXB_ID_1
-#define TB_ABOUT_ID         TXB_ID_2
-#define TB_PLOT_ID          TXB_ID_3
-#define TB_USB_CONFIG_ID    TXB_ID_4
-#define TB_PLANT_ID         TXB_ID_5
-#define TB_VER_PROMPT_ID    TXB_ID_6
+#define TB_LCD_TEST_ID      TXB_ID_2
+#define TB_ABOUT_ID         TXB_ID_3
+#define TB_PLOT_ID          TXB_ID_4
+#define TB_USB_CONFIG_ID    TXB_ID_5
+#define TB_PLANT_ID         TXB_ID_6
+#define TB_VER_PROMPT_ID    TXB_ID_7
 
 /**
  * ---------------------------------------------------------
@@ -78,7 +80,8 @@
 #define MENU_TEXBOX_Y_POS   160
 
 #define TB_MAIN_LOBBY_X_POS 43
-#define TB_CONFIG_X_POS     30
+#define TB_CONFIG_X_POS     43
+#define TB_LCD_TEST_X_POS   40
 #define TB_ABOUT_X_POS      75
 #define TB_PLOT_X_POS				80
 #define TB_USB_CONFIG_X_POS 0

@@ -44,6 +44,7 @@ struct MenuSelectorsGroup {
 	MenuSelector mSelMainLobby;
 	MenuSelector mSelConfigs;
 	MenuSelector mSelAbout;
+	MenuSelector mSelLCDTest;
 	MenuSelector mSelPlot;
 	MenuSelector mSelUSBConfigs;
 	MenuSelector mSelPlantAnalysis;
@@ -64,6 +65,12 @@ struct MenuSelectorsGroup {
 			.menuStage = sAbout,
 			.idImage = ABOUT_MENU_IMG_ID,
 			.idTextbox = TB_ABOUT_ID,
+			.isOnDevelopment = false
+		},
+		.mSelLCDTest= {
+			.menuStage = sLCDTest,
+			.idImage = LCD_TEST_IMG_ID,
+			.idTextbox = TB_LCD_TEST_ID,
 			.isOnDevelopment = false
 		},
 		.mSelPlot = {
@@ -153,7 +160,7 @@ void Menu_MenuDynamics(void)
  */
 void Menu_buildObjects(void)
 {
-	static UG_OBJECT  ObjWinBuf[WINDOW_MAX_OBJECTS];
+	static UG_OBJECT  ObjWinBuf[32];
 	/* Images */
 	static UG_IMAGE   LeftArrowImage;
 	static UG_IMAGE   PressedLeftArrowImage;
@@ -163,19 +170,21 @@ void Menu_buildObjects(void)
 	static UG_IMAGE   MainLobbyImage;
 	static UG_IMAGE   ConfigImage;
 	static UG_IMAGE   AboutImage;
-	static UG_IMAGE   PlotImage;
-	static UG_IMAGE   USBConfigImage;
-	static UG_IMAGE   PlantAnalysisImage;
+	static UG_IMAGE   LCDTestImage;
+	//static UG_IMAGE   PlotImage;
+	//static UG_IMAGE   USBConfigImage;
+	//static UG_IMAGE   PlantAnalysisImage;
 	/* Textboxes */
 	static UG_TEXTBOX tbMainLobby;
 	static UG_TEXTBOX tbConfig;
+	static UG_TEXTBOX tbLCDTest;
 	static UG_TEXTBOX tbAbout;
 	static UG_TEXTBOX tbPlot;
 	static UG_TEXTBOX tbUSBConfig;
 	static UG_TEXTBOX tbPlantAnalysis;
 	static UG_TEXTBOX tbEarlyVersionPrompt;
 
-	UG_WindowCreate(&menuWindow, ObjWinBuf, WINDOW_MAX_OBJECTS, NULL);
+	UG_WindowCreate(&menuWindow, ObjWinBuf, 32, NULL);
 	/* Set window characteristics */
 	UG_WindowSetTitleText(&menuWindow, "Menu");
   UG_WindowSetTitleTextFont(&menuWindow, FONT_6X8);
@@ -193,9 +202,10 @@ void Menu_buildObjects(void)
   UI_CreateImage(&menuWindow, &MainLobbyImage, MAIN_LOBBY_MENU_IMG_ID, &MainLobby, true, ICON_X_POS, ICON_Y_POS);
   UI_CreateImage(&menuWindow, &ConfigImage, CONFIG_MENU_IMG_ID, &Config, false, ICON_X_POS, ICON_Y_POS);
   UI_CreateImage(&menuWindow, &AboutImage, ABOUT_MENU_IMG_ID, &About, false, ICON_X_POS, ICON_Y_POS);
-  UI_CreateImage(&menuWindow, &PlotImage, PLOT_MENU_IMG_ID, &Plot, false, ICON_X_POS, ICON_Y_POS);
-  UI_CreateImage(&menuWindow, &USBConfigImage, USB_CONFIG_MENU_IMG_ID, &USBConfig, false, ICON_X_POS, ICON_Y_POS);
-  UI_CreateImage(&menuWindow, &PlantAnalysisImage, PLANT_MENU_IMG_ID, &PlantAnalysis, false, ICON_X_POS, ICON_Y_POS);
+  UI_CreateImage(&menuWindow, &LCDTestImage, LCD_TEST_IMG_ID, &LCDTest, false, ICON_X_POS, ICON_Y_POS);
+  //UI_CreateImage(&menuWindow, &PlotImage, PLOT_MENU_IMG_ID, &Plot, false, ICON_X_POS, ICON_Y_POS);
+  //UI_CreateImage(&menuWindow, &USBConfigImage, USB_CONFIG_MENU_IMG_ID, &USBConfig, false, ICON_X_POS, ICON_Y_POS);
+  //UI_CreateImage(&menuWindow, &PlantAnalysisImage, PLANT_MENU_IMG_ID, &PlantAnalysis, false, ICON_X_POS, ICON_Y_POS);
   /* Building Textboxes */
   sMenu_CreateTextbox(&tbMainLobby, TB_MAIN_LOBBY_ID, "Lobby Principal", true, TB_MAIN_LOBBY_X_POS, MENU_TEXBOX_Y_POS);
   sMenu_CreateTextbox(&tbConfig, TB_CONFIG_ID, "Configuraciones", false, TB_MAIN_LOBBY_X_POS, MENU_TEXBOX_Y_POS);
@@ -204,6 +214,13 @@ void Menu_buildObjects(void)
   sMenu_CreateTextbox(&tbUSBConfig, TB_USB_CONFIG_ID, "Configuraciones del USB", false, TB_USB_CONFIG_X_POS, MENU_TEXBOX_Y_POS);
   sMenu_CreateTextbox(&tbPlantAnalysis, TB_PLANT_ID, "Analisis de Planta", false, TB_PLANT_X_POS, MENU_TEXBOX_Y_POS);
   sMenu_CreateTextbox(&tbEarlyVersionPrompt, TB_VER_PROMPT_ID, "En desarrollo", false, TB_VER_PROMPT_X_POS, TB_VER_PROMPT_Y_POS);
+
+	UI_TextboxCreate(&menuWindow, &tbLCDTest, TB_LCD_TEST_ID,
+			TB_LCD_TEST_X_POS, MENU_TEXBOX_Y_POS,
+			TB_LCD_TEST_X_POS+((MENU_TEXTBOX_FONT_X-8) * strlen("Prueba de LCD")), MENU_TEXBOX_Y_POS+MENU_TEXTBOX_FONT_Y);
+	UG_TextboxSetFont(&menuWindow, TB_LCD_TEST_ID, MENU_TEXTBOX_FONT);
+	UG_TextboxSetText(&menuWindow, TB_LCD_TEST_ID, "Prueba de LCD");
+	UG_TextboxHide(&menuWindow, TB_LCD_TEST_ID);
 }
 
 void Menu_ShowInitImage(void)
@@ -238,7 +255,7 @@ static bool sMenu_ProcessButtonPress(Buttons btn)
 		if(sPlantAnalysis == currentMenu->menuStage)
 		{
 			/* Skip */
-			currentMenu = &MenuSelectorsGroup.mSelAbout;
+			currentMenu = &MenuSelectorsGroup.mSelLCDTest;
 		}
 		else
 		{
@@ -276,8 +293,21 @@ static bool sMenu_ProcessButtonPress(Buttons btn)
 		if(!currentMenu->isOnDevelopment)
 		{
 			/* We can enter to the menu */
-			UIMainSM_ChangeMenu(currentMenu->menuStage);
-			return true;
+			if(sLCDTest == currentMenu->menuStage)
+			{
+				/* Only run the test */
+				HMI_DisableAllButtons();
+				LCD_Test();
+				HMI_EnableButtons(iLeft | iRight | iEncoderSW | iOk | iMenu);
+				UG_WindowShow(&menuWindow);
+				UG_Update();
+			}
+			else
+			{
+				/* Enter to the menu */
+				UIMainSM_ChangeMenu(currentMenu->menuStage);
+				return true;
+			}
 		}
 		return false; /* Skip Image processing */
 	}

@@ -72,7 +72,6 @@ void vTaskUI(void *argument)
   for(;;)
   {
   	UIMainSM_InfiniteLoop();
-  	//LCD_Test(); /*TODO Remove the test from here*/
   }
 }
 
@@ -148,7 +147,11 @@ UG_RESULT UI_TextboxCreate(UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs,
 	result = UG_TextboxSetFont(wnd, id, TEXTBOX_FONT);
 	if(result != 0)
 		return result;
-	result = UG_TextboxSetBackColor(wnd, id, C_WHITE_94); /* TODO: debug to see the hole cage */
+#ifdef SEE_TEXTBOX_CAGE
+	result = UG_TextboxSetBackColor(wnd, id, C_WHITE_94);
+#else
+	result = UG_TextboxSetBackColor(wnd, id, C_WHITE);
+#endif
 	if(result != 0)
 		return result;
 	result = UG_TextboxSetForeColor(wnd, id, C_BLACK);
