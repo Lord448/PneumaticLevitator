@@ -23,6 +23,7 @@ extern osMessageQueueId_t xFIFO_ButtonsHandle;
 extern osMessageQueueId_t xFIFO_EncoderDataHandle;
 extern osMessageQueueId_t xFIFO_ActionControlHandle;
 extern osMessageQueueId_t xFIFO_ControlGainsHandle;
+extern osMessageQueueId_t xFIFO_UISetPointHandle;
 
 extern osEventFlagsId_t xEvent_CurrentControlModeHandle;
 
@@ -139,6 +140,12 @@ void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit)
 				MainMenu_setSetPoint(0);
 			}
 			MainMenu_firstChangeMode = false;
+		}
+		if(flags&MODE_USB_FLAG)
+		{
+			/* Selected USB flag */
+			if(osMessageQueueGet(xFIFO_UISetPointHandle, &setPoint, NULL, osNoTimeout) == osOK)
+				MainMenu_setSetPoint(setPoint);
 		}
 		if(osMessageQueueGet(xFIFO_ActionControlHandle, &actionControl, NULL, osNoTimeout) == osOK)
 			MainMenu_setActionControl(actionControl);

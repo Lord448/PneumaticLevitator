@@ -225,6 +225,11 @@ osMessageQueueId_t xFIFO_ControlGainsHandle;
 const osMessageQueueAttr_t xFIFO_ControlGains_attributes = {
   .name = "xFIFO_ControlGains"
 };
+/* Definitions for xFIFO_UISetPoint */
+osMessageQueueId_t xFIFO_UISetPointHandle;
+const osMessageQueueAttr_t xFIFO_UISetPoint_attributes = {
+  .name = "xFIFO_UISetPoint"
+};
 /* Definitions for xSemaphoreDMACplt3 */
 osSemaphoreId_t xSemaphoreDMACplt3Handle;
 osStaticSemaphoreDef_t xSemaphoreDMACplt3ControlBlock;
@@ -478,6 +483,9 @@ int main(void)
 
   /* creation of xFIFO_ControlGains */
   xFIFO_ControlGainsHandle = osMessageQueueNew (16, sizeof(ControlGain), &xFIFO_ControlGains_attributes);
+
+  /* creation of xFIFO_UISetPoint */
+  xFIFO_UISetPointHandle = osMessageQueueNew (16, sizeof(int16_t), &xFIFO_UISetPoint_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -1146,25 +1154,43 @@ void vTaskIdle(void *argument)
 void vTaskLeds(void *argument)
 {
   /* USER CODE BEGIN vTaskLeds */
-	uint32_t flags = 0;
+	uint32_t flags = 0, modeFlags = 0;
+	HAL_GPIO_WritePin(LED_CONTROL_GPIO_Port, LED_CONTROL_Pin, 1);
+	HAL_GPIO_WritePin(LED_COMM_GPIO_Port, LED_COMM_Pin, 0);
+	HAL_GPIO_WritePin(LED_USB_GPIO_Port, LED_USB_Pin, 0);
+	//HAL_GPIO_WritePin(LED_COMM_GPIO_Port, LED_COMM_Pin, 0);
   /* Infinite loop */
   for(;;)
   {
-  	flags = osEventFlagsWait(xEvent_FatalErrorHandle, FATAL_ERROR_MOTHER_COMM, osFlagsWaitAny, osWaitForever);
+  	//flags = osEventFlagsWait(xEvent_FatalErrorHandle, FATAL_ERROR_MOTHER_COMM, osFlagsWaitAny, osWaitForever);
 
   	if(flags&FATAL_ERROR_MOTHER_COMM)
   	{
   		/* Error comm with Motherboard */
-  		HAL_GPIO_WritePin(LED_COMM_GPIO_Port, LED_COMM_Pin, 1);
+  		//HAL_GPIO_WritePin(LED_COMM_GPIO_Port, LED_COMM_Pin, 1);
   	}
-  	/*
-    HAL_GPIO_TogglePin(LED_COMM_GPIO_Port, LED_COMM_Pin);
-    osDelay(pdMS_TO_TICKS(100));
-    HAL_GPIO_TogglePin(LED_USB_GPIO_Port, LED_USB_Pin);
-    osDelay(pdMS_TO_TICKS(100));
-    HAL_GPIO_TogglePin(LED_CONTROL_GPIO_Port, LED_CONTROL_Pin);
-    osDelay(pdMS_TO_TICKS(100));
-    */
+  	//modeFlags = osEventFlagsWait(xEvent_CurrentControlModeHandle, (MODE_MANUAL_FLAG | MODE_PID_FLAG | MODE_USB_FLAG), osFlagsWaitAny, osWaitForever);
+  	if(modeFlags&MODE_PID_FLAG)
+  	{
+  		/* PID mode */
+  		HAL_GPIO_WritePin(LED_CONTROL_GPIO_Port, LED_CONTROL_Pin, 1);
+  		HAL_GPIO_WritePin(LED_COMM_GPIO_Port, LED_COMM_Pin, 0);
+  		HAL_GPIO_WritePin(LED_USB_GPIO_Port, LED_USB_Pin, 0);
+  	}
+  	if(modeFlags&MODE_USB_FLAG)
+  	{
+  		/* USB flag */
+  		HAL_GPIO_WritePin(LED_CONTROL_GPIO_Port, LED_CONTROL_Pin, 0);
+  		HAL_GPIO_WritePin(LED_COMM_GPIO_Port, LED_COMM_Pin, 0);
+  		HAL_GPIO_WritePin(LED_USB_GPIO_Port, LED_USB_Pin, 1);
+  	}
+  	if(modeFlags&MODE_MANUAL_FLAG)
+  	{
+  		/* Manual flag */
+  		HAL_GPIO_WritePin(LED_CONTROL_GPIO_Port, LED_CONTROL_Pin, 0);
+  		HAL_GPIO_WritePin(LED_COMM_GPIO_Port, LED_COMM_Pin, 0);
+  		HAL_GPIO_WritePin(LED_USB_GPIO_Port, LED_USB_Pin, 0);
+  	}
   }
   /* USER CODE END vTaskLeds */
 }

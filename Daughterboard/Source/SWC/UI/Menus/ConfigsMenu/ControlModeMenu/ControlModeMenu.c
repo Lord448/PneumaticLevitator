@@ -195,18 +195,27 @@ static void sControlModeMenu_SetFlags(uint8_t id)
 			MainMenu_setManualChecked(true);
 			MainMenu_setPIDChecked(false);
 			MainMenu_setUSBChecked(false);
+  		HAL_GPIO_WritePin(LED_CONTROL_GPIO_Port, LED_CONTROL_Pin, 0);
+  		HAL_GPIO_WritePin(LED_COMM_GPIO_Port, LED_COMM_Pin, 0);
+  		HAL_GPIO_WritePin(LED_USB_GPIO_Port, LED_USB_Pin, 0);
 		break;
 		case BTN_AUTO_PID_MODE:
 			osEventFlagsSet(xEvent_CurrentControlModeHandle, MODE_PID_FLAG);
 			MainMenu_setManualChecked(false);
 			MainMenu_setPIDChecked(true);
 			MainMenu_setUSBChecked(false);
+  		HAL_GPIO_WritePin(LED_CONTROL_GPIO_Port, LED_CONTROL_Pin, 1);
+  		HAL_GPIO_WritePin(LED_COMM_GPIO_Port, LED_COMM_Pin, 0);
+  		HAL_GPIO_WritePin(LED_USB_GPIO_Port, LED_USB_Pin, 0);
 		break;
 		case BTN_SLAVE_MODE:
 			osEventFlagsSet(xEvent_CurrentControlModeHandle, MODE_USB_FLAG);
 			MainMenu_setManualChecked(false);
 			MainMenu_setPIDChecked(false);
 			MainMenu_setUSBChecked(true);
+  		HAL_GPIO_WritePin(LED_CONTROL_GPIO_Port, LED_CONTROL_Pin, 0);
+  		HAL_GPIO_WritePin(LED_COMM_GPIO_Port, LED_COMM_Pin, 0);
+  		HAL_GPIO_WritePin(LED_USB_GPIO_Port, LED_USB_Pin, 1);
 		break;
 		default:
 		break;

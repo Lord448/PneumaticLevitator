@@ -61,6 +61,7 @@
 #define COM_CONSTANT_USB_MSG       "CONST"      /* Change the constants of the PID controller - Args: KP, KI, KD*/
 #define COM_GET_CONSTANTS_USB_MSG  "CONST_GET"  /* Request the value of the PID constants - No Args */
 #define COM_CONTROL_ACTION_USB_MSG "ACT"        /* Desired action control (only valid when mode is on slave) - Args: ControlAction 0:100*/
+#define COM_SET_POINT_USB_MSG      "SP"         /* Communicate the set point - Args Setpoint */
 #define COM_SET_FIXED_FREQ_DIST  	 "FIXED_D_F"  /* Set a fixed frequency for distance report - Args: Frequency on HZ */
 #define COM_SET_FIXED_PERIOD_DIST	 "FIXED_D_P"  /* Set a fixed period for distance report - Args: period on ms */
 #define COM_SET_FREE_FREQ_DIST   	 "FREE_D_F"   /* Set free sampling frequency on distance sensor - No Args*/
@@ -127,7 +128,7 @@ void vTaskCOM(void *argument);
 void vSubTaskUSB(void *argument);
 void vSubTaskUART(void *argument);
 
-int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
+result_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 
 void vTimer_UARTSendCallback(void *argument);
 void vTimer_WdgUARTCallback(void *argument);

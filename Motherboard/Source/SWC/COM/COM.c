@@ -64,7 +64,6 @@ static void sendInitBuffer(void);
 static void syncComm(void);
 static result_t sUSB_ParseGains(float *kp, float *ki, float *kd);
 static result_t sCOM_SendUSB(uint8_t *buf, uint16_t len);
-static result_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 /**
  * ---------------------------------------------------------
  * 					  SOFTWARE COMPONENT MAIN THREAD
@@ -151,9 +150,10 @@ void vSubTaskUSB(void *argument)
 	char statsBuffer[1024] = {0};
 	char USBBuffer[1024] = {0};
 	float Kp, Ki, Kd;
-	uint32_t usbFlags = 0;
-	uint16_t datalen = 0;
-	int32_t actionControl = 0;
+	uint32_t usbFlags, modeFlags;
+	uint16_t datalen;
+	int16_t setPoint;
+	int32_t actionControl;
 
 	for(;;)
 	{
@@ -233,6 +233,30 @@ void vSubTaskUSB(void *argument)
 				{
 					/* Correct parse of the buffer */
 					osMessageQueuePut(xFIFO_FANDutyCycleHandle, &actionControl, 0U, osNoTimeout);
+				}
+				else
+				{
+					/* Errors on the parse, deprecate send */
+					datalen = strlen(USBBuffer);
+					memset(USBBuffer, '\0', datalen);
+					sprintf(USBBuffer, "ERR\n");
+					datalen = strlen(USBBuffer);
+					sCOM_SendUSB((uint8_t *)USBBuffer, datalen);
+				}
+			}
+			else if(strcmp(CDC_ResBuffer, COM_SET_POINT_USB_MSG) == 0)
+			{
+				/* Communicate the set point - Args Setpoint */
+				COM_WaitForArgs();
+				if(EOF != sscanf(CDC_ResBuffer, "%d", (int *)&setPoint))
+				{
+					/* Correct Parse of the buffer */
+					modeFlags = osEventFlagsGet(xEvent_ControlModesHandle);
+					if(modeFlags&SLAVE_FLAG)
+					{
+						/* Can send the Set point */
+						COM_SendMessage(SET_POINT, MSG_TYPE_ONDEMAND, PRIORITY_MEDIUM, setPoint);
+					}
 				}
 				else
 				{
@@ -366,7 +390,9 @@ void vSubTaskUART(void *argument)
 				{
 					/* Message invalid */
 				}
-
+			break;
+			case RESET:
+				HAL_NVIC_SystemReset();
 			break;
 			case NO_MSG_ID:
 			default:
@@ -384,48 +410,27 @@ void vSubTaskUART(void *argument)
 /* Approach for the COM message sender */
 /*
  * @brief		Send the message to the buffer
- * @return	Number of messages in the queue, -1 for full queue
+ * @return	result of the operation
  */
-int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload) {
-	PDU_t pdu;
+result_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload) {
+	static uint8_t buffer[sizeof(uint32_t)] = {0};
+	uint8_t *bytePointer = (uint8_t *)&payload;
 
-	if (OK == COM_CreatePDU(&pdu, messageID, type, priority, payload)) { /* Check sucessful set */
-		uint16_t currentMessages = osMessageQueueGetCount(xFIFO_COMHandle);
-		/* Checking if the queue is not full */
-		if (COM_MAX_QUEUE_MESSAGES > currentMessages) {
-			/* Putting the message in the queue and returning queue current messages */
-			osMessageQueuePut(xFIFO_COMHandle, &pdu, 0U, 0U);
-			return currentMessages;
-		}
-
-		return -1;
+	osTimerStop(xTimer_UARTSendHandle);
+	buffer[0] = messageID;
+	for(uint16_t i = 1; i < sizeof(uint32_t)+1; i++, bytePointer++)
+	{
+		buffer[i] = *bytePointer;
 	}
-
-	return 0;
+	HAL_UART_Transmit_DMA(&huart1, buffer, sizeof(uint32_t));
+	osTimerStart(xTimer_UARTSendHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
+	return OK;
 }
 /**
  * ---------------------------------------------------------
  * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
  * ---------------------------------------------------------
  */
-/* PDU Constructor */
-/*
- * @brief 		Set values to a blank PDU
- * @return		0 for successful value assignment
- */
-static result_t COM_CreatePDU (PDU_t *pdu, uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload) {
-    /* Checking that the data is inside of bounderies */
-    if (MSG_TYPE_MAX  <= type ||  PRIORITY_MAX <= priority)
-    {
-        return Error; /* Values out of range */
-    }
-    pdu->fields.messageID = messageID;
-    pdu->fields.messageType = type;
-    pdu->fields.priority = priority;
-    pdu->fields.payload = payload;
-
-    return OK;
-}
 /**
  * @brief  Syncronize the communication by sending
  *         the init frames when called

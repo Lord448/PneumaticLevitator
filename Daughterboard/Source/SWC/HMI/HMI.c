@@ -25,6 +25,8 @@
 
 #include "HMI.h"
 
+extern UART_HandleTypeDef huart1;
+
 extern TIM_HandleTypeDef htim1; /* Timer used for the encoder decodification */
 
 extern osMessageQueueId_t xFIFO_ButtonsHandle;
@@ -417,9 +419,11 @@ static ButtonStates Button_Debounce(Button *Button)
   */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+	uint8_t data = RESET;
 	if(Reset_IT_Pin == GPIO_Pin)
 	{
 		/* Communicate the Motherboard the reset request */
-		HAL_NVIC_SystemReset(); /* TODO Instrumented code */
+		HAL_UART_Transmit(&huart1, &data, 1, 1000);
+		HAL_NVIC_SystemReset();
 	}
 }

@@ -161,6 +161,11 @@ def pidLoop(kp : float, kd : float, ki : float, setPoint : float) -> None:
     """Implements the PID controller"""
     pid = PID(kp, ki, kd, float(setPoint))
     distance  = float(0)
+    #Writing the set point
+    ser.write(str.encode("SP"))
+    time.sleep(0.001)
+    ser.write(str.encode(str(int(setPoint))))
+    time.sleep(0.001)
     while True:
         stringRx = ser.readline().decode()
         print(stringRx)

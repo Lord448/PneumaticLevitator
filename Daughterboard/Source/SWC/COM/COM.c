@@ -28,6 +28,7 @@ extern osMessageQueueId_t xFIFO_DistanceHandle;
 extern osMessageQueueId_t xFIFO_RPMHandle;
 extern osMessageQueueId_t xFIFO_COMHandle;
 extern osMessageQueueId_t xFIFO_ActionControlHandle;
+extern osMessageQueueId_t xFIFO_UISetPointHandle;
 
 extern osSemaphoreId_t xSemaphore_InitMotherHandle;
 extern osSemaphoreId_t xSemaphore_UARTTxCpltHandle;
@@ -67,6 +68,7 @@ void vTaskCOM(void *argument)
 	char statsBuffer[1024] = {0};
 	bool syncComInProcess = false;
 	int16_t distance, rpm, actionControl;
+	int16_t setPoint;
 	ControlConst controlConst;
 
 	do {
@@ -105,7 +107,7 @@ void vTaskCOM(void *argument)
 		{
 			/* Timeout, asumming errors on the Motherboard init */
 			/* Reporting to LEDS SWC */
-			osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_MOTHER_COMM);
+			//osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_MOTHER_COMM);
 			/* Poll the task and wait for a response of the mother */
 			osDelay(pdMS_TO_TICKS(500));
 		}
@@ -137,18 +139,20 @@ void vTaskCOM(void *argument)
 				/* Enter on diagnostics session */
 			break;
 			case PERIODIC_ID:
-				/* Normal perdiocal frame */
-				/* TODO handle here the distance and RPM */
+				/* Normal periodical frame */
 				/* Decoding the message */
 				distance = COM_UARTRxBuffer[1] | (COM_UARTRxBuffer[2]<<8);
 				rpm = COM_UARTRxBuffer[3] | (COM_UARTRxBuffer[4]<<8);
 				actionControl = COM_UARTRxBuffer[5];
 				/* Sending to the FIFOs */
-				/* TODO: Add logic for FIFO reseting when overflow */
 				osMessageQueuePut(xFIFO_DistanceHandle, &distance, 0U, osNoTimeout);
 				osMessageQueuePut(xFIFO_RPMHandle, &rpm, 0U, osNoTimeout);
 				osMessageQueuePut(xFIFO_ActionControlHandle, &actionControl, 0U, osNoTimeout);
 			break;
+			case SET_POINT:
+				/* Changing set point */
+				setPoint = COM_UARTRxBuffer[1] | (COM_UARTRxBuffer[2]<<8);
+				osMessageQueuePut(xFIFO_UISetPointHandle, &setPoint, 0U, osNoTimeout);
 			default:
 				/* Unknown message, Do Nothing */
 			break;

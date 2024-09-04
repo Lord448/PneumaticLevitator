@@ -26,6 +26,7 @@
 #define SWC_HMI_HMI_H_
 
 #include "main.h"
+#include "Signals.h"
 #include "cmsis_os.h"
 
 /* Flags for xEvent_ButtonsFIFOEnabledHandle */
