@@ -30,6 +30,7 @@ extern osMessageQueueId_t xFIFO_COMRPMHandle;
 extern osMessageQueueId_t xFIFO_COMActionControlHandle;
 extern osMessageQueueId_t xFIFO_PIDSetPointHandle;
 extern osMessageQueueId_t xFIFO_FANDutyCycleHandle;
+extern osMessageQueueId_t xFIFO_USBDistanceHandle;
 
 extern osTimerId_t xTimer_UARTSendHandle;
 extern osTimerId_t xTimer_WdgUARTHandle;
@@ -96,9 +97,12 @@ void vTaskCOM(void *argument)
 		if(modeFlags&SLAVE_FLAG)
 		{
 			/* Need to send distance */
-			if(osOK == osMessageQueueGet(xFIFO_COMDistanceHandle, &distance, NULL, 10))
+			if(osOK == osMessageQueueGet(xFIFO_USBDistanceHandle, &distance, NULL, 10))
 			{
 				/* There is a distance message */
+#ifdef COM_SEND_DISTANCE_NORMALIZED
+				distance = (distance * 100) / MAX_DISTANCE; /* Normalizing distance */
+#endif
 				datalen = strlen(distBuff);
 				memset(distBuff, '\0', datalen);
 				sprintf(distBuff, COM_DISTANCE_SEND_FORMAT, distance);
@@ -109,7 +113,6 @@ void vTaskCOM(void *argument)
 			{
 				/* Do Nothing */
 			}
-			/* Searching if there are errors on the sensor VL53L0X TODO: Move this to ModeManager*/
 			if(osOK == osSemaphoreAcquire(xSemaphore_SensorErrorHandle, osNoTimeout))
 			{
 				/* Errors on the VL53L0X communication */
@@ -120,7 +123,6 @@ void vTaskCOM(void *argument)
 		else
 		{
 			/* Other mode it's selected */
-			/* Searching if there are errors on the sensor VL53L0X TODO: Move this to ModeManager*/
 			if(osOK == osSemaphoreAcquire(xSemaphore_SensorErrorHandle, 10))
 			{
 				/* Errors on the VL53L0X communication */
@@ -148,22 +150,21 @@ void vSubTaskUSB(void *argument)
 {
 	char statsBuffer[1024] = {0};
 	char USBBuffer[1024] = {0};
-	char DistanceBuffer[256] = {0};
 	float Kp, Ki, Kd;
 	uint32_t usbFlags = 0;
 	uint16_t datalen = 0;
+	int32_t actionControl = 0;
 
 	for(;;)
 	{
 		usbFlags = osEventFlagsWait(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX, osFlagsWaitAny, osWaitForever);
-
 		if(usbFlags&CDC_FLAG_MESSAGE_RX)
 		{
 			/* An USB message arrived */
-			if(strcmp(CDC_ResBuffer, COM_CPU_LOAD_USB_MSG) == 0) /* TODO: Instrumented code */
+			/* Software Integration */
+			if(strcmp(CDC_ResBuffer, COM_CPU_LOAD_USB_MSG) == 0)
 			{
 				/* Make a CPU load measure - No args*/
-				/* TODO: If decided, implement this code on DiagAppl */
 				datalen = strlen(statsBuffer);
 				memset(statsBuffer, '\0', datalen);
 				vTaskGetRunTimeStats(statsBuffer);
@@ -172,12 +173,11 @@ void vSubTaskUSB(void *argument)
 				sCOM_SendUSB((uint8_t *)statsBuffer, datalen);
 				datalen = 0;
 			}
+			/* PID Manipulation */
 			else if(strcmp(CDC_ResBuffer, COM_CONSTANT_USB_MSG) == 0)
 			{
 				/* Change the constants of the PID controller - Args: KP, KI, KD!*/
-				osEventFlagsClear(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX);
-				/* Wait for the args */
-				osEventFlagsWait(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX, osFlagsWaitAny, osWaitForever);
+				COM_WaitForArgs();
 				if(OK != sUSB_ParseGains(&Kp, &Ki, &Kd))
 				{
 					/* Errors on the parse request the constants again */
@@ -209,6 +209,42 @@ void vSubTaskUSB(void *argument)
 				datalen = strlen(USBBuffer);
 				sCOM_SendUSB((uint8_t *)USBBuffer, datalen);
 			}
+			else if(strcmp(CDC_ResBuffer, COM_SET_FIXED_FREQ_DIST) == 0)
+			{
+				/* Set a fixed frequency for distance report - Args: Frequency on HZ */
+				/* TODO: Implement here */
+			}
+			else if(strcmp(CDC_ResBuffer, COM_SET_FIXED_PERIOD_DIST) == 0)
+			{
+				/* Set a fixed period for distance report - Args: period on ms */
+				/* TODO: Implement here */
+			}
+			else if(strcmp(CDC_ResBuffer, COM_SET_FREE_FREQ_DIST) == 0)
+			{
+				/* Set free sampling frequency on distance sensor - No Args*/
+				/* TODO: Implement here */
+			}
+			/* Modes manipulation */
+			else if(strcmp(CDC_ResBuffer, COM_CONTROL_ACTION_USB_MSG) == 0)
+			{
+				/* Desired action control (only valid when mode is on slave) - Args: ControlAction 0:100*/
+				COM_WaitForArgs();
+				if(EOF != sscanf(CDC_ResBuffer, "%d", (int *)&actionControl))
+				{
+					/* Correct parse of the buffer */
+					osMessageQueuePut(xFIFO_FANDutyCycleHandle, &actionControl, 0U, osNoTimeout);
+				}
+				else
+				{
+					/* Errors on the parse, deprecate send */
+					datalen = strlen(USBBuffer);
+					memset(USBBuffer, '\0', datalen);
+					sprintf(USBBuffer, "ERR\n");
+					datalen = strlen(USBBuffer);
+					sCOM_SendUSB((uint8_t *)USBBuffer, datalen);
+				}
+			}
+			/* NVM manipulation */
 			else if(strcmp(CDC_ResBuffer, COM_SET_NVM_DEFAULT) == 0)
 			{
 				/* Set the default values of the EEPROM variables - No Args */
@@ -259,11 +295,13 @@ void vSubTaskUSB(void *argument)
 */
 void vSubTaskUART(void *argument)
 {
+	char bufferCache[COM_UART_PERIODIC_NUMBER_FRAMES_RX];
+	const char usbBuffer[8] = COM_CONFIRM_SLAVE_MODE;
+	uint32_t flags = 0;
 	int16_t setPoint = 0;
 	int8_t controlAction = 0;
+	uint8_t datalen = sizeof(COM_CONFIRM_SLAVE_MODE);
 	ControlModes mode = AutoPID;
-	uint32_t flags = 0;
-	char bufferCache[COM_UART_PERIODIC_NUMBER_FRAMES_RX];
 
 	for(;;)
 	{
@@ -312,6 +350,7 @@ void vSubTaskUART(void *argument)
 							PID_TurnOff();
 						}
 						osEventFlagsSet(xEvent_ControlModesHandle, SLAVE_FLAG);
+						sCOM_SendUSB((uint8_t *)usbBuffer, datalen);
 					break;
 				}
 			break;

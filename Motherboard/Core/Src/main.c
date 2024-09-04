@@ -329,6 +329,17 @@ const osMessageQueueAttr_t xFIFO_PIDSetPoint_attributes = {
   .mq_mem = &xFIFO_PIDSetPointBuffer,
   .mq_size = sizeof(xFIFO_PIDSetPointBuffer)
 };
+/* Definitions for xFIFO_USBDistance */
+osMessageQueueId_t xFIFO_USBDistanceHandle;
+uint8_t xFIFO_USBDistanceBuffer[ 32 * sizeof( int16_t ) ];
+osStaticMessageQDef_t xFIFO_USBDistanceControlBlock;
+const osMessageQueueAttr_t xFIFO_USBDistance_attributes = {
+  .name = "xFIFO_USBDistance",
+  .cb_mem = &xFIFO_USBDistanceControlBlock,
+  .cb_size = sizeof(xFIFO_USBDistanceControlBlock),
+  .mq_mem = &xFIFO_USBDistanceBuffer,
+  .mq_size = sizeof(xFIFO_USBDistanceBuffer)
+};
 /* Definitions for xTimer_UARTSend */
 osTimerId_t xTimer_UARTSendHandle;
 osStaticTimerDef_t xTimer_ControlBlock;
@@ -651,6 +662,9 @@ int main(void)
 
   /* creation of xFIFO_PIDSetPoint */
   xFIFO_PIDSetPointHandle = osMessageQueueNew (16, sizeof(int16_t), &xFIFO_PIDSetPoint_attributes);
+
+  /* creation of xFIFO_USBDistance */
+  xFIFO_USBDistanceHandle = osMessageQueueNew (32, sizeof(int16_t), &xFIFO_USBDistance_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */

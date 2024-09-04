@@ -31,50 +31,51 @@
 #include <stdio.h>
 #include <string.h>
 
-/* Used for the send message logic */
-#define COM_MAX_QUEUE_MESSAGES 16
+/**
+ * ---------------------------------------------------------
+ * 					         COM GENERAL SYMBOLS
+ * ---------------------------------------------------------
+ */
+#define COM_MAX_QUEUE_MESSAGES 16 /* Used for the send message logic */
 
-/* Number of frames of the initial messages (for transmission)*/
-#define COM_UART_INIT_NUMBER_FRAMES     13
-/* Number of frames of the periodic messages (for transmission)*/
-#define COM_UART_PERIODIC_NUMBER_FRAMES_TX 6
-/* Number of frames of the periodic messages (for reception)*/
-#define COM_UART_PERIODIC_NUMBER_FRAMES_RX 5
-/* Number that the MCU will send to identify the initial frame */
-#define COM_UART_INIT_FRAME_VALUE       0xA5
-/* Time of the send of the periodical frames */
-#define COM_UART_PERIOD_FOR_DATA_TX     10 /*MS*/
+#define COM_UART_INIT_NUMBER_FRAMES        13    /* Number of frames of the initial messages (for transmission)*/
+#define COM_UART_PERIODIC_NUMBER_FRAMES_TX 6     /* Number of frames of the periodic messages (for transmission)*/
+#define COM_UART_PERIODIC_NUMBER_FRAMES_RX 5     /* Number of frames of the periodic messages (for reception)*/
+#define COM_UART_INIT_FRAME_VALUE          0xA5  /* Number that the MCU will send to identify the initial frame */
+#define COM_UART_PERIOD_FOR_DATA_TX        10    /*MS*/ /* Time of the send of the periodical frames */
 
-/* Error code for the RPM & distance Frames (could not get the value)*/
-#define COM_MSG_ERROR_CODE -1
-/* Number of counts to assume errors on the FIFO get for distance & RPM */
-#define COM_FIFO_EMPTY_COUNTS_FOR_ERROR 10
+#define COM_MSG_ERROR_CODE                 -1    /* Error code for the RPM & distance Frames (could not get the value) */
+#define COM_FIFO_EMPTY_COUNTS_FOR_ERROR    10    /* Number of counts to assume errors on the FIFO get for distance & RPM */
 
-/* Seconds to wait for mark the GPU Comm as an error */
-#define COM_SECONDS_TO_WAIT_DAUGHTER_INIT 1
+#define COM_SECONDS_TO_WAIT_DAUGHTER_INIT  1     /* Seconds to wait for mark the GPU Comm as an error */
 
-/* Count of sequenced errors to cancel the comm with VL53L0X */
-#define COM_ERROR_COUNTS_TO_CANCEL_VL53L0X_TX 20
-/* Time to wait to reset the sensor task */
-#define COM_TIME_TO_RESET_SENSOR_TASK 1000 /*MS*/
+#define COM_ERROR_COUNTS_TO_CANCEL_VL53L0X_TX 20 /* Count of sequenced errors to cancel the comm with VL53L0X */
+#define COM_TIME_TO_RESET_SENSOR_TASK 1000       /*MS*/ /* Time to wait to reset the sensor task */
 
 /**
  * ---------------------------------------------------------
  * 					       SUPPORTED USB MESSAGES
  * ---------------------------------------------------------
  */
-#define COM_CPU_LOAD_USB_MSG       "CPU"       /* Make a CPU load measure - No args*/
-#define COM_CONSTANT_USB_MSG       "CONST"     /* Change the constants of the PID controller - Args: KP, KI, KD*/
-#define COM_GET_CONSTANTS_USB_MSG  "CONST_GET" /* Request the value of the PID constants - No Args */
-#define COM_CONTROL_ACTION_USB_MSG "ACT"       /* Desired action control (only valid when mode is on slave) - Args: ControlAction 0:100*/
-#define COM_SET_FIXED_FREQ_DIST  	 "FIXED_D_F" /* Set a fixed frequency for distance report - Args: Frequency on HZ */
-#define COM_SET_FIXED_PERIOD_DIST	 "FIXED_D_P" /* Set a fixed period for distance report - Args: period on ms */
-#define COM_SET_FREE_FREQ_DIST   	 "FREE_D_F"  /* Set free sampling frequency on distance sensor - No Args*/
-#define COM_SET_NVM_DEFAULT        "NVM_DEF"   /* Set the default values of the EEPROM variables - No Args */
-#define COM_SET_NVM_DUMP           "NVM_DUMP"  /* Make a memory dump of the EEPROM data - No Args*/
-#define COM_SET_NVM_DUMP_ADDR      "NVM_ADDR"  /* Make a memory dump of with selected addresses - Args: InitAddr, LastAddr */
+#define COM_CPU_LOAD_USB_MSG       "CPU"        /* Make a CPU load measure - No args*/
+#define COM_CONSTANT_USB_MSG       "CONST"      /* Change the constants of the PID controller - Args: KP, KI, KD*/
+#define COM_GET_CONSTANTS_USB_MSG  "CONST_GET"  /* Request the value of the PID constants - No Args */
+#define COM_CONTROL_ACTION_USB_MSG "ACT"        /* Desired action control (only valid when mode is on slave) - Args: ControlAction 0:100*/
+#define COM_SET_FIXED_FREQ_DIST  	 "FIXED_D_F"  /* Set a fixed frequency for distance report - Args: Frequency on HZ */
+#define COM_SET_FIXED_PERIOD_DIST	 "FIXED_D_P"  /* Set a fixed period for distance report - Args: period on ms */
+#define COM_SET_FREE_FREQ_DIST   	 "FREE_D_F"   /* Set free sampling frequency on distance sensor - No Args*/
+#define COM_SET_NVM_DEFAULT        "NVM_DEF"    /* Set the default values of the EEPROM variables - No Args */
+#define COM_SET_NVM_DUMP           "NVM_DUMP"   /* Make a memory dump of the EEPROM data - No Args*/
+#define COM_SET_NVM_DUMP_ADDR      "NVM_ADDR"   /* Make a memory dump of with selected addresses - Args: InitAddr, LastAddr */
 
-#define COM_DISTANCE_SEND_FORMAT   "DIST: %d"  /* Format for the distance send to the usb */
+#define COM_DISTANCE_SEND_FORMAT   "DIST: %d\n" /* Format for the distance send to the usb */
+#define COM_CONFIRM_SLAVE_MODE     "READY\n"    /* It's sent the system starts slave mode */
+
+//#define COM_SEND_DISTANCE_NORMALIZED           /* If defined the distance will be sent on a range from 0 to 100 */
+
+/* Wait for arguments of the commands */
+#define COM_WaitForArgs() osEventFlagsClear(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX); \
+													osEventFlagsWait(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX, osFlagsWaitAny, osWaitForever);
 
 typedef union Data16 {
 	int16_t data;

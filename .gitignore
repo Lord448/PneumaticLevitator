@@ -10,3 +10,4 @@
 **/Debug/*
 .~lock.**
 **.orig
+**__pycache__**

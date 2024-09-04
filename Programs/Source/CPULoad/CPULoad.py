@@ -22,18 +22,21 @@ ser = serial.Serial()
 portOpened = False
 
 def sigint_handler(signum, frame):
+    """Callback executed when the CTRL+C is pressed"""
     print("\r", end="")
     os._exit(0)
 
 def exit_handler():
+    """Callback executed when the program finishes"""
     global ser
     global portOpened
     
     if portOpened:
-        print("Closing " + ser.name)
+        print("Cerrando " + ser.name)
         ser.close()
 
 def writeSerial():
+    """Writes data to the serial in order to request the CPU load"""
     global ser
     
     while True:
@@ -41,10 +44,12 @@ def writeSerial():
         time.sleep(1)
     
 def printHeader(end="\n"):
+    """Prints the header of the chart"""
     print("Task                            Ticks             Percetage")
     print("-----------------------------------------------------------", end=end)
     
 def readSerial():
+    """Read the serial port and prints the chart of CPU load"""
     global ser
     stringRx = ""
     foundEndOfChart = False
@@ -83,14 +88,14 @@ def find_serial_devices():
 def get_product_string(vendor_id, product_id):
     """Retrieve product and manufacturer strings from a USB device."""
     try:
-        # Find the USB device
+        #Find the USB device
         device = usb.core.find(idVendor=vendor_id, idProduct=product_id)
         
         if device is None:
             #print(f"No device found with Vendor ID: {vendor_id}, Product ID: {product_id}")
             return None
 
-        # Detach kernel driver if necessary
+        #Detach kernel driver if necessary
         if device.is_kernel_driver_active(0):
             try:
                 device.detach_kernel_driver(0)
@@ -99,21 +104,20 @@ def get_product_string(vendor_id, product_id):
                 print(f"Could not detach kernel driver: {e}")
                 return None
 
-        # Set the active configuration
+        #Set the active configuration
         device.set_configuration()
 
-        # Get manufacturer and product strings
+        #Get manufacturer and product strings
         #manufacturer = usb.util.get_string(device, device.iManufacturer)
         product_str = usb.util.get_string(device, device.iProduct)
 
-        # Reattach the kernel driver
+        #Reattach the kernel driver
         try:
             usb.util.dispose_resources(device)
             device.attach_kernel_driver(0)
             #print(f"Reattached kernel driver to device {vendor_id}:{product_id}")
         except usb.core.USBError as e:
             print(f"Could not reattach kernel driver: {e}")
-
         return product_str
     except usb.core.USBError as e:
         print(f"USB Error: {e}")

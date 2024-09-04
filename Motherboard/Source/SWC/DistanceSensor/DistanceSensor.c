@@ -24,6 +24,9 @@ static VL53L0X_RangingMeasurementData_t RangingData;
 
 extern osMessageQueueId_t xFIFO_PIDDistanceHandle;
 extern osMessageQueueId_t xFIFO_COMDistanceHandle;
+extern osMessageQueueId_t xFIFO_USBDistanceHandle;
+
+extern osEventFlagsId_t xEvent_ControlModesHandle;
 
 static uint16_t samplingDelay = NO_SAMPLING_DELAY;
 static TickType_t DelayTick = 0;
@@ -36,11 +39,11 @@ static TickType_t DelayTick = 0;
 void vTaskSensor(void *argument)
 {
 	uint32_t refSpadCount;
+	uint32_t ModeFlags = 0;
 	uint8_t isApertureSpads;
 	uint8_t VhvSettings;
 	uint8_t PhaseCal;
 	int16_t distance;
-
 
 	Dev->I2cHandle = &hi2c1;
 	Dev->I2cDevAddr = VL53L0X_ADDR;
@@ -78,6 +81,16 @@ void vTaskSensor(void *argument)
 			distance = RangingData.RangeMilliMeter > MAX_DISTANCE ? 0 : MAX_DISTANCE - RangingData.RangeMilliMeter; /* Setting bounds */
 			osMessageQueuePut(xFIFO_COMDistanceHandle, &distance, 0U, osNoTimeout); /* Sending to COM */
 			osMessageQueuePut(xFIFO_PIDDistanceHandle, &distance, 0U, osNoTimeout); /* Sending to PID */
+			ModeFlags = osEventFlagsGet(xEvent_ControlModesHandle);
+			if(ModeFlags&SLAVE_FLAG)
+			{
+				/* Need to send the distance to USB FIFO */
+				osMessageQueuePut(xFIFO_USBDistanceHandle, &distance, 0U, osNoTimeout); /* Sending to USB in COM */
+			}
+			else
+			{
+				/* Do Nothing */
+			}
 		}
 		else
 		{
