@@ -62,6 +62,7 @@ bool firstInit = true;
  */
 static void sendInitBuffer(void);
 static void syncComm(void);
+static void sCOM_SendConstants(float kp, float ki, float kd);
 static result_t sUSB_ParseGains(float *kp, float *ki, float *kd);
 static result_t sCOM_SendUSB(uint8_t *buf, uint16_t len);
 /**
@@ -197,6 +198,7 @@ void vSubTaskUSB(void *argument)
 					datalen = strlen(USBBuffer);
 					sCOM_SendUSB((uint8_t *)USBBuffer, datalen);
 					PID_SetControlGains(Kp, Ki, Kd);
+					sCOM_SendConstants(Kp, Ki, Kd);
 				}
 			}
 			else if(strcmp(CDC_ResBuffer, COM_GET_CONSTANTS_USB_MSG) == 0)
@@ -530,6 +532,47 @@ static void sendInitBuffer(void)
 	HAL_UART_Transmit_DMA(&huart1, buffer, COM_UART_INIT_NUMBER_FRAMES);
 	osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, osWaitForever);
 	osSemaphoreRelease(xSemaphore_UARTTxCpltHandle);
+}
+
+/**
+ * @brief  This function send the new values
+ * 			   of the control gains to the daughterboard
+ * @param  kp cosntant
+ * @param  ki constant
+ * @param  kd constant
+ * @retval none
+ */
+static void sCOM_SendConstants(float kp, float ki, float kd)
+{
+	static uint8_t buffer[COM_UART_INIT_NUMBER_FRAMES] = {0}; /* Fixed size following the doc */
+	NVMType32 Kp, Ki, Kd; /* PID constants */
+	uint32_t i = 1; /* Iterator used as index for the buffer filling */
+	osTimerStop(xTimer_UARTSendHandle);
+	Kp.dataFloat = kp;
+	Ki.dataFloat = ki;
+	Kd.dataFloat = kd;
+
+	/* Building the buffer transmit */
+	buffer[0] = COM_UART_INIT_FRAME_VALUE;
+	/* Filling Kp */
+	for(uint32_t j = 0; j < sizeof(NVMType32); i++, j++)
+	{
+			buffer[i] = Kp.rawData[j];
+	}
+	/* Filling Ki */
+	for(uint32_t j = 0; j < sizeof(NVMType32); i++, j++)
+	{
+		buffer[i] = Ki.rawData[j];
+	}
+	/* Filling Kd */
+	for(uint32_t j = 0; j < sizeof(NVMType32); i++, j++)
+	{
+		buffer[i] = Kd.rawData[j];
+	}
+	HAL_UART_Transmit_DMA(&huart1, buffer, COM_UART_INIT_NUMBER_FRAMES);
+	osSemaphoreAcquire(xSemaphore_UARTTxCpltHandle, osWaitForever);
+	osSemaphoreRelease(xSemaphore_UARTTxCpltHandle);
+	osTimerStart(xTimer_UARTSendHandle, pdMS_TO_TICKS(COM_UART_PERIOD_FOR_DATA_TX));
 }
 
 /**

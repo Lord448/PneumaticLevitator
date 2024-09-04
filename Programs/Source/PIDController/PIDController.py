@@ -1,8 +1,9 @@
 ##########################################################
 ##    Author: Pedro Rojo - pedroeroca@outlook.com       ##
 ##              File: PIDController.py                  ##
-##    This program prints the the CPU load measure      ##
-##            gaved by the freeRTOS kernel              ##
+##                    Version 1.0                       ##
+##      This program implements a PID controller to     ##
+##         test the usb feature on Motherboard          ##
 ##########################################################
 import serial, usb
 import serial.tools.list_ports

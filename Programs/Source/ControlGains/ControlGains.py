@@ -1,6 +1,7 @@
 ##########################################################
 ##    Author: Pedro Rojo - pedroeroca@outlook.com       ##
-##            File: ControlGains.py                     ##
+##              File: ControlGains.py                   ##
+##                    Version 1.0                       ##
 ##    This program ask you for the constants that       ##
 ##    you want to program on the internal PID           ##
 ##                 controlller                          ##
