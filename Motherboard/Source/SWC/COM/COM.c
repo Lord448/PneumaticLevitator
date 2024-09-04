@@ -155,6 +155,7 @@ void vSubTaskUSB(void *argument)
 	uint16_t datalen;
 	int16_t setPoint;
 	int32_t actionControl;
+	int32_t period, freq;
 
 	for(;;)
 	{
@@ -214,17 +215,44 @@ void vSubTaskUSB(void *argument)
 			else if(strcmp(CDC_ResBuffer, COM_SET_FIXED_FREQ_DIST) == 0)
 			{
 				/* Set a fixed frequency for distance report - Args: Frequency on HZ */
-				/* TODO: Implement here */
+				COM_WaitForArgs();
+				if(EOF != sscanf(CDC_ResBuffer, "%d", (int *)&freq))
+				{
+					float periodF = 1/freq;
+					periodF *= 1000; /* Changing to ms */
+					period = (int32_t)periodF;
+					if (period>0)
+					{
+						DistanceSensor_SetSamplingFreq(period);
+					}
+				}
 			}
 			else if(strcmp(CDC_ResBuffer, COM_SET_FIXED_PERIOD_DIST) == 0)
 			{
 				/* Set a fixed period for distance report - Args: period on ms */
-				/* TODO: Implement here */
+				COM_WaitForArgs();
+				if(EOF != sscanf(CDC_ResBuffer, "%d", (int *)&period))
+				{
+					/*All good*/
+					if(period > 0)
+					{
+						DistanceSensor_SetSamplingFreq(period);
+					}
+				}
+				else
+				{
+					/* Errors on the parse, deprecate send */
+					datalen = strlen(USBBuffer);
+					memset(USBBuffer, '\0', datalen);
+					sprintf(USBBuffer, "ERR\n");
+					datalen = strlen(USBBuffer);
+					sCOM_SendUSB((uint8_t *)USBBuffer, datalen);
+				}
 			}
 			else if(strcmp(CDC_ResBuffer, COM_SET_FREE_FREQ_DIST) == 0)
 			{
 				/* Set free sampling frequency on distance sensor - No Args*/
-				/* TODO: Implement here */
+				DistanceSensor_SetSamplingFreq(0);
 			}
 			/* Modes manipulation */
 			else if(strcmp(CDC_ResBuffer, COM_CONTROL_ACTION_USB_MSG) == 0)
@@ -766,14 +794,14 @@ void vTimer_UARTSendCallback(void *argument)
 		}
 
 		/* Load Distance data */
-		if(COM_FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterDist)
+		//if(COM_FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterDist)
 		{
 			/* Send error code */
-			buffer[1] = COM_MSG_ERROR_CODE;
-			buffer[2] = COM_MSG_ERROR_CODE;
+			//buffer[1] = COM_MSG_ERROR_CODE;
+			//buffer[2] = COM_MSG_ERROR_CODE;
 			/* TODO Trigger DTC Not Receiving Distance FIFO */
 		}
-		else
+		//else
 		{
 			/* If there's no data on the FIFO, the bus will take the last value*/
 			bytePointer = (uint8_t *)&distance;

@@ -116,7 +116,7 @@ void vTaskSensor(void *argument)
  */
 void DistanceSensor_SetSamplingFreq(TickType_t ticks)
 {
-	samplingDelay = ticks;
+	samplingDelay = pdMS_TO_TICKS(ticks);
 	if(ticks > 0)
 	{
 		/* Restoring the tick count from kernel */
