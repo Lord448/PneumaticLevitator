@@ -2,7 +2,12 @@
  * @file      COM.h
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This software component leads the communication with
+ *            the Motherboard via UART and handles the reception of
+ *            data, it could be init frame, periodical or on demand.
+ *            In order to know the frame structure for each frame you
+ *            can check the ODS file on the COM directory in the
+ *            Motherboard project
  *
  * @date      Jul 3, 2024
  *
@@ -25,42 +30,36 @@
 #include <stdio.h>
 #include <string.h>
 
-/* Used for the send message logic */
-#define COM_MAX_QUEUE_MESSAGES 16
+/**
+ * ---------------------------------------------------------
+ * 					         COM GENERAL SYMBOLS
+ * ---------------------------------------------------------
+ */
+#define COM_MAX_QUEUE_MESSAGES 16                  /* Used for the send message logic */
 
-/* Number of frames of the initial messages (for reception)*/
-#define COM_UART_INIT_NUMBER_FRAMES 13
-/* Number of frames of the periodic messages (for reception)*/
-#define COM_UART_PERIODIC_NUMBER_FRAMES_RX 6
-/* Number of frames of the periodic messages (for transmission) */
-#define COM_UART_PERIODIC_NUMBER_FRAMES_TX 5
-/* Number that the MCU will send to identify the initial frame */
-#define COM_UART_INIT_FRAME_VALUE 0xA5
-/* Time of the send of the periodical frames */
-#define COM_UART_PERIOD_FOR_DATA_TX 10 /*MS*/
+#define COM_UART_INIT_NUMBER_FRAMES 13             /* Number of frames of the initial messages (for reception)*/
+#define COM_UART_PERIODIC_NUMBER_FRAMES_RX 6       /* Number of frames of the periodic messages (for reception)*/
+#define COM_UART_PERIODIC_NUMBER_FRAMES_TX 5       /* Number of frames of the periodic messages (for transmission) */
+#define COM_UART_INIT_FRAME_VALUE 0xA5             /* Number that the MCU will send to identify the initial frame */
+#define COM_UART_PERIOD_FOR_DATA_TX 10             /*MS*/ /* Time of the send of the periodical frames */
 
-/* Error code for the RPM & distance Frames (could not get the value)*/
-#define COM_MSG_ERROR_CODE (int16_t) -1
-/* Number of counts to assume errors on the FIFO get for distance & RPM */
-#define COM_FIFO_EMPTY_COUNTS_FOR_ERROR 10
+#define COM_MSG_ERROR_CODE (int16_t) -1            /* Error code for the RPM & distance Frames (could not get the value)*/
+#define COM_FIFO_EMPTY_COUNTS_FOR_ERROR 10         /* Number of counts to assume errors on the FIFO get for distance & RPM */
 
-/* Seconds to wait for mark the Mother Comm as an error*/
-#define COM_SECONDS_TO_WAIT_MOTHER_INIT 1
+#define COM_SECONDS_TO_WAIT_MOTHER_INIT 1          /* Seconds to wait for mark the Mother Comm as an error*/
 
-/* Count of sequenced errors to cancel the comm with VL53L0X */
-#define COM_ERROR_COUNTS_TO_CANCEL_VL53L0X_TX 20
-/* Time to wait to reset the sensor task */
-#define COM_TIME_TO_RESET_SENSOR_TASK 1000 /*MS*/
-
-/* Flag for the special meesage type */
-#define CPU_LOAD_MESSAGE_TYPE (uint32_t)   1U << 0
-/* Flag for the init frame */
-#define INIT_FRAME_MESSAGE_TYPE (uint32_t) 1U << 1
+#define CPU_LOAD_MESSAGE_TYPE (uint32_t)   1U << 0 /* Flag for the special meesage type */
+#define INIT_FRAME_MESSAGE_TYPE (uint32_t) 1U << 1 /* Flag for the init frame */
 
 #define KP_INDEX 1
 #define KI_INDEX 2
 #define KD_INDEX 3
 
+/**
+ * ---------------------------------------------------------
+ * 					          COM GENERAL TYPES
+ * ---------------------------------------------------------
+ */
 typedef struct ControlConstants {
 	float kp;
 	float ki;
@@ -68,7 +67,6 @@ typedef struct ControlConstants {
 }ControlConst;
 
 /* Definition of message types and priority (ensuring 4 bits) */
-
 typedef enum {
     MSG_TYPE_PERIODIC = 0,
     MSG_TYPE_ONDEMAND,
@@ -97,6 +95,11 @@ typedef union {
     uint8_t rawData[6];             /* Access as byte array */
 } PDU_t;
 
+/**
+ * ---------------------------------------------------------
+ * 					        COM GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType priority, uint32_t payload);
 
 void vTaskCOM(void *argument);

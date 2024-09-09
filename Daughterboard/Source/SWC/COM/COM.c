@@ -2,7 +2,12 @@
  * @file      COM.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This software component leads the communication with
+ *            the Motherboard via UART and handles the reception of
+ *            data, it could be init frame, periodical or on demand.
+ *            In order to know the frame structure for each frame you
+ *            can check the ODS file on the COM directory in the
+ *            Motherboard project
  *
  * @date      Jul 3, 2024
  *
@@ -107,7 +112,7 @@ void vTaskCOM(void *argument)
 		{
 			/* Timeout, asumming errors on the Motherboard init */
 			/* Reporting to LEDS SWC */
-			//osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_MOTHER_COMM);
+			/* osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_MOTHER_COMM);*/ /* Disabled feature */
 			/* Poll the task and wait for a response of the mother */
 			osDelay(pdMS_TO_TICKS(500));
 		}
@@ -212,13 +217,15 @@ int16_t COM_SendMessage (uint8_t messageID, MessageType type, PriorityType prior
  * ---------------------------------------------------------
  */
 /**
- * @brief
- * @param
- * @retval none
+ * @brief  This function build the float number
+ *         provided by the motherboard via UART
+ * @param  *data : data buffer (amount of 32 bits)
+ * @param  startIndex : Index of the buffer where the number
+ *                      starts
+ * @retval The floating point number received by the UART port
  */
 static float buildFloatFromUART(uint8_t *data, uint8_t startIndex)
 {
-	/* TODO Unscalable code, fix this with PDU handling */
 	union COM32Type
 	{
 		float result;
@@ -234,8 +241,13 @@ static float buildFloatFromUART(uint8_t *data, uint8_t startIndex)
 }
 
 /**
- * @brief
- * @param
+ * @brief  This function try to resyncroinze the communication
+ *         with the Motherboard, responding the init frame so
+ *         the motherboard can start to send the periodic frames
+ * @note   this function it's called when the UART bus detects that
+ *         the motherboard send the initial frame
+ * @param  *syncComInProcess : notifies to the external scope if the
+ *                             MCUs are syncronized
  * @retval none
  */
 static void reSyncCom(bool *syncComInProcess)
@@ -277,8 +289,8 @@ static void reSyncCom(bool *syncComInProcess)
 }
 
 /**
- * @brief
- * @param
+ * @brief  Send the CPU load statistics provided by the freeRTOS kernel
+ * @param  *statsBuffer : The buffer where the data it's allocated
  * @retval none
  */
 static void sendCPULoad(char *statsBuffer)
@@ -353,11 +365,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 }
 /**
  * ---------------------------------------------------------
- * 					        SOFT-TIMERS CALLBACKS
- * ---------------------------------------------------------
- */
-/**
- * ---------------------------------------------------------
  * 					       ISR COMPONENT CALLBACKS
  * ---------------------------------------------------------
  */
@@ -378,7 +385,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 		osEventFlagsClear(xEvent_UARTSendTypeHandle, CPU_LOAD_MESSAGE_TYPE);
 		osSemaphoreRelease(xSemaphore_UARTTxCpltHandle);
 	}
-	else if(flags&INIT_FRAME_MESSAGE_TYPE)
+	else if(flags&INIT_FRAME_MESSAGE_TYPE)/* Flag for the special meesage type */
 	{
 		/* A first frame has been sent */
 		osEventFlagsClear(xEvent_UARTSendTypeHandle, INIT_FRAME_MESSAGE_TYPE);
@@ -409,21 +416,6 @@ void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
 	{
 		/* Do Nothing */
 	}
-}
-
-/**
-  * @brief  Rx Transfer completed callbacks.
-  * @param  huart  Pointer to a UART_HandleTypeDef structure that contains
-  *                the configuration information for the specified UART module.
-  * @retval None
-  */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(huart);
-  /* NOTE: This function should not be modified, when the callback is needed,
-           the HAL_UART_RxCpltCallback could be implemented in the user file
-   */
 }
 
 /**
@@ -465,6 +457,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 
 /**
   * @brief  UART error callbacks.
+  * @note   This function were implemented only for debug porpouses
   * @param  huart  Pointer to a UART_HandleTypeDef structure that contains
   *                the configuration information for the specified UART module.
   * @retval None
