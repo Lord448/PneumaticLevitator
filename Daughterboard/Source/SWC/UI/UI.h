@@ -34,29 +34,32 @@
 #include "ControlModeMenu.h"
 #include "Menu.h"
 #include "COM.h"
-#include "stm32f4xx_hal_dma.h"
 #include <stdio.h>
 #include <string.h>
 
+/**
+ * ---------------------------------------------------------
+ * 					         UI GENERAL SYMBOLS
+ * ---------------------------------------------------------
+ */
 #define charslen(_) (int32_t)(sizeof(_)-1)
-
-#define WINDOW_MAX_OBJECTS 30
-
+#define WINDOW_MAX_OBJECTS 32
 #define UI_STARTED_THREAD_FLAG (uint32_t) 1U << 0
 
-//#define SKIP_INTRO_ANIM
-//#define SEE_TEXTBOX_CAGE
-
+//#define SKIP_INTRO_ANIM   /* Skips the initial image fade on the init of the project */
+//#define SEE_TEXTBOX_CAGE  /* Prints all the textbox cages with a gray color */
 /**
  * ---------------------------------------------------------
  * 					        FUNCTION LIKE MACRO
  * ---------------------------------------------------------
  */
-/*Helps on the creation of a BMP*/
-#define UI_ImageCreate(window, ImgObj, IMG_ID, xs, ys) UG_ImageCreate(window, ImgObj, IMG_ID, xs, ys, 0, 0)
-/*Macro to convert RGB color to RGB565 color code*/
-#define RGB565Color(R, G, B) (uint16_t)(r<<11 | g<<5 | b)
-
+#define UI_ImageCreate(window, ImgObj, IMG_ID, xs, ys) UG_ImageCreate(window, ImgObj, IMG_ID, xs, ys, 0, 0) /*Helps on the creation of a BMP*/
+#define RGB565Color(R, G, B) (uint16_t)(r<<11 | g<<5 | b) /*Macro to convert RGB color to RGB565 color code*/
+/**
+ * ---------------------------------------------------------
+ * 					        UI GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 void vTaskUI(void *argument);
 UG_RESULT UI_TextboxCreate(UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye);
 UG_RESULT UI_CheckboxCreate(UG_WINDOW* wnd, UG_CHECKBOX* chb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye);

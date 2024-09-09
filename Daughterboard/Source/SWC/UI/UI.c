@@ -41,9 +41,18 @@ extern const uint16_t ITMLogoData[IMAGE_SIZE(ITMLogo)];
 
 extern UG_WINDOW mainWindow;
 
+/**
+ * ---------------------------------------------------------
+ * 					 SOFTWARE COMPONENT LOCAL PROTOYPES
+ * ---------------------------------------------------------
+ */
 static void waitForConstants(void);
 static void loadGraphicalResources(void);
-
+/**
+ * ---------------------------------------------------------
+ * 					  SOFTWARE COMPONENT MAIN THREAD
+ * ---------------------------------------------------------
+ */
 /**
 * @brief Function implementing the TaskUI thread.
 * @param argument: Not used
@@ -76,7 +85,8 @@ void vTaskUI(void *argument)
 }
 
 /**
- * @brief
+ * @brief  Loads all the graphical resources
+ *         for the GPU
  * @param  none
  * @retval none
  */
@@ -90,7 +100,7 @@ static void loadGraphicalResources(void)
 }
 
 /**
- * @brief
+ * @brief  Wait for the reception on COM for the control gains
  * @param  none
  * @retval none
  */
@@ -126,17 +136,25 @@ static void waitForConstants(void)
 	}
 
 }
-
 /**
- * @brief
- * @param
- * @param
- * @param
- * @param
- * @param
- * @param
- * @param
- * @retval
+ * ---------------------------------------------------------
+ * 					 SOFTWARE COMPONENT GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
+/**
+ * @brief  This function gives a predefined style on the textboxes
+ *         in order to avoid the call of each function ever it is
+ *         required to create a textbox
+ * @param  *wnd : Pointer to the window containter of the textbox
+ * @param  *txb : Textbox object defined by the uGUI library
+ * @param  id   : Id of the object
+ * @param  xs   : Start position in x of the textbox
+ * @param  ys   : Start position in y of the textbox
+ * @param  xe   : End position in x of the textbox
+ * @param  ye   : End position in x of the textbox
+ * @retval result of the operation:
+ *         		UG_RESULT_OK   ->  0 : All OK
+ *         		UG_RESULT_FAIL -> -1 : The operation failed
  */
 UG_RESULT UI_TextboxCreate(UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye)
 {
@@ -164,15 +182,19 @@ UG_RESULT UI_TextboxCreate(UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs,
 }
 
 /**
- * @brief
- * @param
- * @param
- * @param
- * @param
- * @param
- * @param
- * @param
- * @retval
+ * @brief  This function gives a predefined style on the checkboxes
+ *         in order to avoid the call of each function ever it is
+ *         required to create a checkbox
+ * @param  *wnd : Pointer to the window containter of the checkbox
+ * @param  *chb : Checkbox object defined by the uGUI library
+ * @param  id   : Id of the object
+ * @param  xs   : Start position in x of the checkbox
+ * @param  ys   : Start position in y of the checkbox
+ * @param  xe   : End position in x of the checkbox
+ * @param  ye   : End position in x of the checkbox
+ * @retval result of the operation:
+ *         		UG_RESULT_OK   ->  0 : All OK
+ *         		UG_RESULT_FAIL -> -1 : The operation failed
  */
 UG_RESULT UI_CheckboxCreate(UG_WINDOW* wnd, UG_CHECKBOX* chb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye)
 {
@@ -203,15 +225,18 @@ UG_RESULT UI_CheckboxCreate(UG_WINDOW* wnd, UG_CHECKBOX* chb, UG_U8 id, UG_S16 x
 }
 
 /**
- * @brief
- * @param
- * @param
- * @param
- * @param
- * @param
- * @param
- * @param
- * @retval
+ * @brief  This function gives a predefined style on the images
+ *         in order to avoid the call of each function ever it is
+ *         required to create a image
+ * @param  *wnd : Pointer to the window containter of the image
+ * @param  *img : Image object defined by the uGUI library
+ * @param  *bmp : bitmap buffer of the image
+ * @param  show : true if you want to show the image on the first enter to the window
+ * @param  xs   : Start position in x of the textbox
+ * @param  ys   : Start position in y of the textbox
+ * @retval result of the operation:
+ *         		UG_RESULT_OK   ->  0 : All OK
+ *         		UG_RESULT_FAIL -> -1 : The operation failed
  */
 UG_RESULT UI_CreateImage(UG_WINDOW* wnd, UG_IMAGE* img, UG_U8 id, const UG_BMP* bmp, bool show, UG_S16 xs, UG_S16 ys)
 {
