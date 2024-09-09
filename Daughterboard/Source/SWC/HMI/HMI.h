@@ -29,6 +29,11 @@
 #include "Signals.h"
 #include "cmsis_os.h"
 
+/**
+ * ---------------------------------------------------------
+ * 					         HMI GENERAL SYMBOLS
+ * ---------------------------------------------------------
+ */
 /* Flags for xEvent_ButtonsFIFOEnabledHandle */
 #define FIFO_ENABLED_FLAG        (uint32_t) 1U << 0
 
@@ -45,6 +50,11 @@
 #define TASK_RESOLUTION  2
 #define DEBOUNCE_SAMPLES 2
 
+/**
+ * ---------------------------------------------------------
+ * 					         HMI GENERAL TYPES
+ * ---------------------------------------------------------
+ */
 typedef enum EncoderDir {
 	Minus,
 	Plus
@@ -68,14 +78,26 @@ typedef enum Buttons {
 	Reset
 }Buttons;
 
+/**
+ * ---------------------------------------------------------
+ * 					            HMI MACROS
+ * ---------------------------------------------------------
+ */
+/* Encoder handling */
 #define TimerMiddleValue 0x7FFF //0xFFFF/2
 #define TimerValue TimerMiddleValue>>2 //1FFF
 #define EncoderGetVal(x) x = (int32_t)(((TIM1 -> CNT)>>2) - (TimerValue))
 #define EncoderVal (int32_t)(((TIM1 -> CNT)>>2) - (TimerValue))
 
+/* Component managment */
 #define HMI_EnableAllButtons() HMI_EnableButtons(iOk | iUp | iDown | iLeft | iRight | iMenu | iEncoderSW | iEncoder)
 #define HMI_DisableAllButtons() HMI_DisableButtons(iOk | iUp | iDown | iLeft | iRight | iMenu | iEncoderSW | iEncoder)
 
+/**
+ * ---------------------------------------------------------
+ * 					        HMI GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 void vTaskHMI(void *argument);
 ButtonStates HMI_CheckButtonPress(Buttons button);
 result_t HMI_EnableButtons(uint32_t flags);
