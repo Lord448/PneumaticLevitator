@@ -12,6 +12,8 @@
  * 			     memory buffers this component can reach only a
  * 			     maximum size defined of "MAXIMUM_POOL_SIZE"
  *
+ * 			     THIS COMPONENT IT'S DISABLED ON THE FIRST VERSIONS
+ *
  * @date     Jul 5, 2024
  *
  * @license  This Source Code Form is subject to the terms of
