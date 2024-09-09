@@ -2,7 +2,11 @@
  * @file      OSHandler.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This component implements the OS hooks such as
+ *            stack overflow detection, configurations of the
+ *            SWIT (Software integration) statistics like the
+ *            CPU Load measures and the check of the heap usage
+ *            in runtime
  *
  * @date      Jul 9, 2024
  *

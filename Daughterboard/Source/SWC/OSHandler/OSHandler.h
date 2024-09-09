@@ -2,7 +2,11 @@
  * @file      OSHandler.h
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This component implements the OS hooks such as
+ *            stack overflow detection, configurations of the
+ *            SWIT (Software integration) statistics like the
+ *            CPU Load measures and the check of the heap usage
+ *            in runtime
  *
  * @date      Jul 9, 2024
  *
@@ -20,7 +24,11 @@
 #include "FreeRTOSConfig.h"
 #include "task.h"
 #include "main.h"
-
+/**
+ * ---------------------------------------------------------
+ * 					     OS HANDLERS GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName);
 uint16_t usCheckHeapUsage(void);
 uint16_t usCheckStackUsage(xTaskHandle xTask);
