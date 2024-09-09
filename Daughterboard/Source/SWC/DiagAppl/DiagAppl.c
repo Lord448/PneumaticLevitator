@@ -2,7 +2,9 @@
  * @file      DiagAppl.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     TODO - This component it's not available on
+ *            the first versions of the project
+ *            TODO Disabled Component at the moment
  *
  * @date      Jul 3, 2024
  *
@@ -18,6 +20,7 @@
 
 void vTaskDiagAppl(void *argument)
 {
+	osDelay(osWaitForever); /* Disabled thread */
 	for(;;)
 	{
 		osDelay(1);
