@@ -562,8 +562,13 @@ static void sAboutMenu_ShowPage(Pages page)
 }
 
 /**
- * @brief
- * @param
+ * @brief  Create a custom textbox for this menu
+ * @param  *txb : Textbox object
+ * @param  id   : id of the texbox
+ * @param  *str : String of the textbox
+ * @param  show : if true, it shows the textbox on the first init
+ * @param  xs   : Start position in x of the textbox
+ * @param  ys   : Start position in y of the textbox
  * @retval none
  */
 static void sAboutMenu_CreateTextbox(UG_TEXTBOX* txb, UG_U8 id, char *str, bool show, UG_S16 xs, UG_S16 ys)
@@ -581,8 +586,14 @@ static void sAboutMenu_CreateTextbox(UG_TEXTBOX* txb, UG_U8 id, char *str, bool 
 }
 
 /**
- * @brief
- * @param
+ * @brief  Create a custom small textbox with
+ *         the variation of the font
+ * @param  *txb : Textbox object
+ * @param  id   : id of the texbox
+ * @param  *str : String of the textbox
+ * @param  show : if true, it shows the textbox on the first init
+ * @param  xs   : Start position in x of the textbox
+ * @param  ys   : Start position in y of the textbox
  * @retval none
  */
 static void sAboutMenu_CreateSmallTextbox(UG_TEXTBOX* txb, UG_U8 id, char *str, bool show, UG_S16 xs, UG_S16 ys)

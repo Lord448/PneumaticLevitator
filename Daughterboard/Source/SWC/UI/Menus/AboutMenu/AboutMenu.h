@@ -156,7 +156,11 @@
 #define HECTOR_GIT  "Mantace96"
 
 #define SOFTWARE_VERSION "Version 0.0.1"
-
+/**
+ * ---------------------------------------------------------
+ * 					    ABOUT_MENU GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 void AboutMenu_Dynamics(Buttons btnPress, bool *isFirstMenuInit);
 void AboutMenu_buildObjects(void);
 
