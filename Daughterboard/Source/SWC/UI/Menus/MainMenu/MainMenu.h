@@ -2,7 +2,11 @@
  * @file      MainMenu.h
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     On this menu it's displayed by progress bar
+ *            the distance of the ball, the action control,
+ *            the RPM of the FAN, the set point, the current
+ *            control mode and the gains of the PID control
+ *            (Kp, Ki, Kd)
  *
  * @date      Jul 28, 2024
  *
@@ -67,7 +71,6 @@
 #define TB_KI_ID               TXB_ID_14
 #define TB_KD_ID               TXB_ID_15
 
-/* Date */
 /* RPM */
 #define TB_RPM_X_INIT          LCD_WIDTH-45
 #define TB_RPM_Y						   PROGRESS_BAR_Y_END_LOC+5
@@ -131,35 +134,38 @@
 
 /**
  * ---------------------------------------------------------
- * 					          CHECKBOX SYMBOLS
+ * 					            CHECKBOX SYMBOLS
  * ---------------------------------------------------------
  */
-
 #define CB_MANUAL_ID           CHB_ID_0
 #define CB_PID_ID							 CHB_ID_1
 #define CB_USB_ID              CHB_ID_2
 
-
 /**
  * ---------------------------------------------------------
- * 					          GENERIC SYMBOLS
+ * 					           GENERIC SYMBOLS
  * ---------------------------------------------------------
  */
-/* Manual */
 #define CB_MANUAL_INIT
-/* PID */
-/* USB */
 
 #define MAX_DISTANCE 520
 #define MAX_RPM 5200
 
 #define DEFAULT_SET_POINT 260
 
+#define MainMenu_isMode(x) osEventFlagsGet(xEvent_CurrentControlModeHandle)&x
+
 typedef struct ControlGain {
 	float value;
 	uint8_t constant;
 }ControlGain;
 
+
+/**
+ * ---------------------------------------------------------
+ * 					     MAIN_MENU GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit);
 void MainMenu_buildObjects(void);
 

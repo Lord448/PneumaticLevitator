@@ -2,7 +2,11 @@
  * @file      MainMenu.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     On this menu it's displayed by progress bar
+ *            the distance of the ball, the action control,
+ *            the RPM of the FAN, the set point, the current
+ *            control mode and the gains of the PID control
+ *            (Kp, Ki, Kd)
  *
  * @date      28 jul 2024
  *
@@ -44,6 +48,16 @@ static void sMainMenu_ProcessButtonPressCtrlAct(Buttons btnPressed, int8_t *actC
  * ---------------------------------------------------------
  * 					 SOFTWARE COMPONENT GLOBAL FUNCTIONS
  * ---------------------------------------------------------
+ */
+/**
+ * @brief  This function makes all the animations and
+ *         processes the button pressions gived by the
+ *         main state machine, the reception of the button
+ *         pressed is received by a Queue on the Main state
+ *         machine
+ * @param  btnPress : The button that has been pressed
+ * @param  *isFirstMenuInit : bool used to return into initial conditions
+ * @retval none
  */
 void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit)
 {
@@ -179,6 +193,12 @@ void MainMenu_MenuDynamics(Buttons btnPressed, bool *isFirstMenuInit)
 	}
 }
 
+/**
+ * @brief  Build and declare all the graphical
+ *         resources needed by this component
+ * @param  none
+ * @retval none
+ */
 void MainMenu_buildObjects(void)
 {
 	static UG_OBJECT ObjWinBuf[WINDOW_MAX_OBJECTS];
@@ -346,6 +366,11 @@ void MainMenu_buildObjects(void)
   UG_CheckboxSetChecked(&mainWindow, CB_USB_ID, 0);
 }
 
+/**
+ * @brief  Prints on the UI the new Kp number
+ * @param  kp : Kp constant
+ * @retval result of the operation
+ */
 result_t MainMenu_setKP(float kp)
 {
 	result_t result = OK;
@@ -358,6 +383,11 @@ result_t MainMenu_setKP(float kp)
 	return result;
 }
 
+/**
+ * @brief  Prints on the UI the new Ki number
+ * @param  ki : Ki constant
+ * @retval the result of the operation
+ */
 result_t MainMenu_setKI(float ki)
 {
 	result_t result = OK;
@@ -370,6 +400,11 @@ result_t MainMenu_setKI(float ki)
 	return result;
 }
 
+/**
+ * @brief  Prints on the UI the new Kd number
+ * @param  kd : Kd constant
+ * @retval the result of the operation
+ */
 result_t MainMenu_setKD(float kd)
 {
 	result_t result = OK;
@@ -382,6 +417,13 @@ result_t MainMenu_setKD(float kd)
 	return result;
 }
 
+/**
+ * @brief  Prints on the UI all the control gains
+ * @param  kp : Kp constant
+ * @param  ki : Ki constant
+ * @param  kd : Kd constant
+ * @retval the result of the operation
+ */
 result_t MainMenu_setControlConstants(float kp, float ki, float kd)
 {
 	if(OK != MainMenu_setKP(kp))
@@ -393,6 +435,11 @@ result_t MainMenu_setControlConstants(float kp, float ki, float kd)
 	return OK;
 }
 
+/**
+ * @brief  Prints the set point on the progress bar
+ * @param  distance : distance that will be printed (0-530)
+ * @retval the result of the operation
+ */
 result_t MainMenu_setDistance(int16_t distance)
 {
 	UG_U8 progress = 0;
@@ -413,6 +460,11 @@ result_t MainMenu_setDistance(int16_t distance)
 	return OK;
 }
 
+/**
+ * @brief  Prints the set point on the progress bar
+ * @param  setPoint : set point that will be printed (0-530)
+ * @retval the result of the operation
+ */
 result_t MainMenu_setSetPoint(uint16_t setPoint)
 {
 	uint32_t flags = 0;
@@ -428,6 +480,14 @@ result_t MainMenu_setSetPoint(uint16_t setPoint)
 	if(UG_RESULT_OK != UG_ProgressSetProgress(&mainWindow, PROGRESS_BAR_SET_POINT_ID, progress))
 		return Error;
 	/* Send to COM */
+	/*@note The mode check can be implemented on a macro*/
+	/*
+	 * Macro implementation sample
+	 *
+	 * if(MainMenu_isMode(MODE_PID_FLAG))
+	 * {
+	 *  ....
+	 */
 	flags = osEventFlagsGet(xEvent_CurrentControlModeHandle);
 	if(flags&MODE_PID_FLAG)
 	{
@@ -438,11 +498,15 @@ result_t MainMenu_setSetPoint(uint16_t setPoint)
 	{
 		/* Do Nothing */
 	}
-
 	UG_Update();
 	return OK;
 }
 
+/**
+ * @brief  Prints the rpm on the progress bar
+ * @param  rpm : FAN rpm that will be printed (0-5200)
+ * @retval the result of the operation
+ */
 result_t MainMenu_setRPM(int16_t rpm)
 {
 	UG_U8 progress = 0;
@@ -462,6 +526,11 @@ result_t MainMenu_setRPM(int16_t rpm)
 	return OK;
 }
 
+/**
+ * @brief  Prints the action control on the progress bar
+ * @param  actionControl : action control percetage that will be printed (0-100)
+ * @retval the result of the operation
+ */
 result_t MainMenu_setActionControl(int8_t actionControl)
 {
 	uint32_t flags = 0;
@@ -489,6 +558,11 @@ result_t MainMenu_setActionControl(int8_t actionControl)
 	return OK;
 }
 
+/**
+ * @brief  Set the check on the checkbox
+ * @param  state : new state of the checkbox
+ * @retval result of the operation
+ */
 result_t MainMenu_setManualChecked(bool state)
 {
 	if(OK == UG_CheckboxSetChecked(&mainWindow, CB_MANUAL_ID, state))
@@ -497,6 +571,11 @@ result_t MainMenu_setManualChecked(bool state)
 		return Error;
 }
 
+/**
+ * @brief  Set the check on the checkbox
+ * @param  state : new state of the checkbox
+ * @retval result of the operation
+ */
 result_t MainMenu_setPIDChecked(bool state)
 {
 	if(OK == UG_CheckboxSetChecked(&mainWindow, CB_PID_ID, state))
@@ -505,6 +584,11 @@ result_t MainMenu_setPIDChecked(bool state)
 		return Error;
 }
 
+/**
+ * @brief  Set the check on the checkbox
+ * @param  state : new state of the checkbox
+ * @retval result of the operation
+ */
 result_t MainMenu_setUSBChecked(bool state)
 {
 	if(OK == UG_CheckboxSetChecked(&mainWindow, CB_USB_ID, state))
@@ -513,6 +597,11 @@ result_t MainMenu_setUSBChecked(bool state)
 		return Error;
 }
 
+/**
+ * @brief  Set the check on the checkbox
+ * @param  state : new state of the checkbox
+ * @retval result of the operation
+ */
 result_t MainMenu_preCheck(uint16_t ID)
 {
 	/* TODO Implement the function */
@@ -524,6 +613,13 @@ result_t MainMenu_preCheck(uint16_t ID)
  * ---------------------------------------------------------
  * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
  * ---------------------------------------------------------
+ */
+/**
+ * @brief  This function processes the button pressions
+ *         on the Control action progress bar
+ * @param  btnPressed : button that has been pressed
+ * @param  *actCtrl : pointer to the action control variable
+ * @retval none
  */
 static void sMainMenu_ProcessButtonPressCtrlAct(Buttons btnPressed, int8_t *actCtrl)
 {
@@ -542,9 +638,7 @@ static void sMainMenu_ProcessButtonPressCtrlAct(Buttons btnPressed, int8_t *actC
 			MainMenu_setActionControl(*actCtrl);
 		break;
 		case iLeft:
-		break;
 		case iRight:
-		break;
 		case iOk:
 		case iEncoderSW:
 		case iMenu:
@@ -556,6 +650,13 @@ static void sMainMenu_ProcessButtonPressCtrlAct(Buttons btnPressed, int8_t *actC
 	}
 }
 
+/**
+ * @brief  This function processes the button pressions
+ *         on the set point progress bar
+ * @param  btnPressed : button that has been pressed
+ * @param  *setPoint : pointer to the set point variable
+ * @retval none
+ */
 static void sMainMenu_ProcessButtonPressSetPoint(Buttons btnPressed, int16_t *setPoint)
 {
 	switch(btnPressed)
@@ -577,9 +678,7 @@ static void sMainMenu_ProcessButtonPressSetPoint(Buttons btnPressed, int16_t *se
 			MainMenu_setSetPoint(*setPoint);
 		break;
 		case iLeft:
-		break;
 		case iRight:
-		break;
 		case iMenu:
 		case iNone:
 		case iEncoder:
