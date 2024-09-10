@@ -2,7 +2,8 @@
  * @file      ControlModeMenu.h
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This menu gives the user the options of control mode
+ *            and it can be Manual Mode, PID (Slave), or USB
  *
  * @date      Sep 2, 2024
  *
@@ -57,7 +58,11 @@
 #define MODE_MANUAL_FLAG            (uint32_t) 1U << 0
 #define MODE_PID_FLAG               (uint32_t) 1U << 1
 #define MODE_USB_FLAG               (uint32_t) 1U << 2
-
+/**
+ * ---------------------------------------------------------
+ * 					  CONTROL_MODE_MENU GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 void ControlModeMenu_Dynamics(Buttons btnPress, bool *isFirstInit);
 void ControlModeMenu_buildObjects(void);
 

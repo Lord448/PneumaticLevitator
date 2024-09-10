@@ -243,7 +243,8 @@ static void sAboutMenu_CreateSmallTextbox(UG_TEXTBOX* txb, UG_U8 id, char *str, 
  *         main state machine, the reception of the button
  *         pressed is received by a Queue on the Main state
  *         machine
- * @param  The button that has been pressed
+ * @param  btnPress : The button that has been pressed
+ * @param  *isFirstMenuInit : bool used to return into initial conditions
  * @retval none
  */
 void AboutMenu_Dynamics(Buttons btnPress, bool *isFirstMenuInit)
@@ -564,7 +565,7 @@ static void sAboutMenu_ShowPage(Pages page)
 /**
  * @brief  Create a custom textbox for this menu
  * @param  *txb : Textbox object
- * @param  id   : id of the texbox
+ * @param  id   : id of the textbox
  * @param  *str : String of the textbox
  * @param  show : if true, it shows the textbox on the first init
  * @param  xs   : Start position in x of the textbox

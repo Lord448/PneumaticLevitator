@@ -2,7 +2,8 @@
  * @file      ControlModeMenu.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This menu gives the user the options of control mode
+ *            and it can be Manual Mode, PID (Slave), or USB
  *
  * @date      Sep 2, 2024
  *
@@ -62,8 +63,13 @@ static BtnCoordinates sControlModeMenu_GetCoordinates(uint8_t id);
  * ---------------------------------------------------------
  */
 /**
- * @brief
- * @param  btnPress : Button that has been pressed
+ * @brief  This function makes all the animations and
+ *         processes the button pressions gived by the
+ *         main state machine, the reception of the button
+ *         pressed is received by a Queue on the Main state
+ *         machine
+ * @param  btnPress : The button that has been pressed
+ * @param  *isFirstMenuInit : bool used to return into initial conditions
  * @retval none
  */
 void ControlModeMenu_Dynamics(Buttons btnPress, bool *isFirstInit)
@@ -142,7 +148,8 @@ void ControlModeMenu_Dynamics(Buttons btnPress, bool *isFirstInit)
 }
 
 /**
- * @brief
+ * @brief  Build and declare all the graphical
+ *         resources needed by this component
  * @param  none
  * @retval none
  */
@@ -181,7 +188,8 @@ void ControlModeMenu_buildObjects(void)
  * ---------------------------------------------------------
  */
 /**
- * @brief
+ * @brief  Set the OS event flags depending of the
+ *         selected mode and also turns on the leds
  * @param  id : Id of the button
  * @retval none
  */
@@ -224,7 +232,8 @@ static void sControlModeMenu_SetFlags(uint8_t id)
 }
 
 /**
- * @brief
+ * @brief  Sets the cursor of a button with a given id
+ *         by drawing a frame on that button
  * @param  id : Id of the button
  * @retval none
  */
@@ -245,7 +254,7 @@ static void sControlModeMenu_ButtonSetCursor(uint8_t id)
 }
 
 /**
- * @brief
+ * @brief  Makes the animation of a button press
  * @param  id : Id of the button
  * @retval none
  */
@@ -258,7 +267,8 @@ static void sControlModeMenu_ButtonPressAnim(uint8_t id)
 }
 
 /**
- * @brief
+ * @brief  Sets the text of the TB_Select
+ *         with a given ID
  * @param  id : Id of the button
  * @retval none
  */
@@ -282,7 +292,8 @@ static void sControlModeMenu_SetSelectedText(uint8_t id)
 }
 
 /**
- * @brief
+ * @brief  Makes the animation of a pression
+ *         of the button
  * @param  state : true if pressed
  * @param  id : Id of the button
  * @retval none
@@ -303,12 +314,12 @@ static void sControlModeMenu_ButtonSetPress(bool state, uint8_t id)
 }
 
 /**
- * @brief
- * @param
- * @param
- * @param
- * @param
- * @param
+ * @brief  Create a custom button for this menu
+ * @param  *txb : button object
+ * @param  id   : id of the button
+ * @param  *str : String of the button
+ * @param  xs   : Start position in x of the button
+ * @param  ys   : Start position in y of the button
  * @retval none
  */
 static void sControlModeMenu_ButtonCreate(UG_BUTTON *btn, uint8_t id, char *str, uint16_t xs, uint16_t ys)
@@ -325,18 +336,17 @@ static void sControlModeMenu_ButtonCreate(UG_BUTTON *btn, uint8_t id, char *str,
 }
 
 /**
- * @brief
- * @param
- * @param
- * @param
- * @param
- * @param
- * @param
+ * @brief  Create a custom textbox for this menu
+ * @param  *txb : Textbox object
+ * @param  id   : id of the texbox
+ * @param  *str : String of the textbox
+ * @param  show : if true, it shows the textbox on the first init
+ * @param  xs   : Start position in x of the textbox
+ * @param  ys   : Start position in y of the textbox
  * @retval none
  */
 static void sControlModeMenu_CreateTextbox(UG_TEXTBOX* txb, UG_U8 id, char *str, bool show, UG_S16 xs, UG_S16 ys)
 {
-	//uint16_t xe = xs + ((CONTROL_MENU_TEXTBOX_FONT_X-10) * strlen(str));
 	uint16_t xe = LCD_WIDTH-10;
 	uint16_t ye = ys + CONTROL_MENU_TEXTBOX_FONT_Y;
 
@@ -350,16 +360,15 @@ static void sControlModeMenu_CreateTextbox(UG_TEXTBOX* txb, UG_U8 id, char *str,
 }
 
 /**
- * @brief
+ * @brief  This function gets the coordinates of a button
+ *         with a given id
  * @param  id : ID of the button
  * @retval A structure with the coordinates
  *         of the button
  */
 static BtnCoordinates sControlModeMenu_GetCoordinates(uint8_t id)
 {
-
 	BtnCoordinates retval;
-
 	retval.xs = CONTROL_MENU_TEXTBOX_X_POS+1;
 	switch(id)
 	{
