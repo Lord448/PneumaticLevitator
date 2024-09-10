@@ -2,7 +2,24 @@
  * @file      COM.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This software component leads the all the
+ *            communication ports on the Motherboard, UART
+ *            for the communication with the Daughterboard,
+ *            USB for the communication with Matlab or any PC
+ *            program (Arduino monitor can be used to).
+ *
+ *            This component implements two subthreads in order to
+ *            make a fast process and response for the USB messages
+ *            as well as the on demand UART messages, and save CPU
+ *            load charge by polling this tasks until there's a
+ *            message to process.
+ *
+ *            This component implements soft-timers with the help
+ *            of the kernel predefined objects for the periodic
+ *            frame sending
+ *
+ *            For the usage of the Arduino Monitor, please check
+ *            the user manual in the section USB communication.
  *
  * @date      May 29, 2024
  *
@@ -737,7 +754,7 @@ static result_t sCOM_SendUSB(uint8_t *buf, uint16_t len)
  * ---------------------------------------------------------
  */
 /**
- * @brief
+ * @brief  Callback for the UART periodical send
  * @param  *argument none
  * @retval none
  */
@@ -746,7 +763,6 @@ void vTimer_UARTSendCallback(void *argument)
 	static int16_t distance = 0;
 	static int16_t RPM = 0;
 	static int16_t actionControl = 0;
-	static uint16_t emptyFIFOCounterDist = 0;
 	static uint16_t emptyFIFOCounterRPM = 0;
 	static uint8_t buffer[COM_UART_PERIODIC_NUMBER_FRAMES_TX+1] = {0};
 	volatile uint8_t *bytePointer;
@@ -771,37 +787,8 @@ void vTimer_UARTSendCallback(void *argument)
 	/* DISTANCE PROCESSING */
 	{
 		/* Getting the distance data */
-		status = osMessageQueueGet(xFIFO_COMDistanceHandle, &distance, NULL, osNoTimeout);
-		if(osOK != status)
-		{
-			/* The FIFO is empty */
-			emptyFIFOCounterDist++;
-		}
-		else
-		{
-			/* All Good */
-			emptyFIFOCounterDist = 0;
-		}
-		/* Checking value of distance */
-		if(distance < 0)
-		{
-			/* Negative value on distance */
-			distance = 0;
-		}
-		else
-		{
-			/* Do Nothing */
-		}
-
+		osMessageQueueGet(xFIFO_COMDistanceHandle, &distance, NULL, osNoTimeout);
 		/* Load Distance data */
-		//if(COM_FIFO_EMPTY_COUNTS_FOR_ERROR < emptyFIFOCounterDist)
-		{
-			/* Send error code */
-			//buffer[1] = COM_MSG_ERROR_CODE;
-			//buffer[2] = COM_MSG_ERROR_CODE;
-			/* TODO Trigger DTC Not Receiving Distance FIFO */
-		}
-		//else
 		{
 			/* If there's no data on the FIFO, the bus will take the last value*/
 			bytePointer = (uint8_t *)&distance;
@@ -867,7 +854,6 @@ void vTimer_WdgUARTCallback(void *argument)
 	/* Reporting to LEDS SWC */
 	osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_GPU);
 	/* TODO: Trigger DTC Not GPU Comm */
-	//syncComm();
 }
 
 /**
@@ -898,7 +884,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		/* Reporting to LEDS SWC */
 		//osEventFlagsSet(xEvent_FatalErrorHandle, FATAL_ERROR_GPU); /* TODO Enable Code here */
 		/* TODO: Trigger DTC Not GPU Comm */
-		//syncComm();
 	}
 }
 /**

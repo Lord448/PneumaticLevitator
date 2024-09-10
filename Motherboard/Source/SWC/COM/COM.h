@@ -2,7 +2,24 @@
  * @file      COM.h
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This software component leads the all the
+ *            communication ports on the Motherboard, UART
+ *            for the communication with the Daughterboard,
+ *            USB for the communication with Matlab or any PC
+ *            program (Arduino monitor can be used to).
+ *
+ *            This component implements two subthreads in order to
+ *            make a fast process and response for the USB messages
+ *            as well as the on demand UART messages, and save CPU
+ *            load charge by polling this tasks until there's a
+ *            message to process.
+ *
+ *            This component implements soft-timers with the help
+ *            of the kernel predefined objects for the periodic
+ *            frame sending
+ *
+ *            For the usage of the Arduino Monitor, please check
+ *            the user manual in the section USB communication.
  *
  * @date      May 29, 2024
  *
@@ -124,6 +141,11 @@ typedef union DiagPDU{
 	uint8_t rawData[10]; /* Access as byte array */
 } DiagPDU_t;
 
+/**
+ * ---------------------------------------------------------
+ * 					        COM GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 void vTaskCOM(void *argument);
 void vSubTaskUSB(void *argument);
 void vSubTaskUART(void *argument);

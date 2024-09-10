@@ -2,7 +2,7 @@
  * @file      Signals.h
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     List of all the signals sent from the UART bus
  *
  * @date      May 30, 2024
  *
