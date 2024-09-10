@@ -2,7 +2,8 @@
  * @file      Anim.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This component implements the animations on the screen
+ *            for the boot animation of the screeen
  *
  * @date      Jul 28, 2024
  *
@@ -17,8 +18,8 @@
 #include "Anim.h"
 
 /**
- * @brief Fades in the white color on the screen
- * @param Delay for the animation in milliseconds
+ * @brief  Fades in the white color on the screen
+ * @param  Delay for the animation in milliseconds
  * @retval none
  */
 void FadeWhiteIn(uint8_t animDelay)
@@ -34,8 +35,8 @@ void FadeWhiteIn(uint8_t animDelay)
 }
 
 /**
- * @brief Fades in and then fades out the logo
- * @param none
+ * @brief  Fades in and then fades out the logo
+ * @param  none
  * @retval none
  */
 void ITMLogoFadeIn(void)
@@ -142,6 +143,11 @@ void ITMLogoFadeIn(void)
 #endif
 }
 
+/**
+ * @brief  Prints the white color in the screen
+ * @param  none
+ * @retval none
+ */
 void ITMLogoFadeOut(void)
 {
 #ifdef BETA_UI
@@ -150,6 +156,11 @@ void ITMLogoFadeOut(void)
 #endif
 }
 
+/**
+ * @brief  Prints the init string on the screen
+ * @param  none
+ * @retval none
+ */
 void StringFadeIn(void)
 {
 #ifdef BETA_UI
@@ -160,6 +171,13 @@ void StringFadeIn(void)
 #endif
 }
 
+/**
+ * @brief  Fade out the string
+ * @note   Needs to be implemented with the
+ *         processing of the pixels of the string
+ * @param  none
+ * @retval none
+ */
 void StringFadeOut(void)
 {
   /* TODO Implement on future releases */

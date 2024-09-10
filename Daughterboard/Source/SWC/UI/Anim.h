@@ -2,7 +2,8 @@
  * @file      Anim.h
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This component implements the animations on the screen
+ *            for the boot animation of the screeen
  *
  * @date      Jul 28, 2024
  *
@@ -28,10 +29,18 @@
 #include "stm32f4xx_hal_dma.h"
 #include <stdio.h>
 #include <string.h>
-
+/**
+ * ---------------------------------------------------------
+ * 					         ANIM GENERAL SYMBOLS
+ * ---------------------------------------------------------
+ */
 /* No animations release */
 #define BETA_UI
-
+/**
+ * ---------------------------------------------------------
+ * 					        ANIM GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 void FadeWhiteIn(uint8_t animDelay);
 void ITMLogoFadeIn(void);
 void ITMLogoFadeOut(void);
