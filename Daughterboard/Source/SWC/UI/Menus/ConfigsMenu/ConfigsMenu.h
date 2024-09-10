@@ -2,7 +2,9 @@
  * @file      ConfigsMenu.h
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     The configurations menu give the user the option
+ *            to choose the control gains (Kp, Ki, Kd) (under dev)
+ *            and to change the control mode
  *
  * @date      28 ago 2024
  *
@@ -65,7 +67,11 @@
 #define TB_CHANG_MODE_X_POS 0
 #define TB_VER_PROMPT_X_POS 55
 #define TB_VER_PROMPT_Y_POS MENU_TEXBOX_Y_POS + MENU_TEXTBOX_FONT_Y + 5
-
+/**
+ * ---------------------------------------------------------
+ * 					    CONFIGS_MENU GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 void ConfigsMenu_Dynamics(Buttons btnPress, bool *isFirstInit);
 void ConfigsMenu_buildObjects(void);
 

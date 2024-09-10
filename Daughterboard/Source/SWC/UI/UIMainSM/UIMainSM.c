@@ -68,6 +68,22 @@ void UIMainSM_InfiniteLoop(void)
 	{
 		/* Do Nothing */
 	}
+
+	/**
+	 * @note Since most of the dynamics functions have the same signature
+	 *       it is possible (with no much development cost) to create a
+	 *       generic menu structure with the pointer of the window, the
+	 *       stage id, and two function pointers, the BuildObjects and
+	 *       the dynamic objects, so the second function pointer can be
+	 *       called here; assuming those variables are members of a typedef
+	 *       structure, we can declare a structure pointer that can point
+	 *       to the current menu displayed, this strategy will need the
+	 *       declaration of a global structure that contains all the menus
+	 *       (A similar scheme it's implemented on ConfigsMenu, with the
+	 *       "MenuSelector" and "MenuSelectorGroup"). This strategy would
+	 *       save a lot of "switch case" statements among the UI code
+	 */
+
 	switch(menuStage)
 	{
 		case sMainLobby:

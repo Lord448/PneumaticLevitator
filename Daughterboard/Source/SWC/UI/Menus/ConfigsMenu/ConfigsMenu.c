@@ -2,7 +2,9 @@
  * @file      ConfigsMenu.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     The configurations menu give the user the option
+ *            to choose the control gains (Kp, Ki, Kd) (under dev)
+ *            and to change the control mode
  *
  * @date      28 ago 2024
  *
@@ -20,13 +22,16 @@ UG_WINDOW configsWindow;
 
 extern UG_WINDOW controlModesWindow;
 
+/**
+ * ---------------------------------------------------------
+ * 					 SOFTWARE COMPONENT LOCAL TYPES
+ * ---------------------------------------------------------
+ */
+
 typedef enum LocalMenuStages {
 	sChangeConst,
 	sChangeMode
 }LocalMenuStages;
-
-LocalMenuStages menuOnDisplay = sChangeConst;
-bool menuDisplayed = false;
 
 typedef struct MenuSelector {
 	LocalMenuStages menuStage;
@@ -54,6 +59,9 @@ struct MenuSelectorsGroup {
 	}
 };
 
+LocalMenuStages menuOnDisplay = sChangeConst;
+bool menuDisplayed = false;
+
 /**
  * ---------------------------------------------------------
  * 					 SOFTWARE COMPONENT LOCAL PROTOYPES
@@ -69,6 +77,16 @@ static void sConfigsMenu_CreateTextbox(UG_TEXTBOX* txb, UG_U8 id, char *str, boo
  * ---------------------------------------------------------
  * 					 SOFTWARE COMPONENT GLOBAL FUNCTIONS
  * ---------------------------------------------------------
+ */
+/**
+ * @brief  This function makes all the animations and
+ *         processes the button pressions gived by the
+ *         main state machine, the reception of the button
+ *         pressed is received by a Queue on the Main state
+ *         machine
+ * @param  btnPress : The button that has been pressed
+ * @param  *isFirstMenuInit : bool used to return into initial conditions
+ * @retval none
  */
 void ConfigsMenu_Dynamics(Buttons btnPress, bool *isFirstInit)
 {
@@ -133,7 +151,12 @@ void ConfigsMenu_Dynamics(Buttons btnPress, bool *isFirstInit)
 		break;
 	}
 }
-
+/**
+ * @brief  Build and declare all the graphical
+ *         resources needed by this component
+ * @param  none
+ * @retval none
+ */
 void ConfigsMenu_buildObjects(void)
 {
 	static UG_OBJECT  ObjWinBuf[32];
@@ -176,6 +199,14 @@ void ConfigsMenu_buildObjects(void)
  * ---------------------------------------------------------
  * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
  * ---------------------------------------------------------
+ */
+/**
+ * @brief  This function implements a small carrousel for the
+ *         sub menus of this category
+ * @param  btnPress : Button that have been pressed
+ * @retval bool : the result of the pression
+ *             true  -> you need to change menu
+ *						 false -> keep in the same menu
  */
 static bool sConfigsMenu_ProcessButtonPress(Buttons btnPress)
 {
@@ -244,6 +275,13 @@ static bool sConfigsMenu_ProcessButtonPress(Buttons btnPress)
 	return false;
 }
 
+/**
+ * @brief  This function change the displayed sub-menu
+ *         the dynamics function and BuildObjects functions
+ *         for each sub-menu runs inside this component
+ * @param  menuStage : Selected menu
+ * @retval none
+ */
 static void sConfigsMenu_ChangeMenu(LocalMenuStages menuStage)
 {
 	UG_WINDOW *window;
@@ -264,6 +302,13 @@ static void sConfigsMenu_ChangeMenu(LocalMenuStages menuStage)
 	UG_Update();
 }
 
+/**
+ * @brief  This function makes the animation of an
+ *         arrow press, it's only valid with right and
+ *         left pressions
+ * @param  btnPress : btn that have been pressed
+ * @retval none
+ */
 static void sConfigsMenu_MakeArrowPressAnim(Buttons btnPress)
 {
 	const TickType_t AnimDelay = 100; /* MS */
@@ -291,6 +336,11 @@ static void sConfigsMenu_MakeArrowPressAnim(Buttons btnPress)
 	}
 }
 
+/**
+ * @brief  Makes the blink animation on the image
+ * @param  *menu : menu structure
+ * @retval none
+ */
 static void sConfigsMenu_MakeSelectedAnim(MenuSelector *menu)
 {
 	const TickType_t AnimDelay = 45; /* x2 MS */
@@ -308,6 +358,11 @@ static void sConfigsMenu_MakeSelectedAnim(MenuSelector *menu)
 	}
 }
 
+/**
+ * @brief  Hide all the textboxes of this menu
+ * @param  none
+ * @retval none
+ */
 static void sConfigsMenu_HideAllTextboxes(void)
 {
 	MenuSelector *menu = (MenuSelector *)&MenuSelectorsGroup; /* Pointing to the top of the structure */
@@ -324,6 +379,16 @@ static void sConfigsMenu_HideAllTextboxes(void)
 	UG_Update();
 }
 
+/**
+ * @brief  Create a custom textbox for this menu
+ * @param  *txb : Textbox object
+ * @param  id   : id of the textbox
+ * @param  *str : String of the textbox
+ * @param  show : if true, it shows the textbox on the first init
+ * @param  xs   : Start position in x of the textbox
+ * @param  ys   : Start position in y of the textbox
+ * @retval none
+ */
 static void sConfigsMenu_CreateTextbox(UG_TEXTBOX* txb, UG_U8 id, char *str, bool show, UG_S16 xs, UG_S16 ys)
 {
 	uint16_t xe = xs + ((MENU_TEXTBOX_FONT_X-10) * strlen(str));
