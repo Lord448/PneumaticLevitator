@@ -2,7 +2,12 @@
  * @file      DistanceSensor.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This component reads the distance of the ball
+ *            from the sensor VL53L0X and reports to the system
+ *            with Queues
+ *
+ *            It also has the option to manage a fixed sampling
+ *            frequency scheme
  *
  * @date      May 29, 2024
  *
@@ -36,6 +41,11 @@ static TickType_t DelayTick = 0;
  * 					  SOFTWARE COMPONENT MAIN THREAD
  * ---------------------------------------------------------
  */
+/**
+* @brief Function implementing the TaskSensor thread.
+* @param argument: Not used
+* @retval None
+*/
 void vTaskSensor(void *argument)
 {
 	uint32_t refSpadCount;
@@ -47,13 +57,14 @@ void vTaskSensor(void *argument)
 
 	Dev->I2cHandle = &hi2c1;
 	Dev->I2cDevAddr = VL53L0X_ADDR;
-	//Disable XSHUT
-	HAL_GPIO_WritePin(TOF_XSHUT_GPIO_Port, TOF_XSHUT_Pin, GPIO_PIN_RESET);
-	HAL_Delay(20);
 
-	//Enable XSHUT
+	/* Disable XSHUT */
+	HAL_GPIO_WritePin(TOF_XSHUT_GPIO_Port, TOF_XSHUT_Pin, GPIO_PIN_RESET);
+	osDelay(pdMS_TO_TICKS(20));
+
+	/* Enable XSHUT */
 	HAL_GPIO_WritePin(TOF_XSHUT_GPIO_Port, TOF_XSHUT_Pin, GPIO_PIN_SET);
-	HAL_Delay(20);
+	osDelay(pdMS_TO_TICKS(20));
 
 	VL53L0X_WaitDeviceBooted( Dev );
 	VL53L0X_DataInit( Dev );
@@ -62,7 +73,7 @@ void vTaskSensor(void *argument)
 	VL53L0X_PerformRefSpadManagement(Dev, &refSpadCount, &isApertureSpads);
 	VL53L0X_SetDeviceMode(Dev, VL53L0X_DEVICEMODE_SINGLE_RANGING);
 
-	//Enable/Disable Sigma and Signal check
+	/* Enable/Disable Sigma and Signal check */
 	VL53L0X_SetLimitCheckEnable(Dev, VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE, 1);
 	VL53L0X_SetLimitCheckEnable(Dev, VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, 1);
 	VL53L0X_SetLimitCheckValue(Dev, VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, (FixPoint1616_t)(0.1*65536));
@@ -114,21 +125,22 @@ void vTaskSensor(void *argument)
  * 					 SOFTWARE COMPONENT GLOBAL FUNCTIONS
  * ---------------------------------------------------------
  */
+/**
+ * @brief  This function sets the sampling frequency
+ *         of the distance sensor
+ * @param  ticks : period in ms for the sampling
+ * @retval none
+ */
 void DistanceSensor_SetSamplingFreq(TickType_t ticks)
 {
-	samplingDelay = pdMS_TO_TICKS(ticks);
+	DelayTick = osKernelGetTickCount();
 	if(ticks > 0)
 	{
 		/* Restoring the tick count from kernel */
-		DelayTick = osKernelGetTickCount();
+		samplingDelay = pdMS_TO_TICKS(ticks);
 	}
 	else
 	{
 		/* No sampling freq, Do Nothing */
 	}
 }
-
-/*TODO (Ignore if sensor has internal filters)*/
-/*Make signal noise analysis and if needed*/
-/*Implement a FIR filter*/
-/*Implement an averager filter*/

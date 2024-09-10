@@ -2,7 +2,12 @@
  * @file      DistanceSensor.h
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This component reads the distance of the ball
+ *            from the sensor VL53L0X and reports to the system
+ *            with Queues
+ *
+ *            It also has the option to manage a fixed sampling
+ *            frequency scheme
  *
  * @date      May 29, 2024
  *
@@ -27,12 +32,19 @@
 #include <stdio.h>
 #include <string.h>
 
+/**
+ * ---------------------------------------------------------
+ * 					    DISTANCE SENSOR GENERAL SYMBOLS
+ * ---------------------------------------------------------
+ */
 #define NO_SAMPLING_DELAY 0
-
 #define MAX_DISTANCE 530
-
 #define VL53L0X_ADDR 0x52
-
+/**
+ * ---------------------------------------------------------
+ * 					   DISTANCE SENSOR GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 void vTaskSensor(void *argument);
 void DistanceSensor_SetSamplingFreq(TickType_t ticks);
 
