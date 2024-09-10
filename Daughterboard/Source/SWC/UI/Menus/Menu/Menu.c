@@ -2,7 +2,10 @@
  * @file      Menu.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     In this software component it's implemented a
+ *            carrousel that allows the user to change between
+ *            all the menus, with an extra that runs in this
+ *            component, the LCD test
  *
  * @date      Aug 22, 2024
  *
@@ -171,6 +174,7 @@ void Menu_buildObjects(void)
 	static UG_IMAGE   ConfigImage;
 	static UG_IMAGE   AboutImage;
 	static UG_IMAGE   LCDTestImage;
+	/* Commented in order to save FLASH */
 	//static UG_IMAGE   PlotImage;
 	//static UG_IMAGE   USBConfigImage;
 	//static UG_IMAGE   PlantAnalysisImage;
@@ -203,6 +207,7 @@ void Menu_buildObjects(void)
   UI_CreateImage(&menuWindow, &ConfigImage, CONFIG_MENU_IMG_ID, &Config, false, ICON_X_POS, ICON_Y_POS);
   UI_CreateImage(&menuWindow, &AboutImage, ABOUT_MENU_IMG_ID, &About, false, ICON_X_POS, ICON_Y_POS);
   UI_CreateImage(&menuWindow, &LCDTestImage, LCD_TEST_IMG_ID, &LCDTest, false, ICON_X_POS, ICON_Y_POS);
+  /* Commented in order to save FLASH */
   //UI_CreateImage(&menuWindow, &PlotImage, PLOT_MENU_IMG_ID, &Plot, false, ICON_X_POS, ICON_Y_POS);
   //UI_CreateImage(&menuWindow, &USBConfigImage, USB_CONFIG_MENU_IMG_ID, &USBConfig, false, ICON_X_POS, ICON_Y_POS);
   //UI_CreateImage(&menuWindow, &PlantAnalysisImage, PLANT_MENU_IMG_ID, &PlantAnalysis, false, ICON_X_POS, ICON_Y_POS);
@@ -232,7 +237,14 @@ void Menu_ShowInitImage(void)
  * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
  * ---------------------------------------------------------
  */
-
+/**
+ * @brief  This function implements a carrousel for the
+ *         menu selection
+ * @param  btn : Button that have been pressed
+ * @retval bool : the result of the pression
+ *             true  -> you need to change menu
+ *						 false -> keep in the same menu
+ */
 static bool sMenu_ProcessButtonPress(Buttons btn)
 {
 	MenuSelector *firstMenu = &MenuSelectorsGroup.mSelMainLobby;
@@ -331,6 +343,13 @@ static bool sMenu_ProcessButtonPress(Buttons btn)
 	return false;
 }
 
+/**
+ * @brief  This function makes the animation of an
+ *         arrow press, it's only valid with right and
+ *         left pressions
+ * @param  btnPress : btn that have been pressed
+ * @retval none
+ */
 static void sMenu_MakeArrowPressAnim(Buttons side)
 {
 	const TickType_t AnimDelay = 100; /* MS */
@@ -358,6 +377,11 @@ static void sMenu_MakeArrowPressAnim(Buttons side)
 	}
 }
 
+/**
+ * @brief  Makes the blink animation on the image
+ * @param  *menu : menu structure
+ * @retval none
+ */
 static void sMenu_MakeSelectedAnim(MenuSelector *menu)
 {
 	const TickType_t AnimDelay = 45; /* x2 MS */
@@ -375,6 +399,11 @@ static void sMenu_MakeSelectedAnim(MenuSelector *menu)
 	}
 }
 
+/**
+ * @brief  Hide all the textboxes of this menu
+ * @param  none
+ * @retval none
+ */
 static void sMenu_HideAllTextboxes(void)
 {
 	MenuSelector *menu = (MenuSelector *)&MenuSelectorsGroup; /* Pointing to the top of the structure */
@@ -391,6 +420,16 @@ static void sMenu_HideAllTextboxes(void)
 	UG_Update();
 }
 
+/**
+ * @brief  Create a custom textbox for this menu
+ * @param  *txb : Textbox object
+ * @param  id   : id of the textbox
+ * @param  *str : String of the textbox
+ * @param  show : if true, it shows the textbox on the first init
+ * @param  xs   : Start position in x of the textbox
+ * @param  ys   : Start position in y of the textbox
+ * @retval none
+ */
 static void sMenu_CreateTextbox(UG_TEXTBOX* txb, UG_U8 id, char *str, bool show, UG_S16 xs, UG_S16 ys)
 {
 	uint16_t xe = xs + ((MENU_TEXTBOX_FONT_X-10) * strlen(str));

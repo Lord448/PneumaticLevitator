@@ -2,7 +2,10 @@
  * @file      Menu.h
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     In this software component it's implemented a
+ *            carrousel that allows the user to change between
+ *            all the menus, with an extra that runs in this
+ *            component, the LCD test
  *
  * @date      Aug 22, 2024
  *
@@ -89,6 +92,11 @@
 #define TB_VER_PROMPT_X_POS 55
 #define TB_VER_PROMPT_Y_POS MENU_TEXBOX_Y_POS + MENU_TEXTBOX_FONT_Y + 5
 
+/**
+ * ---------------------------------------------------------
+ * 					       MENU GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 void Menu_MenuDynamics(void);
 void Menu_buildObjects(void);
 void Menu_ShowInitImage(void);
