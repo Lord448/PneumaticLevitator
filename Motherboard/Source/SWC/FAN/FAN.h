@@ -31,6 +31,11 @@
 /* If defined the task will enter on a loop for the test of the components */
 //#define HARD_CODED_TEST
 
+/**
+ * ---------------------------------------------------------
+ * 					       FAN FUNCTION LIKE MACRO
+ * ---------------------------------------------------------
+ */
 #define CPU_CLOCK 96000000 / 100 /* Divided by 100 in order to efficient more the IC ISR */
 
 #define setPWM_FAN(x)        TIM3->CCR1 = x < 100 ? ((x*htim3.Init.Period)/100) : htim3.Init.Period /* Set the duty cycle of the PWM in percentage */
@@ -38,6 +43,11 @@
 
 #define EnableFAN(_)         HAL_GPIO_WritePin(EnableFAN_GPIO_Port, EnableFAN_Pin, _)               /* Enables or disables the AND gate for the FAN control */
 
+/**
+ * ---------------------------------------------------------
+ * 					        FAN GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 void vTaskFAN(void *argument);
 
 #endif /* SWC_FAN_FAN_H_ */
