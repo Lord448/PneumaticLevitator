@@ -2,7 +2,9 @@
  * @file      UIMainSM.h
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This component handles the menu UI states and the
+ *            the change of the menu, it also calls the dynamics
+ *            (animation and button processing) of each menu
  *
  * @date      Jul 3, 2024
  *
@@ -23,10 +25,18 @@
 #include "AboutMenu.h"
 #include "ConfigsMenu.h"
 #include "ugui.h"
-
+/**
+ * ---------------------------------------------------------
+ * 					     UI_MAIN_SM GENERAL SYMBOLS
+ * ---------------------------------------------------------
+ */
 /*Macro meant to be used with the uGUI BMP type*/
 #define DrawCenterBitmap(bmp) UG_DrawBMP((LCD_WIDTH-bmp->width)/2, (LCD_HEIGHT-bmp->height)/2, bmp)
-
+/**
+ * ---------------------------------------------------------
+ * 					      UI_MAIN_SM GENERAL TYPES
+ * ---------------------------------------------------------
+ */
 typedef enum MenuStages {
 	sMainLobby,
 	sMenu,
@@ -38,14 +48,11 @@ typedef enum MenuStages {
 	sPlantAnalysis,
 	dummy = -1, /* Dummy variable to make the enum signed */
 }MenuStages;
-
-typedef struct UIWindow {
-	UG_WINDOW window;
-	UG_OBJECT *obj_buff;
-	uint8_t obj_len;
-}UIWindow;
-
-void UIMainSM_Init(void);
+/**
+ * ---------------------------------------------------------
+ * 					     UI_MAIN_SM GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 void UIMainSM_InfiniteLoop(void);
 void UIMainSM_ChangeMenu(MenuStages menuStageID);
 

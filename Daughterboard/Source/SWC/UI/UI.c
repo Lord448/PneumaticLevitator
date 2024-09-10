@@ -96,7 +96,6 @@ static void loadGraphicalResources(void)
 	ConfigsMenu_buildObjects();
 	MainMenu_buildObjects();
 	Menu_buildObjects();
-	UIMainSM_Init();
 }
 
 /**

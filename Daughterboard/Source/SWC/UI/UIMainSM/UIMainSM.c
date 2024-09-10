@@ -2,7 +2,9 @@
  * @file      UIMainSM.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This component handles the menu UI states and the
+ *            the change of the menu, it also calls the dynamics
+ *            (animation and button processing) of each menu
  *
  * @date      Jul 3, 2024
  *
@@ -42,21 +44,22 @@ static UG_WINDOW* UIMainSM_SelectWindow(MenuStages menuStageID);
  * 					 SOFTWARE COMPONENT GLOBAL FUNCTIONS
  * ---------------------------------------------------------
  */
-void UIMainSM_Init(void)
-{
-}
-
+/**
+ * @brief  Main function that process the UI
+ *         state machine and defines the UI
+ *         behavior when entering a menu
+ * @param  none
+ * @retval none
+ */
 void UIMainSM_InfiniteLoop(void)
 {
 	Buttons btnPress = iNone;
 	static bool isFirstMenuInit = true;
 	osMessageQueueGet(xFIFO_ButtonsHandle, &btnPress, NULL, osNoTimeout);
-	static bool debugInitMenu = false; /* TODO: Debug porpouses */
 
 	if(iMenu == btnPress)
 	{
 		/* Menu Button pressed */
-		//Menu_ShowInitImage();
 		UIMainSM_ChangeMenu(sMenu);
 		isFirstMenuInit = true;
 		btnPress = iNone;
@@ -64,12 +67,6 @@ void UIMainSM_InfiniteLoop(void)
 	else
 	{
 		/* Do Nothing */
-	}
-
-	if(debugInitMenu) /* TODO: Debug porpouses */
-	{
-		//UIMainSM_ChangeMenu(sAbout);
-		//debugInitMenu = false;
 	}
 	switch(menuStage)
 	{
@@ -97,6 +94,11 @@ void UIMainSM_InfiniteLoop(void)
 	}
 }
 
+/**
+ * @brief  Changes the menu displayed on the screen
+ * @param  menuStageID : ID of the new menu
+ * @retval none
+ */
 void UIMainSM_ChangeMenu(MenuStages menuStageID)
 {
 	static MenuStages pastMenuStage = sMainLobby;
@@ -114,6 +116,12 @@ void UIMainSM_ChangeMenu(MenuStages menuStageID)
  * ---------------------------------------------------------
  * 					 SOFTWARE COMPONENT LOCAL FUNCTIONS
  * ---------------------------------------------------------
+ */
+/**
+ * @brief  This functions returns the window with a pointer
+ *         given menu ID
+ * @param  menuStageID : Id of the menu
+ * @retval UG_WINDOW* : Pointer to the respective window
  */
 static UG_WINDOW* UIMainSM_SelectWindow(MenuStages menuStageID)
 {
