@@ -21,6 +21,12 @@
 
 #include "main.h"
 
+/**
+ * ---------------------------------------------------------
+ * 					         LEDS GENERAL SYMBOLS
+ * ---------------------------------------------------------
+ */
+
 #define RunningLed #Runnig
 #define GPULed #GPU
 #define ORLed #LED_OR
@@ -36,6 +42,11 @@
 //#define DUPLICATE_FREQ_ANIM
 //#define POLL_LEDS_TASK
 
+/**
+ * ---------------------------------------------------------
+ * 					          LEDS GENERAL TYPES
+ * ---------------------------------------------------------
+ */
 typedef enum ORLed_Colors {
 	Red,
 	White,
@@ -55,6 +66,11 @@ typedef enum AnimStates{
 
 typedef AnimStates (*AnimFuncPtr)(uint16_t);
 
+/**
+ * ---------------------------------------------------------
+ * 					        LEDS GLOBAL FUNCTIONS
+ * ---------------------------------------------------------
+ */
 void vTaskLeds(void *argument);
 
 #endif /* SWC_DIAGAPPL_LEDS_H_ */

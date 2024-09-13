@@ -115,6 +115,13 @@ void vTaskLeds(void *argument)
  * 					    SOFTWARE COMPONENT ANIMATIONS
  * ---------------------------------------------------------
  */
+/**
+ * @brief  This function implements a generic state machine for the
+ * 				 error reports on the system
+ * @param  func : Function pointer to the specific animation
+ * @param  times : times that the anium function will be repeated
+ * @retval AnimStates : state of the animation
+ */
 static AnimStates ORLed_ToggleAnim(AnimFuncPtr func, uint16_t times)
 {
 	enum SMStates {
@@ -188,6 +195,14 @@ static AnimStates ORLed_ToggleAnim(AnimFuncPtr func, uint16_t times)
 	return retval;
 }
 
+/**
+ * @brief  This function implements the blink
+ *         animation on the running led in order
+ *         to notify the user that some error
+ *         occurred
+ * @param  times : Number of blinks of the led
+ * @retval state of the anim
+ */
 static AnimStates RunningLed_BlinkAnim(uint16_t times)
 {
 	const uint16_t blinkPeriodMS = 40;
@@ -238,9 +253,10 @@ static void GPULed_BlinkAnim(void)
  */
 
 /**
- * @brief
- * @param
- * @retval
+ * @brief  Set the color that it's shown on
+ *         the OR LED color
+ * @param  color
+ * @retval none
  */
 static void ORLed_SetColor(ORLed_Colors color)
 {
