@@ -2,7 +2,9 @@
  * @file      ModeManager.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     TODO - This component it's not available on
+ *            the first versions of the project
+ *            TODO Disabled Component at the moment
  *
  * @date      May 29, 2024
  *
