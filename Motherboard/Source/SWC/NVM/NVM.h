@@ -2,7 +2,20 @@
  * @file      NVM.h
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *            Hector Rojo (hectoraroca@outlook.com)
- * @brief     TODO
+ *
+ * @brief     This software component works as an abstraction
+ *            layer for the usage of the EEPROM, implementing
+ *            overloaded function for all the different types
+ *            that can be saved on the EEPROM assuming each
+ *            address of the memory can save 1 byte.
+ *
+ *            For the memory dump function that works with the
+ *            DiagAppl features and the status of the system
+ *            component managers, are implemented a heap
+ *            dynamic memory allocation called memory pools
+ *
+ *            TODO: This component and features are disabled on
+ *            the first versions of the project
  *
  * @date      May 30, 2024
  *
@@ -32,6 +45,12 @@
 #include "usbd_cdc_if.h"
 #endif
 
+
+/**
+ * ---------------------------------------------------------
+ * 					         NVM GENERAL SYMBOLS
+ * ---------------------------------------------------------
+ */
 #define EEPROM_ADDR 0xA0
 #define EEPROM_SIZE 512
 #define EEPROM_INIT_ADDR 0
@@ -45,6 +64,11 @@
 
 //#define ENABLE_EEPROM
 
+/**
+ * ---------------------------------------------------------
+ * 					          NVM GENERAL TYPES
+ * ---------------------------------------------------------
+ */
 /**
  * @brief Union for the 32 bit data handling
  *        on the NVM and the HAL function
@@ -91,8 +115,8 @@ result_t NVM_saveFloat(uint16_t NVMVariable, float value);
  */
 
 /*nvmRead overload interface*/
-#define NVM_Read(variable, data) _Generic((data),					     \
-																	uint8_t*: NVM_read8Bit,   \
+#define NVM_Read(variable, data) _Generic((data),					    \
+																	uint8_t*: NVM_read8Bit,     \
 																	NVMType16*: NVM_read16Bit,  \
 																	NVMType32*: NVM_read32Bit,  \
 																	float*: NVM_readFloat)(variable, data)

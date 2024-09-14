@@ -3,7 +3,19 @@
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  * 						Hector Rojo (hectoraroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This software component works as an abstraction
+ *            layer for the usage of the EEPROM, implementing
+ *            overloaded function for all the different types
+ *            that can be saved on the EEPROM assuming each
+ *            address of the memory can save 1 byte.
+ *
+ *            For the memory dump function that works with the
+ *            DiagAppl features and the status of the system
+ *            component managers, are implemented a heap
+ *            dynamic memory allocation called memory pools
+ *
+ *            TODO: This component and features are disabled on
+ *            the first versions of the project
  *
  * @date      May 30, 2024
  *
@@ -17,7 +29,9 @@
 #include "NVM.h"
 
 extern I2C_HandleTypeDef hi2c2;
+#ifdef ENABLE_EEPROM
 extern IWDG_HandleTypeDef hiwdg;
+#endif
 
 extern osEventFlagsId_t xEvent_FatalErrorHandle;
 
@@ -38,7 +52,7 @@ static result_t transferEEPROMData(uint16_t startAddr, uint16_t endAddr, uint8_t
 static result_t EEPROM_Write(uint16_t MemAddress, uint8_t *pData, uint16_t Size, uint32_t timeout);
 static result_t EEPROM_Read(uint16_t MemAddress, uint8_t *pData, uint16_t Size, uint32_t timeout);
 
-#ifdef MAKE_HARD_CODED_TEST
+#ifndef MAKE_HARD_CODED_TEST
 /* Instrumented code prototypes */
 static void readDefaultValues(void);
 #endif
@@ -47,6 +61,13 @@ static void readDefaultValues(void);
  * ---------------------------------------------------------
  * 					          INIT FUNCTION
  * ---------------------------------------------------------
+ */
+/**
+ * @brief  Initializes the EEPROM and executed
+ *         (if desired) some tests for the right
+ *         functionality of the IC
+ * @param  none
+ * @retval none
  */
 void NVM_Init(void)
 {
@@ -422,6 +443,17 @@ static result_t transferEEPROMData(uint16_t startAddr, uint16_t endAddr, uint8_t
 	return result;
 }
 
+/**
+ * @brief  Writes an amount of data to the EEPROM
+ *         handling all the posibles cases of the
+ * @note   TODO: Takes a maximum to intents for the
+ *         release of the task
+ * @param  MemAddress : Address that will be write
+ * @param  *pData     : Pointer to the data that will be write
+ * @param  Size       : Size of the data to write
+ * @param  timeout    : Max amount of time for the operation to be made
+ * @retval result of the operation
+ */
 static result_t EEPROM_Write(uint16_t MemAddress, uint8_t *pData, uint16_t Size, uint32_t timeout)
 {
 	result_t retval = OK;
@@ -481,6 +513,17 @@ static result_t EEPROM_Write(uint16_t MemAddress, uint8_t *pData, uint16_t Size,
 	return retval;
 }
 
+/**
+ * @brief  Read an amount of data to the EEPROM
+ *         handling all the posibles cases of the
+ * @note   TODO: Takes a maximum to intents for the
+ *         release of the task
+ * @param  MemAddress : Address that will be read
+ * @param  *pData     : Pointer to the data that will have the read data
+ * @param  Size       : Size of the data to read
+ * @param  timeout    : Max amount of time for the operation to be made
+ * @retval result of the operation
+ */
 static result_t EEPROM_Read(uint16_t MemAddress, uint8_t *pData, uint16_t Size, uint32_t timeout)
 {
 	result_t retval = OK;
@@ -547,7 +590,7 @@ static result_t EEPROM_Read(uint16_t MemAddress, uint8_t *pData, uint16_t Size, 
  * 					    HARD CODED TESTING SOFTWARE
  * ---------------------------------------------------------
  */
-
+#ifndef MAKE_HARD_CODED_TEST
 static result_t SendUSB(char *format, ...) /*TODO: Instrumented code*/
 {
 	result_t retval = OK;
@@ -600,4 +643,5 @@ static void readDefaultValues(void)
 	SendUSB("Dlimit = %d\n", Dlimit.data32);
 	SendUSB("Set point = %d\n", setpoint.data32);
 }
+#endif
 #endif
