@@ -155,7 +155,7 @@
 #define HECTOR_MAIL "hectoraroca@outlook.com"
 #define HECTOR_GIT  "Mantace96"
 
-#define SOFTWARE_VERSION "Version 0.0.1"
+#define SOFTWARE_VERSION "Version 0.1.0"
 /**
  * ---------------------------------------------------------
  * 					    ABOUT_MENU GLOBAL FUNCTIONS
