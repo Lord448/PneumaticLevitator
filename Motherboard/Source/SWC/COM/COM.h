@@ -75,6 +75,8 @@
 #define COM_WaitForArgs() osEventFlagsClear(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX); \
 													osEventFlagsWait(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX, osFlagsWaitAny, osWaitForever);
 
+#define if_msg_is(x) if(strcmp(CDC_ResBuffer, x) == 0)
+
 /**
  * ---------------------------------------------------------
  * 					       SUPPORTED USB MESSAGES
