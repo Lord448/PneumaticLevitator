@@ -2,7 +2,11 @@
  * @file      OSHandler.c
  * @author    Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This component implements the OS hooks such as
+ *            stack overflow detection, configurations of the
+ *            SWIT (Software integration) statistics like the
+ *            CPU Load measures and the check of the heap usage
+ *            in runtime
  *
  * @date      Aug 5, 2024
  *
@@ -25,6 +29,14 @@ extern osThreadId_t TaskLedsHandle;
  * 										O S   H A N D L I N G
  *
  * -------------------------------------------------------------
+ */
+/**
+ * @brief  Reset  the thread execution the system
+ * @note   TODO: Not working
+ * @param  *thread_id : Id of the thread
+ * @param  func       : Function that implements the thread
+ * @param  *attr      : Attributes of the thread
+ * @retval result of the operation
  */
 result_t OS_ResetThread(osThreadId_t *thread_id, osThreadFunc_t func, const osThreadAttr_t *attr)
 {
@@ -164,9 +176,10 @@ uint16_t usCheckStackUsage(xTaskHandle xTask, uint32_t *pwStackBuffer)
 }
 
 /**
- * @brief
- * @param
- * @retval
+ * @brief  Resets the task on the system
+ * @note   TODO: Not working
+ * @param  Task to reset
+ * @retval result of the operation
  */
 result_t xResetTask(xTaskHandle xTask)
 {
