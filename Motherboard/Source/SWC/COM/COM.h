@@ -69,6 +69,12 @@
 #define COM_ERROR_COUNTS_TO_CANCEL_VL53L0X_TX 20 /* Count of sequenced errors to cancel the comm with VL53L0X */
 #define COM_TIME_TO_RESET_SENSOR_TASK 1000       /*MS*/ /* Time to wait to reset the sensor task */
 
+//#define COM_SEND_DISTANCE_NORMALIZED           /* If defined the distance will be sent on a range from 0 to 100 */
+
+/* Wait for arguments of the commands */
+#define COM_WaitForArgs() osEventFlagsClear(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX); \
+													osEventFlagsWait(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX, osFlagsWaitAny, osWaitForever);
+
 /**
  * ---------------------------------------------------------
  * 					       SUPPORTED USB MESSAGES
@@ -88,13 +94,11 @@
 
 #define COM_DISTANCE_SEND_FORMAT   "DIST: %d\n" /* Format for the distance send to the usb */
 #define COM_CONFIRM_SLAVE_MODE     "READY\n"    /* It's sent the system starts slave mode */
-
-//#define COM_SEND_DISTANCE_NORMALIZED           /* If defined the distance will be sent on a range from 0 to 100 */
-
-/* Wait for arguments of the commands */
-#define COM_WaitForArgs() osEventFlagsClear(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX); \
-													osEventFlagsWait(xEvent_USBHandle, CDC_FLAG_MESSAGE_RX, osFlagsWaitAny, osWaitForever);
-
+/**
+ * ---------------------------------------------------------
+ * 					          COM GENERAL TYPES
+ * ---------------------------------------------------------
+ */
 typedef union Data16 {
 	int16_t data;
 	uint8_t rawData[sizeof(int16_t)];

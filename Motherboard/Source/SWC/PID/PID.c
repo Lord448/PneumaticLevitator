@@ -3,7 +3,8 @@
  * @author    David Ramirez (dardito23@gmail.com)
  *						Pedro Rojo (pedroeroca@outlook.com)
  *
- * @brief     TODO
+ * @brief     This software component implemented the internal
+ *            PID logic for the control mode AutoPID
  *
  * @date      May 29, 2024
  *
@@ -17,14 +18,10 @@
 
 #include "PID.h"
 
-extern osThreadId_t TaskPIDHandle;
-
 extern osMessageQueueId_t xFIFO_PIDDistanceHandle;
 extern osMessageQueueId_t xFIFO_PIDConfigsHandle;
 extern osMessageQueueId_t xFIFO_FANDutyCycleHandle;
 extern osMessageQueueId_t xFIFO_PIDSetPointHandle;
-
-extern osSemaphoreId_t xSemaphore_PID_InitHandle;
 
 static struct PID {
 	PIDGains Gains;
@@ -64,6 +61,11 @@ static void sPID_SetConfigs(PIDConfigs *configs, float *restActControl);
  * 					  SOFTWARE COMPONENT MAIN THREAD
  * ---------------------------------------------------------
  */
+/**
+* @brief Function implementing the TaskPID thread.
+* @param argument: Not used
+* @retval None
+*/
 void vTaskPID(void *argument)
 {
 	uint32_t distance = 0;
@@ -338,6 +340,8 @@ static void sPID_SetConfigs(PIDConfigs *configs, float *restActControl)
 
 /**
  * @brief
+ * @note TODO: Implement in future versions
+ *             Round from 0.5 to upper
  * @param
  * @retval
  */

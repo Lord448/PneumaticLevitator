@@ -39,9 +39,6 @@ extern UART_HandleTypeDef huart1;
 
 extern osThreadId_t TaskSensorHandle;
 
-extern osThreadAttr_t TaskSensor_attributes;
-
-extern osMessageQueueId_t xFIFO_COMHandle;
 extern osMessageQueueId_t xFIFO_COMDistanceHandle;
 extern osMessageQueueId_t xFIFO_COMRPMHandle;
 extern osMessageQueueId_t xFIFO_COMActionControlHandle;
@@ -54,7 +51,6 @@ extern osTimerId_t xTimer_WdgUARTHandle;
 extern osTimerId_t xTimer_RestartSensorTaskHandle;
 
 extern osSemaphoreId_t xSemaphore_DMA_TransferCpltHandle;
-extern osSemaphoreId_t xSemaphore_SensorTxCpltHandle;
 extern osSemaphoreId_t xSemaphore_SensorRxCpltHandle;
 extern osSemaphoreId_t xSemaphore_InitDaughterHandle;
 extern osSemaphoreId_t xSemaphore_SensorErrorHandle;
@@ -66,8 +62,6 @@ extern osEventFlagsId_t xEvent_FatalErrorHandle;
 extern osEventFlagsId_t xEvent_ControlModesHandle;
 
 extern char CDC_ResBuffer[64];
-
-extern void vTaskSensor(void *argument);
 
 uint8_t UART_RxBuffer[COM_UART_PERIODIC_NUMBER_FRAMES_RX] = {0};
 bool firstInit = true;
@@ -88,10 +82,10 @@ static result_t sCOM_SendUSB(uint8_t *buf, uint16_t len);
  * ---------------------------------------------------------
  */
 /**
-* @brief Function implementing the TaskCOM thread.
-* @param argument: Not used
-* @retval None
-*/
+  * @brief Function implementing the TaskCOM thread.
+	* @param argument: Not used
+	* @retval None
+	*/
 void vTaskCOM(void *argument)
 {
 	uint32_t ErrFlags = 0;
