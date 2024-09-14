@@ -83,6 +83,7 @@ void PID_Reset(void);
 bool PID_isActive(void);
 void PID_GetControlGains(float *kp, float *ki, float *kd);
 void PID_SetControlGains(float kp, float ki, float kd);
+void PID_SetOffset(int32_t offset);
 
 void vTaskPID(void *argument);
 

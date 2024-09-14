@@ -76,6 +76,7 @@ void vTaskPID(void *argument)
 	int16_t fifoSetPoint = 0;
 	float distancePercentage = 0;
 	float setPointPercetage = 0;
+	osStatus_t DistStatus;
 
 	/* Reading constants from NVM */
 	/* TODO: Check here possible concurrency on EEPROM component with
@@ -114,97 +115,115 @@ void vTaskPID(void *argument)
 
 	for (;;)
 	{
-		/* Check if there are some new configurations */
-		if (osMessageQueueGet(xFIFO_PIDConfigsHandle, &FIFOConfigs, NULL, osNoTimeout) == osOK) {
-				/* There are configurations to set */
-				sPID_SetConfigs(&FIFOConfigs, &restActControl);
+		/* CHECK IF THERE ARE NEW CONFIGURATIONS */
+		{
+			if (osMessageQueueGet(xFIFO_PIDConfigsHandle, &FIFOConfigs, NULL, osNoTimeout) == osOK) {
+					/* There are configurations to set */
+					sPID_SetConfigs(&FIFOConfigs, &restActControl);
+			}
+			if(osMessageQueueGet(xFIFO_PIDSetPointHandle, &fifoSetPoint, NULL, osNoTimeout) == osOK) {
+				/* New set Point */
+				if(fifoSetPoint < MAX_DISTANCE && fifoSetPoint > 0) {
+					/* Inside the bounds */
+					PID.Set_Point = fifoSetPoint;
+				}
+				else
+				{
+					/* Out of bounds */
+					if(fifoSetPoint > MAX_DISTANCE) {
+						/* Higher value than permited */
+						PID.Set_Point = MAX_DISTANCE;
+					}
+					else {
+						/* Negative value, Do nothing */
+					}
+				}
+			}
 		}
-		if(osMessageQueueGet(xFIFO_PIDSetPointHandle, &fifoSetPoint, NULL, osNoTimeout) == osOK) {
-			/* New set Point */
-			if(fifoSetPoint < MAX_DISTANCE && fifoSetPoint > 0) {
-				/* Inside the bounds */
-				PID.Set_Point = fifoSetPoint;
+		/* EXECUTE PID ALGORITHM */
+		{
+			/* Get Distance */
+			DistStatus = osMessageQueueGet(xFIFO_PIDDistanceHandle, &distance, NULL, osNoTimeout);
+			/* TODO: New sync logic not tested, be careful with task starving */
+			if(osOK == DistStatus)
+			{
+				/* Can execute the control algorithm */
+				distancePercentage = (distance * 100) / MAX_DISTANCE; /* Normalizing the distance */
+				setPointPercetage = (PID.Set_Point * 100) / MAX_DISTANCE;
+				PID.Error = setPointPercetage - distancePercentage;
+				PID.Control.P = (float)PID.Error * PID.Gains.Kp;
+				PID.Control.I += (float)PID.Error * PID.Gains.Ki;
+				PID.Control.D = (float)(PID.Error - PID.Past_Error) * PID.Gains.Kd;
+				/* Constraints check on the PID algorithm (recommended only for I) */
+				if (NO_LIMIT != PID.Limits.P && PID.Control.P > PID.Limits.P) {
+					/* There are constraints on the P control action */
+					PID.Control.P = PID.Limits.P;
+				}
+				if (NO_LIMIT != PID.Limits.I ) {
+					/* There are constraints on the I control action */
+					if(PID.Control.I > PID.Limits.I)
+						PID.Control.I = PID.Limits.I;
+					else if(PID.Control.I < -PID.Limits.I)
+						PID.Control.I = -PID.Limits.I;
+				}
+				if (NO_LIMIT != PID.Limits.D && PID.Control.D > PID.Limits.D) {
+					/* There are constraints on the D control action */
+					PID.Control.D = PID.Limits.D;
+				}
+
+				/* Calculating control action */
+				PID.ControlAction = PID.Offset + PID.Control.P + PID.Control.I + PID.Control.D; /* Expected value on percetage */
+				/* Constraints for the control action */
+				if (PID.ControlAction < 0) {
+					PID.ControlAction = 0;
+				}
+				PID_LimitActionControl(PID.ControlAction);
+				PID.Past_Error = PID.Error;
+
+				dataToSend = (int8_t)PID.ControlAction;
+				/* Sending to FAN processed data */
+				/* TODO: Traduce the control action to porcentage */
+				osMessageQueuePut(xFIFO_FANDutyCycleHandle, (int8_t*)&dataToSend, 0U, osNoTimeout);
 			}
 			else
 			{
-				/* Out of bounds */
-				if(fifoSetPoint > MAX_DISTANCE) {
-					/* Higher value than permited */
-					PID.Set_Point = MAX_DISTANCE;
-				}
-				else {
-					/* Negative value, Do nothing */
-				}
+				/* There's no distance to process, Do Nothing */
 			}
 		}
-		/* Get Distance */
-		osMessageQueueGet(xFIFO_PIDDistanceHandle, &distance, NULL, osNoTimeout);
-		distancePercentage = (distance * 100) / MAX_DISTANCE; /* Normalizing the distance */
-		setPointPercetage = (PID.Set_Point * 100) / MAX_DISTANCE;
-		PID.Error = setPointPercetage - distancePercentage;
-		PID.Control.P = (float)PID.Error * PID.Gains.Kp;
-		PID.Control.I += (float)PID.Error * PID.Gains.Ki;
-		PID.Control.D = (float)(PID.Error - PID.Past_Error) * PID.Gains.Kd;
-		/* Constraints check on the PID algorithm (recommended only for I) */
-		if (NO_LIMIT != PID.Limits.P && PID.Control.P > PID.Limits.P) {
-			/* There are constraints on the P control action */
-			PID.Control.P = PID.Limits.P;
-		}
-		if (NO_LIMIT != PID.Limits.I ) {
-			/* There are constraints on the I control action */
-			if(PID.Control.I > PID.Limits.I)
-				PID.Control.I = PID.Limits.I;
-			else if(PID.Control.I < -PID.Limits.I)
-				PID.Control.I = -PID.Limits.I;
-		}
-		if (NO_LIMIT != PID.Limits.D && PID.Control.D > PID.Limits.D) {
-			/* There are constraints on the D control action */
-			PID.Control.D = PID.Limits.D;
-		}
 
-		/* Calculating control action */
-		PID.ControlAction = PID.Offset + PID.Control.P + PID.Control.I + PID.Control.D; /* Expected value on percetage */
-		/* Constraints for the control action */
-		if (PID.ControlAction < 0) {
-			PID.ControlAction = 0;
-		}
-		PID_LimitActionControl(PID.ControlAction);
-		PID.Past_Error = PID.Error;
-
-		dataToSend = (int8_t)PID.ControlAction;
-		/* Sending to FAN processed data */
-		/* TODO: Traduce the control action to porcentage */
-		osMessageQueuePut(xFIFO_FANDutyCycleHandle, (int8_t*)&dataToSend, 0U, osNoTimeout);
-
-		/* Off/On logic */
-		if(!PID.isActive)
+		/* PID OFF/ON LOGIC */
 		{
-			/* Disabling PID */
-			PID_Reset();
-			dataToSend = 0;
-			osMessageQueuePut(xFIFO_FANDutyCycleHandle, (int8_t*)&dataToSend, 0U, osNoTimeout);
-			while(!PID.isActive)
+			if(!PID.isActive)
 			{
-				/* Wait 50 ticks to check if the PID has turned on */
-				osDelay(50);
+				/* Disabling PID */
+				PID_Reset();
+				dataToSend = 0;
+				osMessageQueuePut(xFIFO_FANDutyCycleHandle, (int8_t*)&dataToSend, 0U, osNoTimeout);
+				while(!PID.isActive)
+				{
+					/* Wait 50 ticks to check if the PID has turned on */
+					osDelay(50);
+				}
+				continue; /* Skip the end of loop delay */
 			}
-			continue; /* Skip the end of loop delay */
-		}
-		else
-		{
-			/* Do Nothing */
+			else
+			{
+				/* Do Nothing */
+			}
 		}
 
-		/* End of loop */
-		if(0 < PID.SamplingRate)
+		/* END OF LOOP POLLING */
 		{
-			/* There's a fixed sample rate */
-			ticks += PID.SamplingRate;
-			osDelayUntil(ticks);
-		}
-		else
-		{
-			/* Free sampling rate, Do nothing*/
+			if(0 < PID.SamplingRate)
+			{
+				/* There's a fixed sample rate */
+				ticks += PID.SamplingRate;
+				osDelayUntil(ticks);
+			}
+			else
+			{
+				/* Free sampling rate, Do nothing*/
+			}
 		}
 	}
 }
@@ -309,6 +328,15 @@ void PID_SetControlGains(float kp, float ki, float kd)
 	NVM_Save(KI_PID_BASE_ADDR, ki);
 	NVM_Save(KD_PID_BASE_ADDR, kd);
 	PID_Reset();
+}
+/**
+ * @brief  Set the PID offset
+ * @param  offset : The calibrated PID offset
+ * @retval none
+ */
+void PID_SetOffset(int32_t offset)
+{
+	PID.Offset = offset;
 }
 /**
  * ---------------------------------------------------------
